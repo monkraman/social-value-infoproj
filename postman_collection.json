@@ -1,0 +1,166 @@
+{
+  "info": {
+    "name": "Infosys Social Value RFP Response Builder POC",
+    "description": "Postman API Collection for testing all POC Milestones (Health, AI, Document Ingestion, Vector Search, RAG Generation, and Deterministic Calculations).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Milestone 1 - Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Verifies backend status, PostgreSQL connectivity, and pgvector extension status."
+      }
+    },
+    {
+      "name": "Milestone 3 - AI Test Connectivity",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prompt\": \"Explain Social Value in one sentence.\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ai/test",
+          "host": ["{{baseUrl}}"],
+          "path": ["ai", "test"]
+        },
+        "description": "Sends a prompt to the OpenAI LLM or structured offline mode."
+      }
+    },
+    {
+      "name": "Milestone 5 - Document Ingestion (Upload)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "documents/synthetic/Infosys_Birmingham_Digital_Inclusion.docx"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/documents/ingest",
+          "host": ["{{baseUrl}}"],
+          "path": ["documents", "ingest"]
+        },
+        "description": "Uploads and extracts text from PDF, DOCX, or XLSX, generates 1536-dim embeddings, and stores in PostgreSQL pgvector."
+      }
+    },
+    {
+      "name": "Milestone 5 - List Ingested Documents",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/documents",
+          "host": ["{{baseUrl}}"],
+          "path": ["documents"]
+        },
+        "description": "Lists all documents stored in the database with their chunk counts."
+      }
+    },
+    {
+      "name": "Milestone 6 - Vector Similarity Search",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": \"digital inclusion initiatives for Birmingham\",\n  \"top_k\": 5\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/search",
+          "host": ["{{baseUrl}}"],
+          "path": ["search"]
+        },
+        "description": "Generates query embedding and performs cosine distance vector search over document chunks."
+      }
+    },
+    {
+      "name": "Milestone 7 & 8 - RAG Response Generation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"contract_duration_years\": 3,\n  \"contract_value_gbp\": 10000000,\n  \"social_value_weighting_percent\": 10,\n  \"client\": \"Example Council\",\n  \"location\": \"Birmingham\",\n  \"priorities\": [\n    \"Digital Inclusion\",\n    \"Youth Employment\"\n  ],\n  \"top_k\": 5\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/responses/generate",
+          "host": ["{{baseUrl}}"],
+          "path": ["responses", "generate"]
+        },
+        "description": "Retrieves evidence from pgvector, prompts LLM for structured packages, applies deterministic TOMs calculations, and flags validation items."
+      }
+    },
+    {
+      "name": "Deterministic Calculations - TOMs Proxy Catalog",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/calculations/metrics",
+          "host": ["{{baseUrl}}"],
+          "path": ["calculations", "metrics"]
+        },
+        "description": "Lists all available National TOMs proxy metrics and unit values."
+      }
+    },
+    {
+      "name": "Deterministic Calculations - Single Initiative",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"initiative_name\": \"Birmingham Digital Inclusion Clinics\",\n  \"toms_code\": \"NT8\",\n  \"annual_volume\": 4.0,\n  \"duration_years\": 3\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/calculations/initiative",
+          "host": ["{{baseUrl}}"],
+          "path": ["calculations", "initiative"]
+        },
+        "description": "Deterministically calculates total volume and Social Value proxy value."
+      }
+    }
+  ]
+}
