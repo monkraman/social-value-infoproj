@@ -1,6 +1,6 @@
 """
 Database Initialization Script
-Ensures the pgvector extension is enabled and creates tables.
+Ensures tables exist and pgvector is enabled if on PostgreSQL.
 """
 import sys
 import os
@@ -8,34 +8,32 @@ import os
 # Ensure project root is in sys.path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sqlalchemy import text
-from app.core.database import engine, Base, check_db_connection
+from sqlalchemy import text, inspect
+from app.core.database import engine, Base, check_db_connection, IS_POSTGRES
 from app.models import Document, DocumentChunk
 
 
 def init_db():
-    print("Checking PostgreSQL connection...")
+    print("Checking Database connection...")
     status = check_db_connection()
     if not status["connected"]:
         print(f"Error connecting to database: {status.get('error')}")
         sys.exit(1)
 
-    print(f"Connected to PostgreSQL: {status['postgres_version']}")
+    print(f"Connected to Database: {status.get('postgres_version') or status.get('engine')}")
 
-    with engine.begin() as conn:
-        print("Ensuring pgvector extension is enabled...")
-        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
+    if IS_POSTGRES:
+        with engine.begin() as conn:
+            print("Ensuring pgvector extension is enabled...")
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
 
     print("Creating database tables if not existing...")
     Base.metadata.create_all(bind=engine)
 
     # Verify tables
-    with engine.connect() as conn:
-        tables = conn.execute(text(
-            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';"
-        )).fetchall()
-        table_names = [t[0] for t in tables]
-        print(f"Verified tables in public schema: {table_names}")
+    inspector = inspect(engine)
+    table_names = inspector.get_table_names()
+    print(f"Verified tables in database: {table_names}")
 
     print("Database initialization completed successfully!")
 

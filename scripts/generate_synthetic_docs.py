@@ -7,7 +7,6 @@ import os
 import sys
 import docx
 from docx.shared import Pt, Inches, RGBColor
-import pymupdf
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
@@ -99,9 +98,7 @@ def generate_docx():
 def generate_pdf():
     """Generates Infosys_Youth_Employment_Pathways.pdf."""
     path = os.path.join(OUTPUT_DIR, "Infosys_Youth_Employment_Pathways.pdf")
-    doc = pymupdf.open()
-    page = doc.new_page(width=595, height=842)  # A4
-
+    
     text = """INFOSYS UK — SOCIAL VALUE KNOWLEDGE BRIEF
 YOUTH EMPLOYMENT & SKILLS PATHWAYS (BIRMINGHAM)
 [Classification: Synthetic Test Evidence — POC Use Only]
@@ -138,11 +135,29 @@ Where the contract scale permits, Infosys can scale the engagement to include fu
 6. Traceability and Audit
 All evidence logs participant attendance, verified National Insurance onboarding numbers, and partner referral documentation to satisfy public sector audit requirements.
 """
-    # Write text to PDF page
-    rect = pymupdf.Rect(50, 50, 545, 792)
-    page.insert_textbox(rect, text, fontsize=10, fontname="helv")
-    doc.save(path)
-    doc.close()
+    try:
+        import pymupdf
+        doc = pymupdf.open()
+        page = doc.new_page(width=595, height=842)  # A4
+        rect = pymupdf.Rect(50, 50, 545, 792)
+        page.insert_textbox(rect, text, fontsize=10, fontname="helv")
+        doc.save(path)
+        doc.close()
+    except Exception:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.pdfgen import canvas
+        c = canvas.Canvas(path, pagesize=A4)
+        c.setFont("Helvetica", 9)
+        y = 800
+        for line in text.split("\n"):
+            if y < 40:
+                c.showPage()
+                c.setFont("Helvetica", 9)
+                y = 800
+            c.drawString(50, y, line[:100])
+            y -= 14
+        c.save()
+
     print(f"Generated PDF: {path}")
 
 

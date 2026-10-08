@@ -3,9 +3,14 @@ import uuid
 import re
 from typing import List, Dict, Any, Tuple
 from sqlalchemy.orm import Session
-import pymupdf
+try:
+    import pymupdf
+except Exception:
+    pymupdf = None
+
 import docx
 import openpyxl
+import pypdf
 
 from app.models.document import Document
 from app.models.chunk import DocumentChunk
@@ -15,17 +20,33 @@ from app.services.embedding_service import embedding_service
 class DocumentService:
     @staticmethod
     def extract_text_from_pdf(file_bytes: bytes) -> List[Dict[str, Any]]:
-        """Extracts text per page from PDF using PyMuPDF."""
+        """Extracts text per page from PDF using PyMuPDF or pypdf."""
         pages = []
-        with pymupdf.open(stream=file_bytes, filetype="pdf") as doc:
-            for page_num in range(len(doc)):
-                page = doc[page_num]
-                text = page.get_text("text").strip()
-                if text:
-                    pages.append({
-                        "page_number": page_num + 1,
-                        "text": text
-                    })
+        if pymupdf is not None:
+            try:
+                with pymupdf.open(stream=file_bytes, filetype="pdf") as doc:
+                    for page_num in range(len(doc)):
+                        page = doc[page_num]
+                        text = page.get_text("text").strip()
+                        if text:
+                            pages.append({
+                                "page_number": page_num + 1,
+                                "text": text
+                            })
+                if pages:
+                    return pages
+            except Exception:
+                pass
+
+        # Fallback to pure-Python pypdf
+        reader = pypdf.PdfReader(io.BytesIO(file_bytes))
+        for page_num, page in enumerate(reader.pages):
+            text = (page.extract_text() or "").strip()
+            if text:
+                pages.append({
+                    "page_number": page_num + 1,
+                    "text": text
+                })
         return pages
 
     @staticmethod
