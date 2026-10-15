@@ -35,8 +35,17 @@ class Settings(BaseSettings):
     @property
     def active_provider(self) -> str:
         prov = self.LLM_PROVIDER.lower().strip()
-        has_gemini = bool(self.GEMINI_API_KEY and self.GEMINI_API_KEY.strip() and not self.GEMINI_API_KEY.startswith("your_"))
-        has_openai = bool(self.OPENAI_API_KEY and self.OPENAI_API_KEY.strip() and not self.OPENAI_API_KEY.startswith("your_"))
+        has_gemini = bool(
+            self.GEMINI_API_KEY
+            and self.GEMINI_API_KEY.strip()
+            and not self.GEMINI_API_KEY.startswith("your_")
+            and not self.GEMINI_API_KEY.startswith("AQ.")
+        )
+        has_openai = bool(
+            self.OPENAI_API_KEY
+            and self.OPENAI_API_KEY.strip()
+            and not self.OPENAI_API_KEY.startswith("your_")
+        )
 
         if prov == "gemini" and has_gemini:
             return "gemini"
@@ -58,11 +67,20 @@ class Settings(BaseSettings):
 
     @property
     def is_openai_configured(self) -> bool:
-        return bool(self.OPENAI_API_KEY and self.OPENAI_API_KEY.strip() and not self.OPENAI_API_KEY.startswith("your_"))
+        return bool(
+            self.OPENAI_API_KEY
+            and self.OPENAI_API_KEY.strip()
+            and not self.OPENAI_API_KEY.startswith("your_")
+        )
 
     @property
     def is_gemini_configured(self) -> bool:
-        return bool(self.GEMINI_API_KEY and self.GEMINI_API_KEY.strip() and not self.GEMINI_API_KEY.startswith("your_"))
+        return bool(
+            self.GEMINI_API_KEY
+            and self.GEMINI_API_KEY.strip()
+            and not self.GEMINI_API_KEY.startswith("your_")
+            and not self.GEMINI_API_KEY.startswith("AQ.")
+        )
 
 
 settings = Settings()
