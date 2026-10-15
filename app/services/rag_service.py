@@ -26,6 +26,8 @@ class RAGService:
         # Step 1: Query Formulation
         priorities_str = ", ".join(req.priorities) if req.priorities else "Social Value"
         retrieval_query = f"{priorities_str} initiatives in {req.location} for {req.client}"
+        if req.raw_prompt and len(req.raw_prompt.strip()) > 0 and len(req.raw_prompt) < 200:
+            retrieval_query = f"{retrieval_query} ({req.raw_prompt.strip()})"
 
         # Step 2: Vector Retrieval
         retrieved_items = retrieval_service.search_chunks(

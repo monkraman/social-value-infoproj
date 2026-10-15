@@ -14,6 +14,7 @@ class OpportunityRequest(BaseModel):
         description="Priority Social Value themes"
     )
     top_k: int = Field(default=6, ge=1, le=20, description="Evidence chunks to retrieve")
+    raw_prompt: Optional[str] = Field(default=None, description="Raw user prompt string")
 
 
 class InitiativeItem(BaseModel):
