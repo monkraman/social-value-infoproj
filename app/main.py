@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.core.config import settings
-from app.core.database import engine, Base, SessionLocal
+from app.core.database import engine, Base, SessionLocal, IS_POSTGRES
 import app.models  # noqa: F401 - registers all SQLAlchemy models
 from app.services.auth_service import auth_service
 from app.api import (

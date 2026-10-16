@@ -7,7 +7,25 @@ from app.core.config import settings
 
 if IS_POSTGRES:
     from pgvector.sqlalchemy import Vector
-    VectorType = Vector(settings.EMBEDDING_DIMENSION)
+
+    class SafeVector(Vector):
+        cache_ok = True
+
+        def result_processor(self, dialect, coltype):
+            super_processor = super().result_processor(dialect, coltype)
+
+            def process(value):
+                if value is None:
+                    return None
+                if isinstance(value, list):
+                    return [float(v) for v in value]
+                if hasattr(value, "tolist"):
+                    return value.tolist()
+                return super_processor(value)
+
+            return process
+
+    VectorType = SafeVector(settings.EMBEDDING_DIMENSION)
 else:
     VectorType = JSON
 
