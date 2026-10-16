@@ -132,9 +132,20 @@ class PromptInterpreterService:
 
         return True, ""
 
+    UK_LOCATIONS: List[str] = [
+        "Birmingham", "Manchester", "Leeds", "London", "Bristol", "Liverpool",
+        "Sheffield", "Newcastle", "Glasgow", "Edinburgh", "Cardiff", "Coventry",
+        "Leicester", "Nottingham", "Southampton", "Belfast", "Westminster", "Salford",
+        "Bradford", "Sunderland", "Wolverhampton", "Brighton", "Plymouth", "Derby",
+        "Stoke", "Hull", "York", "Reading", "Milton Keynes", "Aberdeen", "Swansea",
+        "Oxford", "Cambridge", "Bath", "Exeter", "Norwich", "Dundee", "Gloucester",
+        "Camden", "Hackney", "Islington", "Greenwich", "Southwark", "Croydon"
+    ]
+
     def _extract_parameters(self, prompt: str) -> Dict[str, Any]:
         """Extracts structured tender parameters from natural language prompt."""
         p = prompt
+        p_lower = p.lower()
 
         # 1. Contract Duration
         duration = 3
@@ -170,52 +181,109 @@ class PromptInterpreterService:
             except ValueError:
                 weighting = 10.0
 
-        # 4. Client and Location
-        client = "Birmingham City Council"
-        location = "Birmingham"
+        # 4. Client and Location Detection (Dynamic, without hardcoded Birmingham)
+        client: Optional[str] = None
+        location: Optional[str] = None
 
-        # Check for known authorities or extract after 'client'
-        if "birmingham" in p.lower():
-            client = "Birmingham City Council"
-            location = "Birmingham"
-        elif "manchester" in p.lower():
-            client = "Manchester City Council"
-            location = "Manchester"
-        elif "leeds" in p.lower():
-            client = "Leeds City Council"
-            location = "Leeds"
-        elif "london" in p.lower():
-            client = "Greater London Authority"
-            location = "London"
-        elif "nhs" in p.lower():
-            client = "NHS Trust"
-            location = "Regional"
-        else:
-            client_match = re.search(r'client\s+([A-Za-z\s]+?)(?:\s+wants|\s+in|\s+requires|\s*,|\s*\.)', p, re.IGNORECASE)
-            if client_match:
-                client = client_match.group(1).strip()
-                location = client.split()[0] if client else "Regional"
+        # Step 4a: Check if explicit UK city/location is mentioned in prompt
+        for uk_loc in self.UK_LOCATIONS:
+            if re.search(r'\b' + re.escape(uk_loc) + r'\b', p, re.IGNORECASE):
+                location = uk_loc
+                break
 
-        # 5. Priorities / Themes
+        # Step 4b: Look for explicit client patterns (e.g. 'client XYZ wants')
+        client_match = re.search(
+            r'client\s*[:=]?\s*([A-Za-z0-9\s&\'()-]+?)(?:\s+(?:in|wants|requires|located|demands)|,|$|\.)',
+            p,
+            re.IGNORECASE
+        )
+        if client_match:
+            cand = client_match.group(1).strip()
+            # Strip placeholder tokens like (INSERT), [INSERT], etc.
+            clean_cand = re.sub(r'[\(\[\{<]?insert[\)\]\}>]?', '', cand, flags=re.IGNORECASE).strip()
+            if len(clean_cand) > 2 and clean_cand.lower() not in ["the", "a", "an", "client"]:
+                client = clean_cand
+
+        # Check for authority following for/with/to if client not found
+        if not client:
+            auth_match = re.search(
+                r'(?:for|with|to)\s+([A-Za-z0-9\s&\'()-]+?\s+(?:City\s+Council|County\s+Council|Borough\s+Council|Council|Combined\s+Authority|Authority|NHS\s+Trust|NHS|Trust|Board|Department|Agency|Service|Constabulary|University))',
+                p,
+                re.IGNORECASE
+            )
+            if auth_match:
+                cand = auth_match.group(1).strip()
+                clean_cand = re.sub(r'[\(\[\{<]?insert[\)\]\}>]?', '', cand, flags=re.IGNORECASE).strip()
+                if len(clean_cand) > 2:
+                    client = clean_cand
+
+        # Step 4c: Reconcile client and location
+        if location and not client:
+            if "nhs" in p_lower or "trust" in p_lower:
+                client = f"{location} NHS Trust"
+            elif "police" in p_lower:
+                client = f"{location} Police Authority"
+            elif "council" in p_lower or "city" in p_lower:
+                client = f"{location} City Council"
+            else:
+                client = f"{location} City Council"
+
+        if client and not location:
+            for uk_loc in self.UK_LOCATIONS:
+                if re.search(r'\b' + re.escape(uk_loc) + r'\b', client, re.IGNORECASE):
+                    location = uk_loc
+                    break
+            if not location:
+                location = client.split()[0] if len(client.split()) > 0 else "UK Regional"
+
+        # Step 4d: Fallback only when prompt provides NO client and NO location
+        # Default to generic Public Sector Authority (NOT Birmingham!)
+        if not client:
+            if "nhs" in p_lower or "trust" in p_lower or "hospital" in p_lower:
+                client = "NHS Regional Health Trust"
+                location = "UK National"
+            elif any(w in p_lower for w in ["central government", "civil service", "ministry", "cabinet office"]):
+                client = "Crown Commercial Service"
+                location = "UK Central Government"
+            else:
+                client = "UK Public Sector Authority"
+                location = "UK Regional"
+
+        if not location:
+            location = "UK Regional"
+
+        # 5. Priorities / Themes Extraction
         priorities: List[str] = []
-        p_lower = p.lower()
-        if "digital inclusion" in p_lower or "digital" in p_lower:
+        if any(w in p_lower for w in ["digital inclusion", "digital skills", "it literacy", "broadband", "coding"]):
             priorities.append("Digital Inclusion")
-        if "youth employment" in p_lower or "youth" in p_lower or "young" in p_lower:
+        if any(w in p_lower for w in ["youth employment", "young people", "apprenticeship", "neet", "early career"]):
             priorities.append("Youth Employment")
-        if "skills" in p_lower or "apprenticeship" in p_lower:
+        if any(w in p_lower for w in ["skills gap", "skills training", "workforce", "upskilling", "reskilling"]):
             priorities.append("Employment & Skills")
-        if "net zero" in p_lower or "carbon" in p_lower or "green" in p_lower or "environment" in p_lower:
-            priorities.append("Net Zero & Environment")
-        if "supply chain" in p_lower or "sme" in p_lower or "local business" in p_lower:
+        if any(w in p_lower for w in ["supply chain", "sme", "vcse", "local spend", "tier 2", "local business"]):
             priorities.append("Local Supply Chain")
-        if "modern slavery" in p_lower:
-            priorities.append("Modern Slavery & Ethics")
-        if "healthcare" in p_lower or "health" in p_lower:
+        if any(w in p_lower for w in ["net zero", "carbon", "green", "environment", "climate", "sustainability"]):
+            priorities.append("Net Zero & Environment")
+        if any(w in p_lower for w in ["healthcare", "health", "wellbeing", "mental health"]):
             priorities.append("Health & Wellbeing")
+        if any(w in p_lower for w in ["stem", "school", "education"]):
+            priorities.append("STEM & Education")
+        if "modern slavery" in p_lower or "living wage" in p_lower:
+            priorities.append("Modern Slavery & Ethics")
 
+        # Also extract custom themes from 'address <themes>'
+        address_match = re.search(r'address\s+([A-Za-z0-9\s,&/-]+?)(?:\.|\s+based\s+on|$|\s+and\s+the\s+impact)', p, re.IGNORECASE)
+        if address_match:
+            raw_chunk = address_match.group(1).strip()
+            clean_chunk = re.sub(r'[\(\[\{<]?insert[\)\]\}>]?', '', raw_chunk, flags=re.IGNORECASE)
+            parts = [s.strip().title() for s in re.split(r'[,&]|\band\b', clean_chunk) if len(s.strip()) > 3]
+            for pt in parts:
+                if pt not in priorities and len(priorities) < 5:
+                    priorities.append(pt)
+
+        # Standard Social Value pillars fallback if no priorities were stated in prompt
         if not priorities:
-            priorities = ["Digital Inclusion", "Youth Employment"]
+            priorities = ["Local Skills & Employment", "Local Economic Growth", "Community Wellbeing"]
 
         return {
             "contract_duration_years": duration,
@@ -226,6 +294,7 @@ class PromptInterpreterService:
             "priorities": priorities,
             "raw_prompt": p
         }
+
 
     def _record_and_return_nav(self, db: Session, prompt: str, intent: str, msg: str) -> Dict[str, Any]:
         record = PromptHistory(

@@ -43,6 +43,41 @@ def test_natural_language_prompt_non_rfp(client):
     assert data["result"] is None
 
 
+def test_natural_language_prompt_generic_without_birmingham(client):
+    """Verifies that a prompt without client/location does NOT default to Birmingham."""
+    prompt_text = (
+        "I need to build a Social Value bid response, for a 3-year contract of £10M with 10% "
+        "Social Value weighting."
+    )
+    response = client.post("/responses/prompt", json={"prompt": prompt_text})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["is_rfp_prompt"] is True
+    assert data["request"]["client"] != "Birmingham City Council"
+    assert data["request"]["location"] != "Birmingham"
+    assert "Birmingham" not in data["request"]["client"]
+    assert "Birmingham" not in data["request"]["location"]
+    assert data["request"]["client"] == "UK Public Sector Authority"
+    assert data["request"]["location"] == "UK Regional"
+
+
+def test_natural_language_prompt_custom_client(client):
+    """Verifies that a custom client (e.g. Manchester) is correctly extracted instead of Birmingham."""
+    prompt_text = (
+        "I need to build a Social Value bid response, for a 4-year contract of £12M with 10% "
+        "Social Value weighting. The client Manchester City Council in Manchester wants the Social "
+        "Value offer to address local supply chain and green skills."
+    )
+    response = client.post("/responses/prompt", json={"prompt": prompt_text})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["is_rfp_prompt"] is True
+    assert data["request"]["client"] == "Manchester City Council"
+    assert data["request"]["location"] == "Manchester"
+    assert "Local Supply Chain" in data["request"]["priorities"]
+    assert "Net Zero & Environment" in data["request"]["priorities"]
+
+
 def test_prompt_history_endpoint(client):
     """Verifies that past prompts are retrieved in audit history."""
     response = client.get("/responses/history")
