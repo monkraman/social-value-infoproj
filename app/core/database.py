@@ -5,14 +5,19 @@ from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from app.core.config import settings
 
 db_url = settings.DATABASE_URL
-IS_POSTGRES = db_url.startswith("postgresql") or db_url.startswith("postgres")
+if db_url.startswith("postgresql://"):
+    db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+elif db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql+psycopg://", 1)
+
+IS_POSTGRES = "postgresql" in db_url or "postgres" in db_url
 
 
 def create_db_engine():
     global db_url, IS_POSTGRES
     if IS_POSTGRES:
         try:
-            eng = create_engine(db_url, echo=False, pool_pre_ping=True, connect_args={"connect_timeout": 2})
+            eng = create_engine(db_url, echo=False, pool_pre_ping=True, connect_args={"connect_timeout": 15})
             with eng.connect() as conn:
                 conn.execute(text("SELECT 1;"))
             return eng, True

@@ -22,6 +22,13 @@ from sqlalchemy import inspect, text
 
 def init_db():
     try:
+        if IS_POSTGRES:
+            try:
+                with engine.begin() as conn:
+                    conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
+            except Exception as ext_err:
+                print(f"[Database Warning] Could not ensure pgvector extension: {ext_err}")
+
         Base.metadata.create_all(bind=engine)
         # Safe schema migration check for existing database instances
         try:
