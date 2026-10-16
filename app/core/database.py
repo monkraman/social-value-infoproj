@@ -17,7 +17,19 @@ def create_db_engine():
     global db_url, IS_POSTGRES
     if IS_POSTGRES:
         try:
-            eng = create_engine(db_url, echo=False, pool_pre_ping=True, connect_args={"connect_timeout": 15})
+            connect_args = {"connect_timeout": 15}
+            try:
+                import socket
+                from urllib.parse import urlparse
+                parsed = urlparse(db_url)
+                if parsed.hostname and "." in parsed.hostname:
+                    ipv4 = socket.gethostbyname(parsed.hostname)
+                    if ipv4:
+                        connect_args["hostaddr"] = ipv4
+            except Exception:
+                pass
+
+            eng = create_engine(db_url, echo=False, pool_pre_ping=True, connect_args=connect_args)
             with eng.connect() as conn:
                 conn.execute(text("SELECT 1;"))
             return eng, True
