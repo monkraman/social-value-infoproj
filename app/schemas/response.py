@@ -29,6 +29,31 @@ class InitiativeItem(BaseModel):
     partner: Optional[str] = Field(None, description="Partner organization, if supported by evidence")
     evidence_source: str = Field(..., description="Source document or 'Model Recommended'")
     is_from_knowledge_base: bool = Field(default=False, description="True if grounded in retrieved knowledge")
+    # Granular operational metrics matching client requirement
+    sessions_per_year: Optional[float] = Field(default=None, description="Number of sessions per year")
+    hours_per_session: Optional[float] = Field(default=None, description="Hours per delivery session")
+    participants_per_session: Optional[float] = Field(default=None, description="Participants per session")
+    indicative_cost_gbp: Optional[float] = Field(default=0.0, description="Estimated internal delivery cost to Infosys")
+    commercial_viability: Optional[str] = Field(default="Zero-Cost Internal Volunteering", description="Cost structure tier")
+
+
+class GovernanceCadence(BaseModel):
+    social_value_lead: str = Field(
+        default="Dedicated Infosys Social Value Lead assigned upon contract award",
+        description="Lead role responsibility"
+    )
+    kickoff_cadence: str = Field(
+        default="Joint Social Value Kick-Off Meeting held within 60 days of contract signature",
+        description="Initial mobilization meeting"
+    )
+    reporting_frequency: str = Field(
+        default="Quarterly Social Value Progress and KPIs performance reporting",
+        description="Reporting cadence"
+    )
+    annual_review: str = Field(
+        default="Annual SVROI impact evaluation and National TOMs financial reconciliation",
+        description="Annual governance cycle"
+    )
 
 
 class SocialValuePackage(BaseModel):
@@ -38,6 +63,16 @@ class SocialValuePackage(BaseModel):
     expected_impact: List[str] = Field(default_factory=list)
     dependencies: List[str] = Field(default_factory=list)
     financial_calculation: Optional[PackageCalculation] = None
+    indicative_delivery_cost_gbp: float = Field(default=0.0, description="Estimated total cost to Infosys to deliver this package")
+    commercial_viability_summary: str = Field(default="Highly Viable / High SVROI", description="Commercial assessment")
+    governance: GovernanceCadence = Field(default_factory=GovernanceCadence, description="Standardized governance framework")
+
+
+class AIReasoningStep(BaseModel):
+    step_number: int
+    title: str
+    detail: str
+    status: str = "completed"
 
 
 class ResponseGenerationResult(BaseModel):
@@ -49,4 +84,6 @@ class ResponseGenerationResult(BaseModel):
     validation_required: List[str] = Field(default_factory=list)
     retrieved_evidence_chunks: int = 0
     grounding_summary: Dict[str, Any] = Field(default_factory=dict)
+    ai_reasoning_chain: List[AIReasoningStep] = Field(default_factory=list, description="Transparent AI reasoning & evidence grounding chain")
     is_mock: bool = False
+
