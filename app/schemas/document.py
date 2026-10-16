@@ -13,8 +13,11 @@ class DocumentBase(BaseModel):
 class DocumentResponse(DocumentBase):
     id: uuid.UUID
     created_at: datetime
+    is_archived: bool = False
+    archived_at: Optional[datetime] = None
     chunks_count: Optional[int] = None
     model_config = ConfigDict(from_attributes=True)
+
 
 
 class DocumentIngestResponse(BaseModel):

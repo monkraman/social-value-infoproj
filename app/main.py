@@ -17,13 +17,30 @@ from app.api import (
 )
 
 
+from sqlalchemy import inspect, text
+
+
 def init_db():
     try:
         Base.metadata.create_all(bind=engine)
+        # Safe schema migration check for existing database instances
+        try:
+            with engine.begin() as conn:
+                inspector = inspect(engine)
+                if "documents" in inspector.get_table_names():
+                    cols = [c["name"] for c in inspector.get_columns("documents")]
+                    if "is_archived" not in cols:
+                        conn.execute(text("ALTER TABLE documents ADD COLUMN is_archived BOOLEAN DEFAULT 0;"))
+                    if "archived_at" not in cols:
+                        conn.execute(text("ALTER TABLE documents ADD COLUMN archived_at TIMESTAMP;"))
+        except Exception as mig_err:
+            pass
+
         with SessionLocal() as db:
             auth_service.ensure_default_superadmin(db)
     except Exception as e:
         print(f"[Startup Warning] Could not initialize database/auth automatically: {e}")
+
 
 
 # Initialize database schema immediately so test runners and workers have tables ready

@@ -63,10 +63,22 @@ async def ingest_document(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Ingestion failed: {str(e)}")
 
 
+from datetime import datetime, timezone
+
+
 @router.get("", response_model=List[DocumentResponse])
-def list_documents(db: Session = Depends(get_db)):
-    """Lists all ingested documents with chunk counts."""
-    docs = db.query(Document).order_by(Document.created_at.desc()).all()
+def list_documents(
+    include_archived: bool = True,
+    db: Session = Depends(get_db)
+):
+    """
+    Lists all ingested documents with chunk counts.
+    By default returns both active and archived documents.
+    """
+    query = db.query(Document)
+    if not include_archived:
+        query = query.filter(Document.is_archived == False)
+    docs = query.order_by(Document.created_at.desc()).all()
     results = []
     for d in docs:
         count = db.query(DocumentChunk).filter(DocumentChunk.document_id == d.id).count()
@@ -76,6 +88,8 @@ def list_documents(db: Session = Depends(get_db)):
                 filename=d.filename,
                 document_type=d.document_type,
                 metadata=d.doc_metadata or {},
+                is_archived=bool(getattr(d, "is_archived", False)),
+                archived_at=getattr(d, "archived_at", None),
                 created_at=d.created_at,
                 chunks_count=count
             )
@@ -84,8 +98,16 @@ def list_documents(db: Session = Depends(get_db)):
 
 
 @router.delete("/{document_id}", status_code=status.HTTP_200_OK)
-def delete_document(document_id: str, db: Session = Depends(get_db)):
-    """Deletes an ingested document and its associated chunks."""
+def delete_document(
+    document_id: str,
+    permanent: bool = False,
+    db: Session = Depends(get_db)
+):
+    """
+    Deletes an ingested document:
+    - If permanent=False (default): Soft-deletes / archives document. Chunks are excluded from vector searches, but file record is preserved.
+    - If permanent=True: Hard-deletes document, cascading delete to all chunks and 1536-dimensional vector embeddings.
+    """
     try:
         doc_uuid = uuid.UUID(document_id)
     except ValueError:
@@ -95,6 +117,49 @@ def delete_document(document_id: str, db: Session = Depends(get_db)):
     if not doc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
 
-    db.delete(doc)
+    if permanent:
+        db.delete(doc)
+        db.commit()
+        return {
+            "message": f"Document '{doc.filename}' permanently purged from database and vector index.",
+            "type": "hard_delete",
+            "document_id": str(doc_uuid)
+        }
+    else:
+        doc.is_archived = True
+        doc.archived_at = datetime.now(timezone.utc)
+        db.commit()
+        return {
+            "message": f"Document '{doc.filename}' archived (soft-deleted). It is now excluded from all vector searches.",
+            "type": "soft_delete",
+            "document_id": str(doc_uuid)
+        }
+
+
+@router.post("/{document_id}/restore", status_code=status.HTTP_200_OK)
+def restore_document(
+    document_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Restores a soft-deleted (archived) document back into active status.
+    Its chunks will immediately become retrievable in vector searches.
+    """
+    try:
+        doc_uuid = uuid.UUID(document_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid UUID format")
+
+    doc = db.query(Document).filter(Document.id == doc_uuid).first()
+    if not doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+
+    doc.is_archived = False
+    doc.archived_at = None
     db.commit()
-    return {"message": f"Document '{doc.filename}' and its chunks deleted successfully"}
+    return {
+        "message": f"Document '{doc.filename}' restored successfully. It is now active in vector searches.",
+        "type": "restored",
+        "document_id": str(doc_uuid)
+    }
+

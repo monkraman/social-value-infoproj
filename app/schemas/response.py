@@ -87,3 +87,35 @@ class ResponseGenerationResult(BaseModel):
     ai_reasoning_chain: List[AIReasoningStep] = Field(default_factory=list, description="Transparent AI reasoning & evidence grounding chain")
     is_mock: bool = False
 
+
+class PromptSubmissionRequest(BaseModel):
+    prompt: str = Field(..., min_length=1, description="Natural language tender specification or query")
+    user_id: Optional[str] = Field(default=None, description="Optional user ID for audit logging")
+
+
+class PromptSubmissionResponse(BaseModel):
+    prompt_id: str
+    is_rfp_prompt: bool
+    intent: str
+    explanation: Optional[str] = None
+    request: Optional[Dict[str, Any]] = None
+    result: Optional[ResponseGenerationResult] = None
+    created_at: str
+
+
+class PromptHistoryItem(BaseModel):
+    id: str
+    raw_prompt: str
+    intent: str
+    is_rfp_prompt: bool
+    client_name: Optional[str] = None
+    location: Optional[str] = None
+    contract_value_gbp: Optional[float] = None
+    duration_years: Optional[int] = None
+    weighting_percent: Optional[float] = None
+    priorities: List[str] = Field(default_factory=list)
+    explanation: Optional[str] = None
+    response_summary: Optional[Dict[str, Any]] = None
+    created_at: Optional[str] = None
+
+

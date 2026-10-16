@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, DateTime, JSON, Text, Uuid
+from sqlalchemy import Column, String, DateTime, JSON, Text, Uuid, Boolean
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -12,10 +12,13 @@ class Document(Base):
     filename = Column(String(255), nullable=False)
     document_type = Column(String(50), nullable=False)  # pdf, docx, xlsx, txt
     doc_metadata = Column("metadata", JSON, nullable=True, default=dict)
+    is_archived = Column(Boolean, default=False, nullable=False, index=True)
+    archived_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # Relationships
     chunks = relationship("DocumentChunk", back_populates="document", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
-        return f"<Document id={self.id} filename={self.filename} type={self.document_type}>"
+        return f"<Document id={self.id} filename={self.filename} type={self.document_type} archived={self.is_archived}>"
+

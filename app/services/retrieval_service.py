@@ -35,6 +35,7 @@ class RetrievalService:
                     distance_expr.label("distance")
                 )
                 .join(Document, DocumentChunk.document_id == Document.id)
+                .where(Document.is_archived == False)
             )
 
             if document_id:
@@ -64,7 +65,11 @@ class RetrievalService:
             return search_items
         else:
             # High-performance in-memory vector ranking for SQLite
-            stmt = select(DocumentChunk, Document.filename).join(Document, DocumentChunk.document_id == Document.id)
+            stmt = (
+                select(DocumentChunk, Document.filename)
+                .join(Document, DocumentChunk.document_id == Document.id)
+                .where(Document.is_archived == False)
+            )
             if document_id:
                 try:
                     doc_uuid = uuid.UUID(document_id)
