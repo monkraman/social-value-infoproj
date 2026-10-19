@@ -39,7 +39,6 @@ class Settings(BaseSettings):
             self.GEMINI_API_KEY
             and self.GEMINI_API_KEY.strip()
             and not self.GEMINI_API_KEY.startswith("your_")
-            and not self.GEMINI_API_KEY.startswith("AQ.")
         )
         has_openai = bool(
             self.OPENAI_API_KEY

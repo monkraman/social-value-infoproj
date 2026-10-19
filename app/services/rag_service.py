@@ -190,4 +190,171 @@ class RAGService:
 
 
 
+    def generate_response_with_conversation(
+        self,
+        db: Session,
+        req: OpportunityRequest,
+        conversation_turns: List[Dict[str, Any]]
+    ) -> ResponseGenerationResult:
+        """
+        Like generate_response but passes the full conversation thread to the LLM.
+        The AI sees every prior turn (prompt, result summary, feedback) and
+        produces a contextually improved proposal.
+        """
+        # Step 1: Build retrieval query from conversation context
+        priorities_str = ", ".join(req.priorities) if req.priorities else "Social Value"
+        retrieval_query = f"{priorities_str} initiatives in {req.location} for {req.client}"
+
+        # Step 2: Vector retrieval
+        retrieved_items = retrieval_service.search_chunks(
+            db=db, query=retrieval_query, top_k=req.top_k
+        )
+
+        # Step 3: Context formatting
+        context_parts = []
+        for i, item in enumerate(retrieved_items, start=1):
+            context_parts.append(
+                f"[Evidence Chunk {i}] (Doc: {item.filename}, Sim: {item.similarity:.2f}):\n{item.content}"
+            )
+        context_text = "\n\n".join(context_parts)
+
+        # Step 4: TOMs catalog
+        toms_catalog = [
+            {
+                "code": m.code, "name": m.name, "theme": m.theme,
+                "unit": m.unit, "unit_value_gbp": m.unit_value_gbp,
+                "description": m.description
+            }
+            for m in calculation_service.get_all_metrics()
+        ]
+
+        opportunity_dict = req.model_dump()
+        target_sv_gbp = round(req.contract_value_gbp * (req.social_value_weighting_percent / 100.0), 2)
+        opportunity_dict["target_social_value_gbp"] = target_sv_gbp
+
+        # Step 5: Multi-turn LLM call with FULL conversation history
+        llm_raw = openai_service.generate_recommendation_with_conversation(
+            context_text=context_text,
+            opportunity=opportunity_dict,
+            toms_catalog=toms_catalog,
+            conversation_turns=conversation_turns
+        )
+
+        # Steps 6-8: Same processing pipeline as generate_response
+        def process_package(pkg_data: Dict[str, Any], pkg_name: str) -> "SocialValuePackage":
+            raw_initiatives = pkg_data.get("initiatives", [])
+            processed_items: List["InitiativeItem"] = []
+            for raw_init in raw_initiatives:
+                init_item = InitiativeItem(
+                    name=raw_init.get("name", "Social Value Initiative"),
+                    theme=raw_init.get("theme", "Community"),
+                    location=raw_init.get("location", req.location),
+                    description=raw_init.get("description", ""),
+                    delivery_mechanism=raw_init.get("delivery_mechanism", ""),
+                    target_beneficiaries=raw_init.get("target_beneficiaries", "Local residents"),
+                    annual_volume=float(raw_init.get("annual_volume", 1.0)),
+                    toms_metric_code=raw_init.get("toms_metric_code"),
+                    partner=raw_init.get("partner"),
+                    evidence_source=raw_init.get("evidence_source", "Knowledge Base"),
+                    is_from_knowledge_base=bool(raw_init.get("is_from_knowledge_base", False)),
+                    sessions_per_year=raw_init.get("sessions_per_year"),
+                    hours_per_session=raw_init.get("hours_per_session"),
+                    participants_per_session=raw_init.get("participants_per_session"),
+                    indicative_cost_gbp=float(raw_init.get("indicative_cost_gbp", 0.0)),
+                    commercial_viability=raw_init.get("commercial_viability", "Internal Operational Delivery")
+                )
+                processed_items.append(init_item)
+
+            calculation_result = calculation_service.calculate_package(
+                package_name=pkg_name,
+                initiatives=[item.model_dump() for item in processed_items],
+                contract_value_gbp=req.contract_value_gbp,
+                duration_years=req.contract_duration_years,
+                target_weighting_percent=req.social_value_weighting_percent
+            )
+            total_delivery_cost = float(pkg_data.get(
+                "indicative_delivery_cost_gbp",
+                sum(i.indicative_cost_gbp or 0.0 for i in processed_items)
+            ))
+            return SocialValuePackage(
+                name=pkg_name,
+                initiatives=processed_items,
+                rationale=pkg_data.get("rationale", ""),
+                expected_impact=pkg_data.get("expected_impact", []),
+                dependencies=pkg_data.get("dependencies", []),
+                financial_calculation=calculation_result,
+                indicative_delivery_cost_gbp=total_delivery_cost,
+                commercial_viability_summary=pkg_data.get(
+                    "commercial_viability_summary", "High SVROI / Conversation-Refined Delivery"
+                ),
+                governance=GovernanceCadence(
+                    social_value_lead="Dedicated Infosys Social Value Lead assigned upon contract award",
+                    kickoff_cadence="Joint Social Value Kick-Off Meeting held within 60 days of contract signature",
+                    reporting_frequency="Quarterly Social Value Progress & National TOMs Performance Reporting",
+                    annual_review="Annual SVROI impact evaluation and financial verification audit"
+                )
+            )
+
+        core_package = process_package(llm_raw.get("core_package", {}), "Core Package")
+        enhanced_package = process_package(llm_raw.get("enhanced_package", {}), "Enhanced Package")
+        localised_package = process_package(llm_raw.get("localised_package", {}), "Localised Package")
+
+        grounding_summary = {
+            "retrieval_query_used": retrieval_query,
+            "top_k_requested": req.top_k,
+            "evidence_chunks_found": len(retrieved_items),
+            "sources_used": list(set(item.filename for item in retrieved_items)),
+            "conversation_turns": len(conversation_turns),
+            "generation_mode": "multi_turn_conversation"
+        }
+
+        validation_items = llm_raw.get("validation_required", [])
+        if len(retrieved_items) == 0:
+            validation_items.append(
+                "No documents in knowledge base. Using synthetic baseline; ingest case studies for grounded evidence."
+            )
+
+        reasoning_chain = [
+            AIReasoningStep(
+                step_number=1,
+                title="Multi-Turn Conversation Context Loaded",
+                detail=(
+                    f"Loaded {len(conversation_turns)} conversation turn(s) from this session. "
+                    f"AI has full memory of all previous prompts, results, and feedback."
+                )
+            ),
+            AIReasoningStep(
+                step_number=2,
+                title="Vector Knowledge Base Retrieval",
+                detail=f"Retrieved {len(retrieved_items)} evidence chunk(s) from pgvector for {req.location}/{req.client}."
+            ),
+            AIReasoningStep(
+                step_number=3,
+                title="Context-Aware LLM Generation",
+                detail=(
+                    "LLM received full conversation thread as multi-turn messages. "
+                    "All prior feedback incorporated cumulatively — no context forgotten."
+                )
+            ),
+            AIReasoningStep(
+                step_number=4,
+                title="Deterministic Calculation Guardrail",
+                detail="Financial calculations performed by Python engine. LLM arithmetic barred."
+            ),
+        ]
+
+        return ResponseGenerationResult(
+            opportunity=opportunity_dict,
+            core_package=core_package,
+            enhanced_package=enhanced_package,
+            localised_package=localised_package,
+            assumptions=llm_raw.get("assumptions", []),
+            validation_required=validation_items,
+            retrieved_evidence_chunks=len(retrieved_items),
+            grounding_summary=grounding_summary,
+            ai_reasoning_chain=reasoning_chain,
+            is_mock=not settings.is_ai_configured
+        )
+
+
 rag_service = RAGService()

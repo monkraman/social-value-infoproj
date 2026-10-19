@@ -98,6 +98,84 @@ class LLMService:
             "is_mock": True
         }
 
+    def interpret_prompt_with_llm(self, prompt: str) -> Optional[Dict[str, Any]]:
+        """
+        Uses active LLM (Gemini or OpenAI) to analyze and interpret the user's natural language prompt.
+        Extracts tender metrics, client details, and priority themes dynamically without hardcoded defaults.
+        """
+        provider = settings.active_provider
+        if not settings.is_ai_configured:
+            return None
+
+        system_prompt = (
+            "You are an expert AI Tender Analyst for UK Social Value public procurement.\n"
+            "Analyze the user's natural language prompt and extract structured parameters for bid proposal generation.\n\n"
+            "CRITICAL RULES:\n"
+            "1. If the prompt does NOT mention a specific client or location, set client=null and location=null. "
+            "NEVER assume or default to Birmingham or any city unless explicitly stated in the prompt.\n"
+            "2. Extract contract duration in years (integer, default to 3 if unspecified).\n"
+            "3. Extract contract value in GBP (float, default to 10000000.0 if unspecified).\n"
+            "4. Extract Social Value target weighting percent (float, default to 10.0 if unspecified).\n"
+            "5. Extract priority themes mentioned in prompt (e.g. Digital Inclusion, Youth Employment, Net Zero, Local Supply Chain, Healthcare, Skills Gap). "
+            "If none mentioned, return empty list [].\n"
+            "6. Classify intent: 'rfp_opportunity' (asking for bid/tender response), 'navigation_documents', 'navigation_search', or 'non_rfp'.\n"
+            "7. If non-RFP, provide a polite explanation in 'explanation'.\n\n"
+            "Return valid JSON ONLY with this exact structure:\n"
+            "{\n"
+            "  \"is_rfp_prompt\": true,\n"
+            "  \"intent\": \"rfp_opportunity\",\n"
+            "  \"explanation\": null,\n"
+            "  \"contract_duration_years\": 3,\n"
+            "  \"contract_value_gbp\": 10000000.0,\n"
+            "  \"social_value_weighting_percent\": 10.0,\n"
+            "  \"client\": null,\n"
+            "  \"location\": null,\n"
+            "  \"priorities\": []\n"
+            "}"
+        )
+
+        user_content = f"User Prompt:\n{prompt}"
+
+        # 1. Google Gemini Provider
+        if provider == "gemini" and settings.is_gemini_configured:
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
+                payload = {
+                    "contents": [{"parts": [{"text": f"{system_prompt}\n\n{user_content}"}]}]
+                }
+                with httpx.Client(timeout=30.0) as client:
+                    r = client.post(url, json=payload)
+                    if r.status_code == 200:
+                        raw = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+                        cleaned = raw
+                        if "```json" in cleaned:
+                            cleaned = cleaned.split("```json", 1)[1].split("```", 1)[0].strip()
+                        elif "```" in cleaned:
+                            cleaned = cleaned.split("```", 1)[1].split("```", 1)[0].strip()
+                        return json.loads(cleaned)
+                    else:
+                        print(f"[LLMService] Gemini prompt interpretation HTTP {r.status_code}: {r.text[:200]}")
+            except Exception as e:
+                print(f"[LLMService] Gemini prompt interpretation warning: {e}")
+
+        # 2. OpenAI Provider
+        if provider == "openai" and settings.is_openai_configured:
+            try:
+                response = self.openai_client.chat.completions.create(
+                    model=settings.OPENAI_CHAT_MODEL,
+                    response_format={"type": "json_object"},
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_content}
+                    ],
+                    temperature=0.1
+                )
+                return json.loads(response.choices[0].message.content)
+            except Exception as e:
+                print(f"[LLMService] OpenAI prompt interpretation warning: {e}")
+
+        return None
+
     def generate_recommendation_from_llm(
         self,
         context_text: str,
@@ -201,14 +279,20 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
             try:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
                 payload = {
-                    "contents": [{"parts": [{"text": f"{system_prompt}\n\n{user_content}"}]}],
-                    "generationConfig": {"responseMimeType": "application/json"}
+                    "contents": [{"parts": [{"text": f"{system_prompt}\n\n{user_content}"}]}]
                 }
-                with httpx.Client(timeout=30.0) as client:
+                with httpx.Client(timeout=45.0) as client:
                     r = client.post(url, json=payload)
                     if r.status_code == 200:
-                        raw_json = r.json()["candidates"][0]["content"]["parts"][0]["text"]
-                        return json.loads(raw_json)
+                        raw_json = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+                        cleaned = raw_json
+                        if "```json" in cleaned:
+                            cleaned = cleaned.split("```json", 1)[1].split("```", 1)[0].strip()
+                        elif "```" in cleaned:
+                            cleaned = cleaned.split("```", 1)[1].split("```", 1)[0].strip()
+                        data = json.loads(cleaned)
+                        data["is_mock"] = False
+                        return data
                     else:
                         print(f"[LLMService] Gemini HTTP {r.status_code}: {r.text[:200]}")
             except Exception as e:
@@ -652,6 +736,111 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
                 "Ensure IT asset management protocols comply with GDPR sanitization prior to device donations."
             ]
         }
+
+
+
+    def generate_recommendation_with_conversation(
+        self,
+        context_text: str,
+        opportunity: Dict[str, Any],
+        toms_catalog: List[Dict[str, Any]],
+        conversation_turns: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """
+        Context-aware multi-turn generation.
+        `conversation_turns` is a list of dicts:
+          [
+            {"role": "user",      "content": "Original prompt text"},
+            {"role": "assistant", "content": "Summary of turn-1 result JSON"},
+            {"role": "user",      "content": "User feedback: add more Net Zero focus"},
+            {"role": "assistant", "content": "Summary of turn-2 result JSON"},
+            ...
+            {"role": "user",      "content": "Latest feedback message"}
+          ]
+        The AI receives the full thread and uses ALL prior context to generate
+        an improved proposal.
+        """
+        provider = settings.active_provider
+
+        system_prompt = (
+            "You are the Infosys Social Value RFP Response Architect with perfect memory of this conversation.\n"
+            "You are in a MULTI-TURN conversation with a bid author who is iteratively improving a Social Value proposal.\n\n"
+            "CRITICAL RULES:\n"
+            "1. You MUST read ALL previous conversation turns carefully before generating your response.\n"
+            "2. You MUST incorporate ALL feedback given in every previous turn — not just the latest message.\n"
+            "3. Ground initiatives in the provided RETRIEVED EVIDENCE whenever possible.\n"
+            "4. If a previous turn said 'add Net Zero', and this turn says 'also increase digital inclusion', "
+            "you MUST include BOTH improvements.\n"
+            "5. Never reset or ignore previous instructions from earlier turns.\n"
+            "6. NEVER hallucinate partners, costs, or local entities not in the evidence base.\n"
+            "7. Map each initiative to National TOMs metric codes from the PROVIDED catalog.\n"
+            "8. Return ONLY valid JSON matching the exact schema requested.\n\n"
+            f"OPPORTUNITY CONTEXT:\n"
+            f"- Client: {opportunity.get('client')}\n"
+            f"- Location: {opportunity.get('location')}\n"
+            f"- Contract: {opportunity.get('contract_duration_years')} years, "
+            f"£{opportunity.get('contract_value_gbp', 0):,.0f}\n"
+            f"- SV Weighting: {opportunity.get('social_value_weighting_percent')}%\n"
+            f"- Priorities: {', '.join(opportunity.get('priorities', []))}\n\n"
+            f"RETRIEVED KNOWLEDGE BASE:\n{context_text or 'No documents found — use best practice.'}\n\n"
+            f"TOMs CATALOG:\n{json.dumps(toms_catalog, indent=2)}\n\n"
+            "Produce the full improved Social Value proposal as valid JSON with keys: "
+            "core_package, enhanced_package, localised_package, assumptions, validation_required."
+        )
+
+        # Build the full messages array with real conversation history
+        messages = [{"role": "system", "content": system_prompt}]
+        for turn in conversation_turns:
+            messages.append({"role": turn["role"], "content": turn["content"]})
+
+        # 1. Google Gemini (flattens multi-turn into single context block)
+        if provider == "gemini" and settings.is_gemini_configured:
+            try:
+                # Gemini REST doesn't support proper multi-turn roles in the same way,
+                # so we flatten the thread into a rich single prompt
+                full_context = system_prompt + "\n\n=== FULL CONVERSATION THREAD ===\n"
+                for turn in conversation_turns:
+                    role_label = "BID AUTHOR" if turn["role"] == "user" else "AI PREVIOUS RESPONSE"
+                    full_context += f"\n[{role_label}]:\n{turn['content']}\n"
+                full_context += "\n=== END THREAD ===\n\nNow generate the improved Social Value proposal JSON:"
+
+                url = (
+                    f"https://generativelanguage.googleapis.com/v1beta/models/"
+                    f"{settings.GEMINI_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
+                )
+                payload = {"contents": [{"parts": [{"text": full_context}]}]}
+                with httpx.Client(timeout=60.0) as client:
+                    r = client.post(url, json=payload)
+                    if r.status_code == 200:
+                        raw = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+                        if "```json" in raw:
+                            raw = raw.split("```json", 1)[1].split("```", 1)[0].strip()
+                        elif "```" in raw:
+                            raw = raw.split("```", 1)[1].split("```", 1)[0].strip()
+                        data = json.loads(raw)
+                        data["is_mock"] = False
+                        return data
+                    else:
+                        print(f"[LLMService] Gemini conversation HTTP {r.status_code}")
+            except Exception as e:
+                print(f"[LLMService] Gemini conversation error: {e}")
+
+        # 2. OpenAI — native multi-turn messages support
+        if provider == "openai" and settings.is_openai_configured:
+            try:
+                response = self.openai_client.chat.completions.create(
+                    model=settings.OPENAI_CHAT_MODEL,
+                    response_format={"type": "json_object"},
+                    messages=messages,
+                    temperature=0.2,
+                    max_tokens=4000
+                )
+                return json.loads(response.choices[0].message.content)
+            except Exception as e:
+                print(f"[LLMService] OpenAI conversation error: {e}")
+
+        # 3. Offline fallback
+        return self._generate_offline_fallback(opportunity, context_text)
 
 
 # Maintain backward compatible references

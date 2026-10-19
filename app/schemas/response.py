@@ -91,13 +91,19 @@ class ResponseGenerationResult(BaseModel):
 class PromptSubmissionRequest(BaseModel):
     prompt: str = Field(..., min_length=1, description="Natural language tender specification or query")
     user_id: Optional[str] = Field(default=None, description="Optional user ID for audit logging")
+    session_id: Optional[str] = Field(default=None, description="Conversational thread/session ID for continuous chat")
+    parent_prompt_id: Optional[str] = Field(default=None, description="Parent prompt ID if continuing a previous bid")
+    current_result: Optional[Dict[str, Any]] = Field(default=None, description="Previous generation result to refine upon")
 
 
 class PromptSubmissionResponse(BaseModel):
     prompt_id: str
+    session_id: Optional[str] = None
+    turn_index: int = 1
     is_rfp_prompt: bool
     intent: str
     explanation: Optional[str] = None
+    refinement_note: Optional[str] = None
     request: Optional[Dict[str, Any]] = None
     result: Optional[ResponseGenerationResult] = None
     created_at: str
@@ -105,6 +111,8 @@ class PromptSubmissionResponse(BaseModel):
 
 class PromptHistoryItem(BaseModel):
     id: str
+    session_id: Optional[str] = None
+    turn_index: int = 1
     raw_prompt: str
     intent: str
     is_rfp_prompt: bool
@@ -116,6 +124,7 @@ class PromptHistoryItem(BaseModel):
     priorities: List[str] = Field(default_factory=list)
     explanation: Optional[str] = None
     response_summary: Optional[Dict[str, Any]] = None
+    full_result: Optional[Dict[str, Any]] = None
     created_at: Optional[str] = None
 
 

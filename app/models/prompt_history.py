@@ -17,9 +17,13 @@ class PromptHistory(Base):
     contract_duration_years = Column(Integer, nullable=True)
     social_value_weighting_percent = Column(Float, nullable=True)
     priorities = Column(JSON, nullable=True)
+    session_id = Column(String(100), index=True, nullable=True)
+    turn_index = Column(Integer, default=1, nullable=False)
+    parent_prompt_id = Column(Uuid, nullable=True)
     explanation = Column(Text, nullable=True)
     response_summary = Column(JSON, nullable=True)
+    full_result = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     def __repr__(self) -> str:
-        return f"<PromptHistory id={self.id} is_rfp={self.is_rfp_prompt} client={self.client_name}>"
+        return f"<PromptHistory id={self.id} session={self.session_id} is_rfp={self.is_rfp_prompt} client={self.client_name}>"

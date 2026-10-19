@@ -1,6 +1,7 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List, Optional, Dict, Any
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
+from pydantic import BaseModel, Field
 
 from app.core.database import get_db
 from app.schemas.response import (
@@ -57,6 +58,64 @@ def get_prompt_history(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve prompt history: {str(e)}"
         )
+
+
+@router.get("/history/{prompt_id}")
+def get_single_prompt_history(
+    prompt_id: str,
+    db: Session = Depends(get_db)
+):
+    """Fetches a single past prompt by ID with full result for restoring a session."""
+    item = prompt_interpreter_service.get_history_by_id(db=db, prompt_id=prompt_id)
+    if not item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No prompt history found with id={prompt_id}"
+        )
+    return item
+
+
+class RefineRequest(BaseModel):
+    feedback: str = Field(..., min_length=1, description="User's refinement feedback text")
+    previous_result: Dict[str, Any] = Field(..., description="The previous ResponseGenerationResult dict")
+    previous_prompt: str = Field(default="", description="The original prompt that was used")
+    session_id: Optional[str] = Field(default=None, description="Session thread ID")
+    parent_prompt_id: Optional[str] = Field(default=None, description="ID of the prompt being refined")
+    turn_index: int = Field(default=2, description="Which turn in the conversation thread")
+    conversation_turns: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="Full conversation history as [{role, content}] pairs for true multi-turn AI memory"
+    )
+
+
+@router.post("/refine", response_model=PromptSubmissionResponse)
+def refine_rfp_response(
+    body: RefineRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Refines a previous Social Value proposal using full multi-turn context-aware AI.
+    Sends the ENTIRE conversation thread (all previous turns, feedback, results)
+    to the LLM so it never forgets earlier instructions — true continuous conversation.
+    """
+    try:
+        data = prompt_interpreter_service.refine_with_feedback(
+            db=db,
+            feedback_text=body.feedback,
+            previous_result=body.previous_result,
+            previous_prompt=body.previous_prompt,
+            session_id=body.session_id,
+            parent_prompt_id=body.parent_prompt_id,
+            turn_index=body.turn_index,
+            conversation_turns=body.conversation_turns
+        )
+        return data
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Refinement failed: {str(e)}"
+        )
+
 
 
 @router.post("/generate", response_model=ResponseGenerationResult)

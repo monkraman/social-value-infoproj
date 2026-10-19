@@ -12,6 +12,7 @@ from app.schemas.response import (
 from app.services.rag_service import rag_service
 from app.services.openai_service import openai_service
 from app.core.config import settings
+import json
 
 
 class PromptInterpreterService:
@@ -38,33 +39,78 @@ class PromptInterpreterService:
             if any(w in prompt_lower for w in ["search vector", "open search", "show search", "vector search", "search tab"]):
                 return self._record_and_return_nav(db, prompt, "navigation_search", "Navigating to Vector Search tool.")
 
-        # 2. RFP Tender Specification Intent Check
-        is_rfp, explanation = self._check_is_rfp_intent(prompt)
+        # 2. AI-Driven Prompt Interpretation (Direct LLM Reasoning)
+        llm_parsed = None
+        if settings.is_ai_configured:
+            llm_parsed = openai_service.interpret_prompt_with_llm(prompt)
 
-        if not is_rfp:
-            # Random / Non-Tender Prompt ("harkuch prompt")
-            history_record = PromptHistory(
-                raw_prompt=prompt,
-                intent="non_rfp",
-                is_rfp_prompt=False,
-                explanation=explanation,
-                created_at=datetime.now(timezone.utc)
-            )
-            db.add(history_record)
-            db.commit()
+        if llm_parsed and isinstance(llm_parsed, dict):
+            is_rfp = bool(llm_parsed.get("is_rfp_prompt", True))
+            explanation = llm_parsed.get("explanation")
+            intent = llm_parsed.get("intent", "rfp_opportunity")
 
-            return {
-                "prompt_id": str(history_record.id),
-                "is_rfp_prompt": False,
-                "intent": "non_rfp",
-                "explanation": explanation,
-                "request": None,
-                "result": None,
-                "created_at": history_record.created_at.isoformat()
+            if not is_rfp:
+                history_record = PromptHistory(
+                    raw_prompt=prompt,
+                    intent=intent,
+                    is_rfp_prompt=False,
+                    explanation=explanation or "The submitted prompt does not contain recognized tender or Social Value parameters.",
+                    created_at=datetime.now(timezone.utc)
+                )
+                db.add(history_record)
+                db.commit()
+
+                return {
+                    "prompt_id": str(history_record.id),
+                    "is_rfp_prompt": False,
+                    "intent": intent,
+                    "explanation": explanation or "The submitted prompt does not contain recognized tender or Social Value parameters.",
+                    "request": None,
+                    "result": None,
+                    "created_at": history_record.created_at.isoformat()
+                }
+
+            # Valid RFP Prompt interpreted by AI:
+            client_val = llm_parsed.get("client") or "UK Public Sector Authority"
+            loc_val = llm_parsed.get("location") or "UK Regional"
+            priorities_val = llm_parsed.get("priorities")
+            if not priorities_val:
+                priorities_val = ["Local Skills & Employment", "Local Economic Growth", "Community Wellbeing"]
+
+            req_params = {
+                "contract_duration_years": int(llm_parsed.get("contract_duration_years", 3)),
+                "contract_value_gbp": float(llm_parsed.get("contract_value_gbp", 10000000.0)),
+                "social_value_weighting_percent": float(llm_parsed.get("social_value_weighting_percent", 10.0)),
+                "client": client_val,
+                "location": loc_val,
+                "priorities": priorities_val,
+                "raw_prompt": prompt
             }
+        else:
+            # Fallback to rule-based parser if LLM is offline
+            is_rfp, explanation = self._check_is_rfp_intent(prompt)
+            if not is_rfp:
+                history_record = PromptHistory(
+                    raw_prompt=prompt,
+                    intent="non_rfp",
+                    is_rfp_prompt=False,
+                    explanation=explanation,
+                    created_at=datetime.now(timezone.utc)
+                )
+                db.add(history_record)
+                db.commit()
 
-        # 3. Parse Tender Parameters from Prompt
-        req_params = self._extract_parameters(prompt)
+                return {
+                    "prompt_id": str(history_record.id),
+                    "is_rfp_prompt": False,
+                    "intent": "non_rfp",
+                    "explanation": explanation,
+                    "request": None,
+                    "result": None,
+                    "created_at": history_record.created_at.isoformat()
+                }
+            req_params = self._extract_parameters(prompt)
+
         opportunity_request = OpportunityRequest(**req_params)
 
         # 4. Execute RAG Generation Pipeline
@@ -91,6 +137,7 @@ class PromptInterpreterService:
             priorities=opportunity_request.priorities,
             explanation=None,
             response_summary=response_snapshot,
+            full_result=result.model_dump(),
             created_at=datetime.now(timezone.utc)
         )
         db.add(history_record)
@@ -322,6 +369,8 @@ class PromptInterpreterService:
         return [
             {
                 "id": str(r.id),
+                "session_id": r.session_id,
+                "turn_index": r.turn_index,
                 "raw_prompt": r.raw_prompt,
                 "intent": r.intent,
                 "is_rfp_prompt": r.is_rfp_prompt,
@@ -333,10 +382,201 @@ class PromptInterpreterService:
                 "priorities": r.priorities or [],
                 "explanation": r.explanation,
                 "response_summary": r.response_summary,
+                "full_result": r.full_result,
                 "created_at": r.created_at.isoformat() if r.created_at else None
             }
             for r in records
         ]
+
+    def get_history_by_id(self, db: Session, prompt_id: str) -> Optional[Dict[str, Any]]:
+        """Fetch a single prompt history entry by ID, including full result for chat restore."""
+        try:
+            record = db.query(PromptHistory).filter(
+                PromptHistory.id == prompt_id
+            ).first()
+            if not record:
+                return None
+            return {
+                "id": str(record.id),
+                "session_id": record.session_id,
+                "turn_index": record.turn_index,
+                "raw_prompt": record.raw_prompt,
+                "intent": record.intent,
+                "is_rfp_prompt": record.is_rfp_prompt,
+                "client_name": record.client_name,
+                "location": record.location,
+                "contract_value_gbp": record.contract_value_gbp,
+                "duration_years": record.contract_duration_years,
+                "weighting_percent": record.social_value_weighting_percent,
+                "priorities": record.priorities or [],
+                "explanation": record.explanation,
+                "response_summary": record.response_summary,
+                "full_result": record.full_result,
+                "created_at": record.created_at.isoformat() if record.created_at else None
+            }
+        except Exception:
+            return None
+
+    def refine_with_feedback(
+        self,
+        db: Session,
+        feedback_text: str,
+        previous_result: Dict[str, Any],
+        previous_prompt: str,
+        session_id: Optional[str] = None,
+        parent_prompt_id: Optional[str] = None,
+        turn_index: int = 2,
+        conversation_turns: Optional[List[Dict[str, Any]]] = None
+    ) -> Dict[str, Any]:
+        """
+        Context-aware multi-turn refinement.
+
+        Sends the FULL conversation thread (all prior user prompts, AI result summaries,
+        and feedback messages) to the LLM — so AI never forgets earlier instructions.
+
+        `conversation_turns` format:
+          [
+            {"role": "user",      "content": "Original prompt"},
+            {"role": "assistant", "content": "Turn 1 result summary"},
+            {"role": "user",      "content": "First feedback"},
+            {"role": "assistant", "content": "Turn 2 result summary"},
+            {"role": "user",      "content": "Second feedback"},   ← latest
+          ]
+        If conversation_turns is not provided, it builds one from previous_result.
+        """
+        # 1. Extract opportunity parameters from the previous result
+        opportunity = previous_result.get("opportunity", {})
+        prev_client = opportunity.get("client", "UK Public Sector Authority")
+        prev_location = opportunity.get("location", "UK Regional")
+        prev_duration = opportunity.get("duration_years", opportunity.get("contract_duration_years", 3))
+        prev_value = opportunity.get("contract_value_gbp", 10000000.0)
+        prev_weighting = opportunity.get("social_value_weighting_percent", 10.0)
+        prev_priorities = opportunity.get("priorities", [])
+
+        # 2. Build opportunity request to re-use in RAG
+        try:
+            opportunity_request = OpportunityRequest(
+                contract_duration_years=int(prev_duration),
+                contract_value_gbp=float(prev_value),
+                social_value_weighting_percent=float(prev_weighting),
+                client=prev_client,
+                location=prev_location,
+                priorities=prev_priorities if prev_priorities else ["Local Skills & Employment"],
+                raw_prompt=previous_prompt
+            )
+        except Exception:
+            opportunity_request = OpportunityRequest(
+                contract_duration_years=3,
+                contract_value_gbp=10000000.0,
+                social_value_weighting_percent=10.0,
+                client=prev_client,
+                location=prev_location,
+                priorities=["Local Skills & Employment", "Community Wellbeing"]
+            )
+
+        # 3. Build the conversation thread if not provided by caller
+        if conversation_turns is None:
+            # Build a minimal 2-turn thread from what we know
+            localised = previous_result.get("localised_package", {})
+            current_initiatives = localised.get("initiatives", [])
+            current_sv_total = 0
+            if localised.get("financial_calculation"):
+                current_sv_total = localised["financial_calculation"].get("total_social_value_gbp", 0)
+            initiatives_summary = "; ".join(
+                [f"{init.get('name', 'Initiative')} ({init.get('theme', '')})"
+                 for init in current_initiatives[:6]]
+            ) if current_initiatives else "None yet"
+
+            conversation_turns = [
+                {
+                    "role": "user",
+                    "content": (
+                        f"Original request: {previous_prompt or 'Build a Social Value bid response for '
+                        + prev_client + ' in ' + prev_location}"
+                    )
+                },
+                {
+                    "role": "assistant",
+                    "content": (
+                        f"I generated a Social Value proposal with these initiatives: [{initiatives_summary}]. "
+                        f"Total Social Value: £{current_sv_total:,.0f}. "
+                        f"Contract: {prev_duration}-year, £{prev_value:,.0f}, {prev_weighting}% weighting for {prev_client} in {prev_location}."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": f"Refinement feedback: {feedback_text}"
+                }
+            ]
+        else:
+            # Append the new feedback as the latest user turn
+            conversation_turns = list(conversation_turns) + [
+                {"role": "user", "content": f"Refinement feedback: {feedback_text}"}
+            ]
+
+        # 4. Call the multi-turn RAG pipeline
+        try:
+            result = rag_service.generate_response_with_conversation(
+                db=db,
+                req=opportunity_request,
+                conversation_turns=conversation_turns
+            )
+        except Exception as e:
+            # Fallback to single-turn if multi-turn fails
+            print(f"[Refine] Multi-turn failed ({e}), falling back to standard generate")
+            result = rag_service.generate_response(db=db, req=opportunity_request)
+
+        # 5. Persist to DB with session thread metadata
+        response_snapshot = {
+            "core_total_sv": result.core_package.financial_calculation.total_social_value_gbp
+                if result.core_package.financial_calculation else 0,
+            "enhanced_total_sv": result.enhanced_package.financial_calculation.total_social_value_gbp
+                if result.enhanced_package.financial_calculation else 0,
+            "localised_total_sv": result.localised_package.financial_calculation.total_social_value_gbp
+                if result.localised_package.financial_calculation else 0,
+            "target_met": result.localised_package.financial_calculation.target_met
+                if result.localised_package.financial_calculation else False,
+            "turn_index": turn_index,
+            "feedback": feedback_text[:200]
+        }
+
+        new_session_id = session_id or str(uuid.uuid4())
+        history_record = PromptHistory(
+            raw_prompt=f"[Turn {turn_index} Refinement] {feedback_text}",
+            intent="rfp_opportunity",
+            is_rfp_prompt=True,
+            client_name=prev_client,
+            location=prev_location,
+            contract_value_gbp=prev_value,
+            contract_duration_years=int(prev_duration),
+            social_value_weighting_percent=prev_weighting,
+            priorities=prev_priorities,
+            session_id=new_session_id,
+            parent_prompt_id=parent_prompt_id,
+            turn_index=turn_index,
+            response_summary=response_snapshot,
+            full_result=result.model_dump(),
+            created_at=datetime.now(timezone.utc)
+        )
+        db.add(history_record)
+        db.commit()
+
+        return {
+            "prompt_id": str(history_record.id),
+            "session_id": new_session_id,
+            "turn_index": turn_index,
+            "is_rfp_prompt": True,
+            "intent": "rfp_opportunity",
+            "explanation": None,
+            "refinement_note": (
+                f"✓ Turn {turn_index} — AI refined using full conversation context "
+                f"({len(conversation_turns)} turns). Feedback: '{feedback_text[:80]}"
+                f"{'...' if len(feedback_text) > 80 else ''}'"
+            ),
+            "request": opportunity_request.model_dump(),
+            "result": result.model_dump(),
+            "created_at": history_record.created_at.isoformat()
+        }
 
 
 prompt_interpreter_service = PromptInterpreterService()
