@@ -7,7 +7,7 @@ from sqlalchemy import func
 from app.core.database import get_db
 from app.models.document import Document
 from app.models.chunk import DocumentChunk
-from app.schemas.document import DocumentResponse, DocumentIngestResponse
+from app.schemas.document import DocumentResponse, DocumentIngestResponse, DocumentChunkResponse
 from app.services.document_service import document_service
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
@@ -162,4 +162,41 @@ def restore_document(
         "type": "restored",
         "document_id": str(doc_uuid)
     }
+
+
+@router.get("/{document_id}/chunks", response_model=List[DocumentChunkResponse])
+def get_document_chunks(
+    document_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Returns all vectorized text chunks for a specific document.
+    Enables users to audit and inspect parsed document content stored in PostgreSQL.
+    """
+    try:
+        doc_uuid = uuid.UUID(document_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid UUID format")
+
+    doc = db.query(Document).filter(Document.id == doc_uuid).first()
+    if not doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+
+    chunks = (
+        db.query(DocumentChunk)
+        .filter(DocumentChunk.document_id == doc_uuid)
+        .order_by(DocumentChunk.chunk_index.asc())
+        .all()
+    )
+    return [
+        DocumentChunkResponse(
+            id=c.id,
+            document_id=c.document_id,
+            chunk_index=c.chunk_index,
+            content=c.content,
+            metadata=c.chunk_metadata or {},
+            created_at=c.created_at
+        )
+        for c in chunks
+    ]
 
