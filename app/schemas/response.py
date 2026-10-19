@@ -24,7 +24,7 @@ class InitiativeItem(BaseModel):
     description: str = Field(..., description="Actionable summary of delivery")
     delivery_mechanism: str = Field(..., description="How it is delivered (e.g. 4 workshops/yr)")
     target_beneficiaries: str = Field(..., description="Who benefits")
-    annual_volume: float = Field(default=1.0, description="Estimated annual volume/count")
+    annual_volume: float = Field(default=1.0, ge=0, description="Estimated annual volume/count")
     toms_metric_code: Optional[str] = Field(None, description="Linked TOMs proxy code (e.g. NT8)")
     partner: Optional[str] = Field(None, description="Partner organization, if supported by evidence")
     evidence_source: str = Field(..., description="Source document or 'Model Recommended'")
@@ -43,7 +43,7 @@ class GovernanceCadence(BaseModel):
         description="Lead role responsibility"
     )
     kickoff_cadence: str = Field(
-        default="Joint Social Value Kick-Off Meeting held within 60 days of contract signature",
+        default="Joint Social Value Kick-Off Meeting held within 60 days of contract award",
         description="Initial mobilization meeting"
     )
     reporting_frequency: str = Field(

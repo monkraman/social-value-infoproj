@@ -2,32 +2,30 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, Text, DateTime, JSON, ForeignKey, Uuid
 from sqlalchemy.orm import relationship
-from app.core.database import Base, IS_POSTGRES
+from app.core.database import Base
 from app.core.config import settings
+from pgvector.sqlalchemy import Vector
 
-if IS_POSTGRES:
-    from pgvector.sqlalchemy import Vector
 
-    class SafeVector(Vector):
-        cache_ok = True
+class SafeVector(Vector):
+    cache_ok = True
 
-        def result_processor(self, dialect, coltype):
-            super_processor = super().result_processor(dialect, coltype)
+    def result_processor(self, dialect, coltype):
+        super_processor = super().result_processor(dialect, coltype)
 
-            def process(value):
-                if value is None:
-                    return None
-                if isinstance(value, list):
-                    return [float(v) for v in value]
-                if hasattr(value, "tolist"):
-                    return value.tolist()
-                return super_processor(value)
+        def process(value):
+            if value is None:
+                return None
+            if isinstance(value, list):
+                return [float(v) for v in value]
+            if hasattr(value, "tolist"):
+                return value.tolist()
+            return super_processor(value)
 
-            return process
+        return process
 
-    VectorType = SafeVector(settings.EMBEDDING_DIMENSION)
-else:
-    VectorType = JSON
+
+VectorType = SafeVector(settings.EMBEDDING_DIMENSION)
 
 
 class DocumentChunk(Base):

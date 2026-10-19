@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.core.config import settings
-from app.core.database import engine, Base, SessionLocal, IS_POSTGRES
+from app.core.database import engine, Base, SessionLocal
 import app.models  # noqa: F401 - registers all SQLAlchemy models
 from app.services.auth_service import auth_service
 from app.services.audit_service import audit_service
@@ -36,32 +36,35 @@ from sqlalchemy import inspect, text
 
 
 def init_db():
-    try:
-        if IS_POSTGRES:
-            try:
-                with engine.begin() as conn:
-                    conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
-            except Exception as ext_err:
-                print(f"[Database Warning] Could not ensure pgvector extension: {ext_err}")
+    with engine.begin() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
 
-        Base.metadata.create_all(bind=engine)
-        # Safe schema migration check for existing database instances
-        try:
-            with engine.begin() as conn:
-                inspector = inspect(engine)
-                if "documents" in inspector.get_table_names():
-                    cols = [c["name"] for c in inspector.get_columns("documents")]
-                    if "is_archived" not in cols:
-                        conn.execute(text("ALTER TABLE documents ADD COLUMN is_archived BOOLEAN DEFAULT 0;"))
-                    if "archived_at" not in cols:
-                        conn.execute(text("ALTER TABLE documents ADD COLUMN archived_at TIMESTAMP;"))
-        except Exception as mig_err:
-            pass
+    Base.metadata.create_all(bind=engine)
+    # Safe schema migration check for existing PostgreSQL instances.
+    with engine.begin() as conn:
+        inspector = inspect(conn)
+        if "documents" in inspector.get_table_names():
+            cols = [c["name"] for c in inspector.get_columns("documents")]
+            if "is_archived" not in cols:
+                conn.execute(text("ALTER TABLE documents ADD COLUMN is_archived BOOLEAN DEFAULT FALSE;"))
+            if "archived_at" not in cols:
+                conn.execute(text("ALTER TABLE documents ADD COLUMN archived_at TIMESTAMP;"))
+        if "prompt_history" in inspector.get_table_names():
+            prompt_cols = [c["name"] for c in inspector.get_columns("prompt_history")]
+            history_migrations = {
+                "session_id": "VARCHAR(100)",
+                "turn_index": "INTEGER NOT NULL DEFAULT 1",
+                "parent_prompt_id": "UUID",
+                "explanation": "TEXT",
+                "response_summary": "JSON",
+                "full_result": "JSON"
+            }
+            for column, definition in history_migrations.items():
+                if column not in prompt_cols:
+                    conn.execute(text(f"ALTER TABLE prompt_history ADD COLUMN {column} {definition};"))
 
-        with SessionLocal() as db:
-            auth_service.ensure_default_superadmin(db)
-    except Exception as e:
-        print(f"[Startup Warning] Could not initialize database/auth automatically: {e}")
+    with SessionLocal() as db:
+        auth_service.ensure_default_superadmin(db)
 
 
 

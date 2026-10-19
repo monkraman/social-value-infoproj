@@ -1,6 +1,6 @@
 """
 Database Initialization Script
-Ensures tables exist and pgvector is enabled if on PostgreSQL.
+Ensures tables exist and pgvector is enabled in PostgreSQL.
 """
 import sys
 import os
@@ -9,7 +9,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import text, inspect
-from app.core.database import engine, Base, check_db_connection, IS_POSTGRES
+from app.core.database import engine, Base, check_db_connection
 from app.models import Document, DocumentChunk
 
 
@@ -22,10 +22,9 @@ def init_db():
 
     print(f"Connected to Database: {status.get('postgres_version') or status.get('engine')}")
 
-    if IS_POSTGRES:
-        with engine.begin() as conn:
-            print("Ensuring pgvector extension is enabled...")
-            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
+    with engine.begin() as conn:
+        print("Ensuring pgvector extension is enabled...")
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
 
     print("Creating database tables if not existing...")
     Base.metadata.create_all(bind=engine)

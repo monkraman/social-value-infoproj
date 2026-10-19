@@ -209,9 +209,12 @@ class LLMService:
             "   - Items requiring validation (validation_required)\n"
             "3. If the knowledge base does not provide a specific partner, cost, or local entity, DO NOT INVENT ONE. "
             "Instead, set partner to null and add a note to 'validation_required'.\n"
-            "4. Map each initiative to an appropriate National TOMs metric code from the PROVIDED TOMs CATALOG (e.g., NT1, NT3, NT8, NT10, NT14, NT20).\n"
-            "5. Do NOT perform arithmetic or final financial calculations; simply estimate realistic annual_volume for each initiative.\n"
-            "6. You must return ONLY a valid JSON object matching the exact JSON schema requested."
+            "4. Map each initiative to an appropriate metric code from the PROVIDED POC TOMs PROXY CATALOG. The catalog values are synthetic demonstration values, not approved National TOMs rates.\n"
+            "5. Keep initiatives aligned to the client's stated priority themes. Do not add unrelated themes just to increase the calculated total.\n"
+            "6. Only use a partner if retrieved evidence explicitly names it; otherwise partner must be null and location fit must be flagged for review. Retrieved evidence does not prove current partner approval.\n"
+            "7. Do NOT invent delivery costs or claim commercial viability. Set initiative and package indicative costs to 0 and state that costing is required. Do NOT perform arithmetic; estimate delivery volumes only where evidence supports them, otherwise mark assumptions for review.\n"
+            "8. Include sessions_per_year, hours_per_session and participants_per_session when the delivery model supports them; do not invent missing commitments.\n"
+            "9. You must return ONLY a valid JSON object matching the exact JSON schema requested."
         )
 
         user_content = f"""
@@ -224,7 +227,7 @@ OPPORTUNITY DETAILS:
 - Client Priorities: {', '.join(opportunity.get('priorities', []))}
 - Original Tender Prompt: {opportunity.get('raw_prompt') or 'Not specified'}
 
-AVAILABLE TOMs METRIC PROXY CATALOG:
+AVAILABLE SYNTHETIC POC TOMs PROXY CATALOG (NOT APPROVED RATES):
 {json.dumps(toms_catalog, indent=2)}
 
 RETRIEVED KNOWLEDGE BASE EVIDENCE:
@@ -233,8 +236,8 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
 {{
   "core_package": {{
     "rationale": "High confidence, baseline package addressing core contractual compliance",
-    "indicative_delivery_cost_gbp": 28000.0,
-    "commercial_viability_summary": "Low delivery cost, highly viable via core operational delivery",
+    "indicative_delivery_cost_gbp": 0.0,
+    "commercial_viability_summary": "Not assessed; approved delivery cost inputs required",
     "initiatives": [
       {{
         "name": "Initiative Title",
@@ -251,8 +254,8 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
         "sessions_per_year": 4.0,
         "hours_per_session": 2.0,
         "participants_per_session": 12.0,
-        "indicative_cost_gbp": 2500.0,
-        "commercial_viability": "Zero-Cost Internal Volunteering"
+        "indicative_cost_gbp": 0.0,
+        "commercial_viability": "Cost to be confirmed"
       }}
     ],
     "expected_impact": ["Impact bullet 1"],
@@ -260,16 +263,16 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
   }},
   "enhanced_package": {{
     "rationale": "Expanded high-value package to win competitive bids",
-    "indicative_delivery_cost_gbp": 62000.0,
-    "commercial_viability_summary": "Moderate delivery investment delivering maximum tender evaluation score",
+    "indicative_delivery_cost_gbp": 0.0,
+    "commercial_viability_summary": "Not assessed; approved delivery cost inputs required",
     "initiatives": [...],
     "expected_impact": [...],
     "dependencies": [...]
   }},
   "localised_package": {{
     "rationale": "Hyper-localised package customized specifically for {opportunity.get('location')}",
-    "indicative_delivery_cost_gbp": 45000.0,
-    "commercial_viability_summary": "Optimized place-based delivery model with high community multiplier",
+    "indicative_delivery_cost_gbp": 0.0,
+    "commercial_viability_summary": "Not assessed; approved delivery cost inputs required",
     "initiatives": [...],
     "expected_impact": [...],
     "dependencies": [...]
@@ -407,17 +410,17 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
                 "name": f"{loc} Youth Tech Mentoring & Work Experience",
                 "theme": "Youth Employment",
                 "location": loc,
-                "description": f"Structured career mentoring and technical work experience for young people aged 16-24 across {loc}.",
-                "delivery_mechanism": "Supporting 3 young people per contract year into employment/work pathways",
+                "description": f"Employability workshops and follow-up coaching for 16–24-year-olds; TOMs volume counts only young people supported into employment, not total workshop attendance.",
+                "delivery_mechanism": "4 employability workshops per year (2 hours each, targeting 12 young people per session), plus follow-up support",
                 "target_beneficiaries": f"Young people (NEET) in {loc}",
                 "annual_volume": 3.0,
                 "toms_metric_code": "NT3",
                 "partner": f"{loc} Youth Trust" if has_context else None,
                 "evidence_source": "Retrieved Knowledge Base Document" if has_context else "Synthesized Baseline",
                 "is_from_knowledge_base": has_context,
-                "sessions_per_year": 12.0,
-                "hours_per_session": 3.0,
-                "participants_per_session": 3.0,
+                "sessions_per_year": 4.0,
+                "hours_per_session": 2.0,
+                "participants_per_session": 12.0,
                 "indicative_cost_gbp": 4500.0,
                 "commercial_viability": "Internal HR & Mentoring Operations"
             },
@@ -714,7 +717,7 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
             }
         ]
 
-        return {
+        result = {
             "core_package": {
                 "rationale": f"High confidence baseline compliance package addressing core tender priorities in {loc}.",
                 "indicative_delivery_cost_gbp": 28000.0,
@@ -765,12 +768,56 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
                 f"Apprentices and beneficiaries will be verified residents of {loc} or surrounding local authority areas.",
                 "Subcontractor spend figures will be validated via invoice logs and quarterly accounting reconciliations."
             ],
-            "validation_required": [
-                f"Confirm specific local secondary schools/colleges in {loc} for STEM volunteering and apprenticeship placements.",
-                f"Review {client} local procurement policy to confirm recognized definition of local SME/VCSE suppliers.",
-                "Ensure IT asset management protocols comply with GDPR sanitization prior to device donations."
-            ]
+            "validation_required": []
         }
+
+        # This branch is a demo generator. Its examples and volumes are not
+        # evidence of Infosys delivery, local partnerships, or approved costs.
+        for package_key in ("core_package", "enhanced_package", "localised_package"):
+            package = result[package_key]
+            package["indicative_delivery_cost_gbp"] = 0.0
+            package["commercial_viability_summary"] = "Not assessed; approved delivery cost inputs required."
+            priority_text = " ".join(priorities_lower)
+            priority_buckets = set()
+            bucket_terms = {
+                "digital": ("digital", "technology", "tech", "inclusion", "device", "literacy", "cyber"),
+                "youth": ("youth", "young", "neet"),
+                "employment_skills": ("employment", "skill", "apprentice", "career", "training", "work"),
+                "supply_chain": ("supply", "sme", "vcse", "supplier", "procurement", "economic"),
+                "environment": ("net zero", "green", "carbon", "environment", "climate"),
+                "health": ("health", "healthcare", "wellbeing", "care"),
+                "modern_slavery": ("slavery", "human rights", "ethical supply")
+            }
+            for bucket, terms in bucket_terms.items():
+                if any(term in priority_text for term in terms):
+                    priority_buckets.add(bucket)
+
+            kept_initiatives = []
+            for initiative in package.get("initiatives", []):
+                initiative["partner"] = None
+                initiative["evidence_source"] = "Offline demo recommendation — no verified source evidence"
+                initiative["is_from_knowledge_base"] = False
+                initiative["indicative_cost_gbp"] = 0.0
+                initiative["commercial_viability"] = "Cost to be confirmed"
+                theme = str(initiative.get("theme", "")).lower()
+                theme_buckets = set()
+                for bucket, terms in bucket_terms.items():
+                    if any(term in theme for term in terms):
+                        theme_buckets.add(bucket)
+                if not priority_buckets or theme_buckets.intersection(priority_buckets):
+                    kept_initiatives.append(initiative)
+            package["initiatives"] = kept_initiatives
+            package["rationale"] = "Illustrative offline demo option; validate the initiative and delivery volume before use."
+            package["expected_impact"] = [
+                "Illustrative impact is calculated from the listed activities using synthetic POC proxy rates; validate the measure, rate and delivery assumptions before use."
+            ] if kept_initiatives else [
+                "No initiative in the offline demo catalog matched the stated priority themes. Add relevant approved delivery examples before proposing an option."
+            ]
+        result["assumptions"].append("All offline recommendations and delivery volumes are illustrative; they are not verified Infosys commitments.")
+        result["assumptions"].append("TOMs values in this POC are synthetic proxies and must be checked against the approved current source.")
+        result["validation_required"].append("Confirm local need, delivery capacity, beneficiary volumes and approved partner fit before including any initiative in a bid.")
+        result["validation_required"].append("Commercial costs are unavailable in offline demo mode; compare options only after approved cost inputs are supplied.")
+        return result
 
 
 

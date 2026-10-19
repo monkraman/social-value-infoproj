@@ -28,7 +28,26 @@ def test_natural_language_prompt_rfp(client):
     assert data["prompt_id"] is not None
     assert data["result"] is not None
     assert "localised_package" in data["result"]
-    assert data["result"]["localised_package"]["financial_calculation"]["target_met"] is True
+    result = data["result"]
+    assert result["is_mock"] is True
+    assert "synthetic proxy values" in " ".join(result["validation_required"]).lower()
+    allowed_themes = ("digital", "youth", "employment")
+    for package_key in ("core_package", "enhanced_package", "localised_package"):
+        package = result[package_key]
+        assert package["financial_calculation"]["target_met"] is False
+        assert all(any(theme in initiative["theme"].lower() for theme in allowed_themes) for initiative in package["initiatives"])
+        assert package["indicative_delivery_cost_gbp"] == 0
+        assert package["governance"]["kickoff_cadence"].find("60 days") >= 0
+        assert "contract award" in package["governance"]["kickoff_cadence"].lower()
+    youth_option = next(
+        initiative
+        for initiative in result["core_package"]["initiatives"]
+        if initiative["theme"] == "Youth Employment"
+    )
+    assert youth_option["sessions_per_year"] == 4
+    assert youth_option["hours_per_session"] == 2
+    assert youth_option["participants_per_session"] == 12
+    assert "target" in " ".join(result["validation_required"]).lower()
 
 
 def test_natural_language_prompt_non_rfp(client):

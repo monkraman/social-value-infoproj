@@ -47,7 +47,7 @@ flowchart TD
         A[RFP & Case Documents<br/>PDF, DOCX, XLSX] --> B[Multi-Format Extractor<br/>PyMuPDF / pypdf, python-docx, openpyxl]
         B --> C[Text Normalization & Paragraph Chunking<br/>~800 Chars + 150 Overlap]
         C --> D[Vector Embedding Engine<br/>1536-Dimensional Semantic Vectors]
-        D --> E[(Database Vector Store<br/>PostgreSQL pgvector / SQLite Engine)]
+        D --> E[(Single Database<br/>PostgreSQL + pgvector)]
     end
 
     subgraph QUERY["2. Real-Time Bid Query & Retrieval"]
@@ -122,4 +122,4 @@ Jab user tender criteria deta hai, to engine 3 options produce karta hai:
 1. **Deterministic Accuracy**: Calculation LLM se nahi karwaya jata; Python backend deterministic math formula run karta hai ($Total = Volume \times Years \times Unit Value$).
 2. **Anti-Hallucination**: Agar delivery partner knowledge base mein nahi hai, to system `partner: null` aur `validation_required` flag raise karta hai bajaye fake naam banane ke.
 3. **Multi-Format Ingestion**: PDF, Word DOCX, Excel spreadsheets ko single-click mein ingest karta hai.
-4. **Offline + Multi-Cloud Ready**: Gemini (Free Tier), OpenAI, ya high-fidelity Offline fallback teeno par seamlessly chalta hai.
+4. **AI Provider Fallback**: Gemini and OpenAI providers can be configured; offline generation fallback still requires the same PostgreSQL + pgvector database.

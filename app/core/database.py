@@ -1,56 +1,44 @@
 from typing import Generator
-import os
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
+
 from app.core.config import settings
 
-db_url = settings.DATABASE_URL
+
+db_url = settings.DATABASE_URL.strip()
 if db_url.startswith("postgresql://"):
     db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
 elif db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql+psycopg://", 1)
+elif not db_url.startswith("postgresql+psycopg://"):
+    raise RuntimeError(
+        "DATABASE_URL must point to PostgreSQL using the psycopg driver. "
+        "SQLite and other database engines are not supported."
+    )
 
-IS_POSTGRES = "postgresql" in db_url or "postgres" in db_url
+engine = create_engine(
+    db_url,
+    echo=False,
+    pool_pre_ping=True,
+    connect_args={"connect_timeout": 10}
+)
 
+try:
+    with engine.connect() as connection:
+        connection.execute(text("SELECT 1"))
+except Exception as exc:
+    engine.dispose()
+    raise RuntimeError(
+        "PostgreSQL is unavailable. The application will not start without its configured PostgreSQL database; "
+        "no fallback database is used."
+    ) from exc
 
-def create_db_engine():
-    global db_url, IS_POSTGRES
-    if IS_POSTGRES:
-        try:
-            connect_args = {"connect_timeout": 15}
-            try:
-                import socket
-                from urllib.parse import urlparse
-                parsed = urlparse(db_url)
-                if parsed.hostname and "." in parsed.hostname:
-                    ipv4 = socket.gethostbyname(parsed.hostname)
-                    if ipv4:
-                        connect_args["hostaddr"] = ipv4
-            except Exception:
-                pass
-
-            eng = create_engine(db_url, echo=False, pool_pre_ping=True, connect_args=connect_args)
-            with eng.connect() as conn:
-                conn.execute(text("SELECT 1;"))
-            return eng, True
-        except Exception as e:
-            print(f"[Database Warning] PostgreSQL not reachable ({e}). Falling back to SQLite.")
-    
-    # Portable SQLite database fallback
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    sqlite_path = os.path.join(base_dir, "social_value.db")
-    sqlite_url = f"sqlite:///{sqlite_path}"
-    eng = create_engine(sqlite_url, echo=False, connect_args={"check_same_thread": False})
-    return eng, False
-
-
-engine, IS_POSTGRES = create_db_engine()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
 def get_db() -> Generator[Session, None, None]:
-    """Dependency that yields a database session and closes it afterwards."""
+    """Yield a session connected to the single configured PostgreSQL database."""
     db = SessionLocal()
     try:
         yield db
@@ -59,34 +47,25 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def check_db_connection() -> dict:
-    """Verifies Database connection and vector extension status."""
+    """Report PostgreSQL and pgvector availability without switching engines."""
     try:
-        with engine.connect() as conn:
-            if IS_POSTGRES:
-                version_row = conn.execute(text("SELECT version();")).fetchone()
-                ext_row = conn.execute(
-                    text("SELECT extname, extversion FROM pg_extension WHERE extname = 'vector';")
-                ).fetchone()
-
-                return {
-                    "connected": True,
-                    "engine": "postgresql",
-                    "postgres_version": version_row[0] if version_row else "Unknown",
-                    "pgvector_installed": bool(ext_row),
-                    "pgvector_version": ext_row[1] if ext_row else None
-                }
-            else:
-                return {
-                    "connected": True,
-                    "engine": "sqlite",
-                    "postgres_version": "SQLite 3 (Portable / Embedded)",
-                    "pgvector_installed": True,
-                    "pgvector_version": "NumPy Vector Engine (1536 dim)"
-                }
-    except Exception as e:
+        with engine.connect() as connection:
+            version = connection.execute(text("SELECT version()")).scalar_one()
+            vector_version = connection.execute(
+                text("SELECT extversion FROM pg_extension WHERE extname = 'vector'")
+            ).scalar_one_or_none()
+        return {
+            "connected": True,
+            "engine": "postgresql",
+            "postgres_version": version,
+            "pgvector_installed": bool(vector_version),
+            "pgvector_version": vector_version
+        }
+    except Exception as exc:
         return {
             "connected": False,
-            "error": str(e),
+            "engine": "postgresql",
+            "error": str(exc),
             "postgres_version": None,
             "pgvector_installed": False,
             "pgvector_version": None

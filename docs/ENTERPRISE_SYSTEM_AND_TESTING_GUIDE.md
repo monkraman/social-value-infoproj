@@ -152,12 +152,12 @@ graph TD
 ---
 
 ### Feature 6: Live System Diagnostics & Provider Verification
-- **Description:** Directly answers the user question: *"Is PostgreSQL working or is it SQLite? Which AI model is running?"*
+- **Description:** Reports PostgreSQL connectivity and the active AI provider.
 - **Backend Utility:** `GET /health`.
 - **Capabilities:**
   - Live Sidebar pill displaying database engine and AI provider.
   - **System Health & Diagnostics Modal** detailing:
-    - Database Engine: `PostgreSQL (Neon Cloud)` vs SQLite.
+    - Database Engine: configured PostgreSQL + pgvector service.
     - `pgvector` Extension: Status and version (e.g., `v0.8.0`).
     - Vector Dimensions: `768 dimensions`.
     - AI Provider: `gemini` (`gemini-3.8-flash` via direct REST IPv4).
@@ -233,7 +233,7 @@ This section provides step-by-step test suites that any QA engineer, developer, 
 ---
 
 ### Test Suite 1: Live System Diagnostics & DB Verification
-- **Objective:** Verify that the application is running against Neon Cloud PostgreSQL (not SQLite) and that Gemini 3.8 Flash is active.
+- **Objective:** Verify that the application is running against configured PostgreSQL + pgvector and that the selected AI provider is active.
 - **Preconditions:** Backend running on port 8000, Frontend running on port 5173.
 - **Steps:**
   1. Open the application in a web browser: `http://localhost:5173`.

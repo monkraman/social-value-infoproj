@@ -66,8 +66,8 @@ Social Value Response + Financial Audit Trail + Validation Flags
    - If the knowledge base does not contain an approved delivery partner or local cost, the system sets `partner: null` and surfaces a note in `validation_required` rather than fabricating external entities.
 3. **Multi-Format Ingestion**:
    - Native support for **PDF** (PyMuPDF / page tracking), **DOCX** (python-docx / paragraph and table extraction), and **XLSX** (openpyxl / multi-sheet cell rows).
-4. **Resilient Offline Fallback**:
-   - Can be run and demonstrated offline with deterministic 1536-dimensional pseudo-vectors and structured responses, or online by configuring `OPENAI_API_KEY`.
+4. **AI Provider Fallback**:
+   - AI generation can use an offline demo response when no provider is reachable. PostgreSQL + pgvector remains required in every mode; there is no database fallback.
 
 ---
 

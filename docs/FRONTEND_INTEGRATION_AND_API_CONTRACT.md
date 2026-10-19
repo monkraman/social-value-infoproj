@@ -10,7 +10,7 @@ This document serves as the **single source of truth** for developers and AI age
 - **Backend Base URL**: `http://127.0.0.1:8000` (or `http://localhost:8000`)
 - **Interactive Swagger Docs**: `http://127.0.0.1:8000/docs`
 - **CORS Setup**: Enabled for all origins (`*`), credentials allowed, all HTTP methods and headers enabled in `app/main.py`.
-- **Database**: SQLite (`./social_value.db`) with fallback vector simulation, or PostgreSQL 17 + pgvector.
+- **Database**: PostgreSQL 17 + pgvector only. The backend refuses SQLite URLs and fails to start if PostgreSQL is unavailable.
 
 ---
 

@@ -19,7 +19,7 @@ class PromptInterpreterService:
     """
     Interprets natural language user prompts on the backend,
     classifies intent (RFP, Navigation, or General/Non-RFP),
-    records full audit history in PostgreSQL/SQLite,
+    records full audit history in PostgreSQL,
     and executes RAG generation.
     """
 
