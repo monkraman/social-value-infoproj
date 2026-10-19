@@ -1,3 +1,13 @@
+import socket
+
+# Windows IPv6 blackhole mitigation: prioritize IPv4 to avoid 20-30s connection timeouts
+_orig_getaddrinfo = socket.getaddrinfo
+def _ipv4_first_getaddrinfo(*args, **kwargs):
+    res = _orig_getaddrinfo(*args, **kwargs)
+    ipv4 = [r for r in res if r[0] == socket.AF_INET]
+    return ipv4 if ipv4 else res
+socket.getaddrinfo = _ipv4_first_getaddrinfo
+
 import json
 import httpx
 from typing import Dict, Any, List
@@ -141,9 +151,10 @@ class LLMService:
             try:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
                 payload = {
-                    "contents": [{"parts": [{"text": f"{system_prompt}\n\n{user_content}"}]}]
+                    "contents": [{"parts": [{"text": f"{system_prompt}\n\n{user_content}"}]}],
+                    "generationConfig": {"temperature": 0.1, "maxOutputTokens": 1024}
                 }
-                with httpx.Client(timeout=30.0) as client:
+                with httpx.Client(timeout=60.0) as client:
                     r = client.post(url, json=payload)
                     if r.status_code == 200:
                         raw = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
@@ -279,9 +290,10 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
             try:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
                 payload = {
-                    "contents": [{"parts": [{"text": f"{system_prompt}\n\n{user_content}"}]}]
+                    "contents": [{"parts": [{"text": f"{system_prompt}\n\n{user_content}"}]}],
+                    "generationConfig": {"temperature": 0.2, "maxOutputTokens": 4096}
                 }
-                with httpx.Client(timeout=45.0) as client:
+                with httpx.Client(timeout=90.0) as client:
                     r = client.post(url, json=payload)
                     if r.status_code == 200:
                         raw_json = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
@@ -294,12 +306,12 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
                         data["is_mock"] = False
                         return data
                     else:
-                        print(f"[LLMService] Gemini HTTP {r.status_code}: {r.text[:200]}")
+                        err_snippet = r.text[:300]
+                        print(f"[LLMService] Gemini HTTP {r.status_code}: {err_snippet}")
+                        raise RuntimeError(f"Gemini API Error ({r.status_code}): {err_snippet}")
             except Exception as e:
-                print(f"[LLMService] Gemini error: {e}. Falling back to grounded structure.")
-                fallback = self._generate_offline_fallback(opportunity, context_text)
-                fallback["validation_required"].append(f"Gemini API warning: {str(e)}")
-                return fallback
+                print(f"[LLMService] Gemini error: {e}")
+                raise RuntimeError(f"AI generation failed via Gemini: {str(e)}")
 
         # 2. OpenAI Provider
         if provider == "openai" and settings.is_openai_configured:
@@ -315,12 +327,10 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
                 )
                 return json.loads(response.choices[0].message.content)
             except Exception as e:
-                print(f"[LLMService] OpenAI error: {e}. Falling back to grounded structure.")
-                fallback = self._generate_offline_fallback(opportunity, context_text)
-                fallback["validation_required"].append(f"OpenAI API warning: {str(e)}")
-                return fallback
+                print(f"[LLMService] OpenAI error: {e}")
+                raise RuntimeError(f"AI generation failed via OpenAI: {str(e)}")
 
-        # 3. Offline Mode
+        # 3. Offline Mode (Only if explicitly selected)
         return self._generate_offline_fallback(opportunity, context_text)
 
     def _generate_offline_fallback(self, opportunity: Dict[str, Any], context_text: str) -> Dict[str, Any]:
@@ -808,8 +818,11 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
                     f"https://generativelanguage.googleapis.com/v1beta/models/"
                     f"{settings.GEMINI_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
                 )
-                payload = {"contents": [{"parts": [{"text": full_context}]}]}
-                with httpx.Client(timeout=60.0) as client:
+                payload = {
+                    "contents": [{"parts": [{"text": full_context}]}],
+                    "generationConfig": {"temperature": 0.2, "maxOutputTokens": 4096}
+                }
+                with httpx.Client(timeout=90.0) as client:
                     r = client.post(url, json=payload)
                     if r.status_code == 200:
                         raw = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
@@ -821,9 +834,12 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
                         data["is_mock"] = False
                         return data
                     else:
-                        print(f"[LLMService] Gemini conversation HTTP {r.status_code}")
+                        err_snippet = r.text[:300]
+                        print(f"[LLMService] Gemini conversation HTTP {r.status_code}: {err_snippet}")
+                        raise RuntimeError(f"Gemini Refinement API Error ({r.status_code}): {err_snippet}")
             except Exception as e:
                 print(f"[LLMService] Gemini conversation error: {e}")
+                raise RuntimeError(f"AI refinement failed via Gemini: {str(e)}")
 
         # 2. OpenAI — native multi-turn messages support
         if provider == "openai" and settings.is_openai_configured:
@@ -838,8 +854,9 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
                 return json.loads(response.choices[0].message.content)
             except Exception as e:
                 print(f"[LLMService] OpenAI conversation error: {e}")
+                raise RuntimeError(f"AI refinement failed via OpenAI: {str(e)}")
 
-        # 3. Offline fallback
+        # 3. Offline fallback (only if offline explicitly selected)
         return self._generate_offline_fallback(opportunity, context_text)
 
 

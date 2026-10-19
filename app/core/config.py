@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     # Google Gemini Settings (Free Tier available at ai.google.dev)
     GEMINI_API_KEY: Optional[str] = None
-    GEMINI_MODEL: str = "gemini-3.5-flash"
+    GEMINI_MODEL: str = "gemini-3.8-flash"
     GEMINI_EMBEDDING_MODEL: str = "gemini-embedding-001"
 
     # OpenAI Settings
@@ -78,7 +78,6 @@ class Settings(BaseSettings):
             self.GEMINI_API_KEY
             and self.GEMINI_API_KEY.strip()
             and not self.GEMINI_API_KEY.startswith("your_")
-            and not self.GEMINI_API_KEY.startswith("AQ.")
         )
 
 
