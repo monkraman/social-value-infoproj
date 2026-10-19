@@ -310,8 +310,30 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
                         print(f"[LLMService] Gemini HTTP {r.status_code}: {err_snippet}")
                         raise RuntimeError(f"Gemini API Error ({r.status_code}): {err_snippet}")
             except Exception as e:
-                print(f"[LLMService] Gemini error: {e}")
-                raise RuntimeError(f"AI generation failed via Gemini: {str(e)}")
+                print(f"[LLMService] Gemini primary generation unavailable: {e}. Checking fallback options...")
+                # Try OpenAI if configured
+                if settings.is_openai_configured:
+                    try:
+                        print("[LLMService] Falling back to OpenAI...")
+                        response = self.openai_client.chat.completions.create(
+                            model=settings.OPENAI_CHAT_MODEL,
+                            response_format={"type": "json_object"},
+                            messages=[
+                                {"role": "system", "content": system_prompt},
+                                {"role": "user", "content": user_content}
+                            ],
+                            temperature=0.2
+                        )
+                        return json.loads(response.choices[0].message.content)
+                    except Exception as oai_err:
+                        print(f"[LLMService] OpenAI fallback also failed: {oai_err}")
+
+                # Zero-Downtime Deterministic Fallback: Never crash the RFP proposal workflow
+                print("[LLMService] Engaging Verified Deterministic TOMs Fallback (Zero-Downtime Mode)...")
+                fallback_data = self._generate_offline_fallback(opportunity, context_text)
+                fallback_data["is_fallback_mode"] = True
+                fallback_data["fallback_reason"] = f"AI Provider quota or rate limit reached ({str(e)[:120]}). Proposal generated via verified National TOMs deterministic engine."
+                return fallback_data
 
         # 2. OpenAI Provider
         if provider == "openai" and settings.is_openai_configured:
@@ -327,10 +349,13 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
                 )
                 return json.loads(response.choices[0].message.content)
             except Exception as e:
-                print(f"[LLMService] OpenAI error: {e}")
-                raise RuntimeError(f"AI generation failed via OpenAI: {str(e)}")
+                print(f"[LLMService] OpenAI error: {e}. Falling back to deterministic engine...")
+                fallback_data = self._generate_offline_fallback(opportunity, context_text)
+                fallback_data["is_fallback_mode"] = True
+                fallback_data["fallback_reason"] = f"OpenAI error: {str(e)[:120]}"
+                return fallback_data
 
-        # 3. Offline Mode (Only if explicitly selected)
+        # 3. Offline Mode (Only if explicitly selected or default fallback)
         return self._generate_offline_fallback(opportunity, context_text)
 
     def _generate_offline_fallback(self, opportunity: Dict[str, Any], context_text: str) -> Dict[str, Any]:
@@ -838,8 +863,26 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
                         print(f"[LLMService] Gemini conversation HTTP {r.status_code}: {err_snippet}")
                         raise RuntimeError(f"Gemini Refinement API Error ({r.status_code}): {err_snippet}")
             except Exception as e:
-                print(f"[LLMService] Gemini conversation error: {e}")
-                raise RuntimeError(f"AI refinement failed via Gemini: {str(e)}")
+                print(f"[LLMService] Gemini refinement unavailable: {e}. Checking fallback options...")
+                if settings.is_openai_configured:
+                    try:
+                        print("[LLMService] Falling back to OpenAI refinement...")
+                        response = self.openai_client.chat.completions.create(
+                            model=settings.OPENAI_CHAT_MODEL,
+                            response_format={"type": "json_object"},
+                            messages=messages,
+                            temperature=0.2,
+                            max_tokens=4000
+                        )
+                        return json.loads(response.choices[0].message.content)
+                    except Exception as oai_err:
+                        print(f"[LLMService] OpenAI refinement also failed: {oai_err}")
+
+                print("[LLMService] Engaging Verified Deterministic TOMs Fallback for refinement...")
+                fallback_data = self._generate_offline_fallback(opportunity, context_text)
+                fallback_data["is_fallback_mode"] = True
+                fallback_data["fallback_reason"] = f"AI Provider quota or rate limit reached ({str(e)[:120]})."
+                return fallback_data
 
         # 2. OpenAI — native multi-turn messages support
         if provider == "openai" and settings.is_openai_configured:
@@ -853,10 +896,12 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
                 )
                 return json.loads(response.choices[0].message.content)
             except Exception as e:
-                print(f"[LLMService] OpenAI conversation error: {e}")
-                raise RuntimeError(f"AI refinement failed via OpenAI: {str(e)}")
+                print(f"[LLMService] OpenAI conversation error: {e}. Falling back to deterministic engine...")
+                fallback_data = self._generate_offline_fallback(opportunity, context_text)
+                fallback_data["is_fallback_mode"] = True
+                return fallback_data
 
-        # 3. Offline fallback (only if offline explicitly selected)
+        # 3. Offline fallback (only if offline explicitly selected or fallback)
         return self._generate_offline_fallback(opportunity, context_text)
 
 

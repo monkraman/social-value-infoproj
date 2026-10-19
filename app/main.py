@@ -8,7 +8,9 @@ def _ipv4_first_getaddrinfo(*args, **kwargs):
     return ipv4 if ipv4 else res
 socket.getaddrinfo = _ipv4_first_getaddrinfo
 
-from fastapi import FastAPI
+import time
+import uuid
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
@@ -16,6 +18,8 @@ from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal, IS_POSTGRES
 import app.models  # noqa: F401 - registers all SQLAlchemy models
 from app.services.auth_service import auth_service
+from app.services.audit_service import audit_service
+from app.core.logging_config import logger, current_request_id
 from app.api import (
     health_router,
     ai_router,
@@ -23,7 +27,8 @@ from app.api import (
     search_router,
     responses_router,
     calculations_router,
-    auth_router
+    auth_router,
+    audit_router
 )
 
 
@@ -67,6 +72,14 @@ init_db()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    # Enforce statutory 3-Year audit log retention policy (1,095 days)
+    try:
+        with SessionLocal() as db:
+            purged = audit_service.purge_expired_logs(db, retention_days=1095)
+            if purged > 0:
+                logger.info(f"[Audit Retention] Automatically purged {purged} expired audit logs older than 3 years (1,095 days).")
+    except Exception as e:
+        logger.warning(f"[Audit Retention Warning] Could not run statutory log purge: {e}")
     yield
 
 
@@ -97,9 +110,66 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def audit_logging_middleware(request: Request, call_next):
+    """
+    Enterprise Audit & Request ID Tracking Middleware:
+    1. Injects/generates unique X-Request-ID.
+    2. Logs every API transaction with duration to rotating logs/app.log.
+    3. Persists error transactions (status >= 400 or exceptions) to system_audit_logs table.
+    """
+    request_id = request.headers.get("X-Request-ID") or f"req_{uuid.uuid4().hex[:8]}"
+    token = current_request_id.set(request_id)
+    start_time = time.time()
+    client_ip = request.client.host if request.client else "unknown"
+
+    status_code = 500
+    error_msg = None
+    try:
+        response: Response = await call_next(request)
+        status_code = response.status_code
+        response.headers["X-Request-ID"] = request_id
+        return response
+    except Exception as ex:
+        error_msg = str(ex)
+        logger.exception(f"Unhandled server error on {request.method} {request.url.path}: {ex}")
+        raise
+    finally:
+        duration_ms = round((time.time() - start_time) * 1000, 2)
+        current_request_id.reset(token)
+
+        path = request.url.path
+        if not path.startswith(("/docs", "/openapi.json", "/favicon")):
+            if status_code >= 400 or error_msg:
+                logger.warning(
+                    f"{request.method} {path} - {status_code} ({duration_ms}ms) | IP: {client_ip} | Error: {error_msg or 'HTTP Error'}"
+                )
+                try:
+                    with SessionLocal() as db:
+                        audit_service.record_log(
+                            db=db,
+                            request_id=request_id,
+                            message=f"{request.method} {path} returned HTTP {status_code}",
+                            event_type="ERROR_EXCEPTION" if error_msg else "API_ERROR",
+                            severity="ERROR" if status_code >= 500 else "WARNING",
+                            endpoint=path,
+                            method=request.method,
+                            status_code=status_code,
+                            duration_ms=duration_ms,
+                            client_ip=client_ip,
+                            error_detail=error_msg
+                        )
+                except Exception as log_err:
+                    logger.error(f"Could not persist audit record: {log_err}")
+            else:
+                logger.info(f"{request.method} {path} - {status_code} ({duration_ms}ms) | IP: {client_ip}")
+
+
 # Register API Routers
 app.include_router(health_router)
 app.include_router(auth_router)
+app.include_router(audit_router)
 app.include_router(ai_router)
 app.include_router(documents_router)
 app.include_router(search_router)
