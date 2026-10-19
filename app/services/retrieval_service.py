@@ -55,10 +55,8 @@ class RetrievalService:
                 raw_sim = round(max(0.0, min(1.0, 1.0 - float(distance))), 4) if distance is not None else 0.0
 
                 content_lower = chunk.content.lower()
-                has_keyword = any(w in content_lower for w in query_words) if query_words else True
-
-                # Discard completely unrelated chunks that have neither keyword match nor meaningful semantic similarity
-                if not has_keyword and raw_sim < 0.20:
+                # Discard chunks with negative or zero cosine similarity
+                if raw_sim <= 0.01:
                     continue
 
                 search_items.append(
