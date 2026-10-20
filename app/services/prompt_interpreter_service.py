@@ -159,18 +159,18 @@ class PromptInterpreterService:
 
         # Specific RFP trigger terms
         has_social_value = any(term in p for term in ["social value", "sv", "toms", "national toms", "svroi", "ppn 06/20"])
-        has_tender_terms = any(term in p for term in ["contract", "tender", "rfp", "bid", "procurement", "weighting", "council", "nhs"])
-        has_metrics_or_val = any(term in p for term in ["£", "million", "m ", "year", "yr", "%", "target"])
+        has_tender_terms = any(term in p for term in [
+            "contract", "tender", "rfp", "bid", "bidding", "procurement", "weighting",
+            "council", "nhs", "government", "authority", "deliver", "initiative"
+        ])
 
-        # Check for non-RFP chatter (e.g. general questions, jokes, code requests)
+        # Check for non-RFP chatter (e.g. general questions, jokes, greetings)
         is_chatter = False
-        if len(prompt.split()) < 6 and not has_social_value:
-            is_chatter = True
         if any(p.startswith(prefix) for prefix in ["what is ", "who is ", "tell me a ", "write a poem", "how are you", "weather in"]):
             if not has_social_value and not has_tender_terms:
                 is_chatter = True
 
-        if is_chatter or (not has_social_value and not (has_tender_terms and has_metrics_or_val)):
+        if is_chatter or (not has_social_value and not has_tender_terms):
             return False, (
                 "The submitted prompt does not contain recognized tender or Social Value parameters. "
                 "To formulate an auditable bid proposal, please provide: Contract Duration (e.g. 3 years), "
@@ -196,16 +196,32 @@ class PromptInterpreterService:
 
         # 1. Contract Duration
         duration = 3
-        duration_match = re.search(r'(\d+)\s*(?:-| )(?:year|yr)s?', p, re.IGNORECASE)
-        if duration_match:
+        duration_year_match = re.search(r'(\d+)\s*(?:-| )(?:year|yr)s?', p, re.IGNORECASE)
+        if duration_year_match:
             try:
-                duration = int(duration_match.group(1))
+                duration = int(duration_year_match.group(1))
             except ValueError:
                 duration = 3
+        else:
+            duration_month_match = re.search(r'(\d+)\s*(?:-| )(?:month|mth|mo)s?', p, re.IGNORECASE)
+            if duration_month_match:
+                try:
+                    months = int(duration_month_match.group(1))
+                    duration = max(1, round(months / 12.0))
+                except ValueError:
+                    duration = 1
 
         # 2. Contract Value (GBP)
         contract_value = 10000000.0
+        # Try explicit £ symbol first
         val_match = re.search(r'£\s*([\d,]+(?:\.\d+)?)\s*(m|million|k|thousand|bn|billion)?', p, re.IGNORECASE)
+        if not val_match:
+            # Try numbers with explicit k/m/million unit (e.g. '500k', '25 million')
+            val_match = re.search(r'\b([\d,]+(?:\.\d+)?)\s*(m|million|k|thousand|bn|billion)\b', p, re.IGNORECASE)
+        if not val_match:
+            # Try GBP prefix (e.g. 'GBP 5,000,000')
+            val_match = re.search(r'GBP\s*([\d,]+(?:\.\d+)?)\s*(m|million|k|thousand|bn|billion)?', p, re.IGNORECASE)
+
         if val_match:
             try:
                 base_str = val_match.group(1).replace(',', '').strip()
@@ -217,7 +233,7 @@ class PromptInterpreterService:
                     contract_value = base_val * 1_000_000_000.0
                 elif unit in ['k', 'thousand']:
                     contract_value = base_val * 1_000.0
-                elif base_val < 1000.0:
+                elif base_val < 1000.0 and '£' in p:
                     # Sanity check: In UK public procurement RFP prompts, single/double digit contract values like £10 mean £10M
                     contract_value = base_val * 1_000_000.0
                 else:
@@ -227,7 +243,7 @@ class PromptInterpreterService:
 
         # 3. Target Weighting (%)
         weighting = 10.0
-        weight_match = re.search(r'(\d+(?:\.\d+)?)\s*%\s*(?:social value|sv|weighting)?', p, re.IGNORECASE)
+        weight_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:%|percent|percentage)\s*(?:social value|sv|weighting)?', p, re.IGNORECASE)
         if weight_match:
             try:
                 weighting = float(weight_match.group(1))
@@ -244,30 +260,36 @@ class PromptInterpreterService:
                 location = uk_loc
                 break
 
-        # Step 4b: Look for explicit client patterns (e.g. 'client XYZ wants')
-        client_match = re.search(
-            r'client\s*[:=]?\s*([A-Za-z0-9\s&\'()-]+?)(?:\s+(?:in|wants|requires|located|demands)|,|$|\.)',
-            p,
-            re.IGNORECASE
-        )
-        if client_match:
-            cand = client_match.group(1).strip()
-            # Strip placeholder tokens like (INSERT), [INSERT], etc.
-            clean_cand = re.sub(r'[\(\[\{<]?insert[\)\]\}>]?', '', cand, flags=re.IGNORECASE).strip()
-            if len(clean_cand) > 2 and clean_cand.lower() not in ["the", "a", "an", "client"]:
-                client = clean_cand
+        # Step 4b: Check known public authorities first (e.g. Transport for London, Scottish Government)
+        spec_auth = re.search(r'\b(Transport\s+for\s+London|TfL|Scottish\s+Government|Welsh\s+Government|Crown\s+Commercial\s+Service|CCS)\b', p, re.IGNORECASE)
+        if spec_auth:
+            client = spec_auth.group(1).strip()
 
-        # Check for authority following for/with/to if client not found
+        # Step 4c: Look for explicit client patterns (e.g. 'client XYZ wants')
+        if not client:
+            client_match = re.search(
+                r'client\s*[:=]?\s*([A-Za-z0-9\s&\'()-]+?)(?:\s+(?:in|wants|requires|located|demands)|,|$|\.)',
+                p,
+                re.IGNORECASE
+            )
+            if client_match:
+                cand = client_match.group(1).strip()
+                clean_cand = re.sub(r'[\(\[\{<]?insert[\)\]\}>]?', '', cand, flags=re.IGNORECASE).strip()
+                if len(clean_cand) > 2 and clean_cand.lower() not in ["the", "a", "an", "client", "wants", "requires", "is"]:
+                    if not any(clean_cand.lower().startswith(bad) for bad in ["wants", "requires", "is "]):
+                        client = clean_cand
+
+        # Check for authority following for/with/to
         if not client:
             auth_match = re.search(
-                r'(?:for|with|to)\s+([A-Za-z0-9\s&\'()-]+?\s+(?:City\s+Council|County\s+Council|Borough\s+Council|Council|Combined\s+Authority|Authority|NHS\s+Trust|NHS|Trust|Board|Department|Agency|Service|Constabulary|University))',
+                r'(?:for|with|to)\s+([A-Za-z0-9\s&\'()-]+?\s+(?:City\s+Council|County\s+Council|Borough\s+Council|Council|Combined\s+Authority|Authority|NHS\s+Trust|NHS|Trust|Board|Department|Agency|Service|Constabulary|University|Government))',
                 p,
                 re.IGNORECASE
             )
             if auth_match:
                 cand = auth_match.group(1).strip()
                 clean_cand = re.sub(r'[\(\[\{<]?insert[\)\]\}>]?', '', cand, flags=re.IGNORECASE).strip()
-                if len(clean_cand) > 2:
+                if len(clean_cand) > 2 and clean_cand.lower() not in ["the", "a", "an"]:
                     client = clean_cand
 
         # Step 4c: Reconcile client and location

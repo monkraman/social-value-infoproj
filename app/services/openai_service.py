@@ -154,7 +154,7 @@ class LLMService:
                     "contents": [{"parts": [{"text": f"{system_prompt}\n\n{user_content}"}]}],
                     "generationConfig": {"temperature": 0.1, "maxOutputTokens": 1024}
                 }
-                with httpx.Client(timeout=15.0) as client:
+                with httpx.Client(timeout=6.0) as client:
                     r = client.post(url, json=payload)
                     if r.status_code == 200:
                         raw = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
@@ -308,7 +308,7 @@ Produce a JSON response with this exact structure:
                     "contents": [{"parts": [{"text": f"{system_prompt}\n\n{user_content}"}]}],
                     "generationConfig": {"temperature": 0.2, "maxOutputTokens": 4096}
                 }
-                with httpx.Client(timeout=25.0) as client:
+                with httpx.Client(timeout=8.0) as client:
                     r = client.post(url, json=payload)
                     if r.status_code == 200:
                         raw_json = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()

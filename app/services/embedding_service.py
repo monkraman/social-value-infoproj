@@ -71,7 +71,7 @@ class EmbeddingService:
                     "content": {"parts": [{"text": cleaned_text}]},
                     "outputDimensionality": self.dimension
                 }
-                with httpx.Client(timeout=15.0) as client:
+                with httpx.Client(timeout=5.0) as client:
                     r = client.post(url, json=payload)
                     if r.status_code == 200:
                         values = r.json().get("embedding", {}).get("values", [])
