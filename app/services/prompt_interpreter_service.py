@@ -205,15 +205,21 @@ class PromptInterpreterService:
 
         # 2. Contract Value (GBP)
         contract_value = 10000000.0
-        val_match = re.search(r'£\s*(\d+(?:\.\d+)?)\s*(m|million|k|thousand)?', p, re.IGNORECASE)
+        val_match = re.search(r'£\s*([\d,]+(?:\.\d+)?)\s*(m|million|k|thousand|bn|billion)?', p, re.IGNORECASE)
         if val_match:
             try:
-                base_val = float(val_match.group(1))
-                unit = (val_match.group(2) or '').lower()
+                base_str = val_match.group(1).replace(',', '').strip()
+                base_val = float(base_str)
+                unit = (val_match.group(2) or '').lower().strip()
                 if unit in ['m', 'million']:
                     contract_value = base_val * 1_000_000.0
+                elif unit in ['bn', 'billion']:
+                    contract_value = base_val * 1_000_000_000.0
                 elif unit in ['k', 'thousand']:
                     contract_value = base_val * 1_000.0
+                elif base_val < 1000.0:
+                    # Sanity check: In UK public procurement RFP prompts, single/double digit contract values like £10 mean £10M
+                    contract_value = base_val * 1_000_000.0
                 else:
                     contract_value = base_val
             except ValueError:
