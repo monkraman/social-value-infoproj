@@ -23,8 +23,8 @@ class Settings(BaseSettings):
     OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
     EMBEDDING_DIMENSION: int = 1536
 
-    # Database Settings
-    DATABASE_URL: str = "postgresql+psycopg://neondb_owner:npg_XnmfhOb0aJI6@ep-sweet-pine-b443ejs6.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require"
+    # Database Settings (Set via .env or Azure App Service Environment Variables)
+    DATABASE_URL: str = "postgresql+psycopg://postgres:postgres@localhost:5432/social_value_db"
 
     model_config = SettingsConfigDict(
         env_file=".env",

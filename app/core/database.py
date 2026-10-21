@@ -16,36 +16,31 @@ def _ipv4_first_getaddrinfo(*args, **kwargs):
     return ipv4 if ipv4 else res
 socket.getaddrinfo = _ipv4_first_getaddrinfo
 
-DEFAULT_NEON_POSTGRES = (
-    "postgresql+psycopg://neondb_owner:npg_XnmfhOb0aJI6"
-    "@ep-sweet-pine-b443ejs6.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require"
-)
-
 raw_url = (
     os.environ.get("DATABASE_URL")
     or os.environ.get("POSTGRESQLCONNSTR_DATABASE_URL")
     or os.environ.get("CUSTOMCONNSTR_DATABASE_URL")
     or settings.DATABASE_URL
-    or DEFAULT_NEON_POSTGRES
+    or ""
 )
 
 db_url = raw_url.strip().strip("\"'")
 
-# If someone has SQLite or an invalid non-postgres string in Azure, fallback gracefully to Neon PostgreSQL
-if not (
-    db_url.startswith("postgresql://")
-    or db_url.startswith("postgres://")
-    or db_url.startswith("postgresql+psycopg")
-):
-    print("[Database Notice] Non-PostgreSQL DATABASE_URL provided. Automatically falling back to default cloud PostgreSQL database.")
-    db_url = DEFAULT_NEON_POSTGRES
-
+# Auto-correct common dialect prefixes
 if db_url.startswith("postgresql+psycopg2://"):
     db_url = db_url.replace("postgresql+psycopg2://", "postgresql+psycopg://", 1)
 elif db_url.startswith("postgresql://"):
     db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
 elif db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql+psycopg://", 1)
+
+if not db_url.startswith("postgresql+psycopg://"):
+    prefix_preview = (db_url[:20] + "...") if len(db_url) > 20 else (db_url or "(empty)")
+    raise RuntimeError(
+        f"DATABASE_URL must be a valid PostgreSQL connection string starting with postgresql+psycopg://. "
+        f"Please configure DATABASE_URL in Azure App Service Environment Variables or local .env file. "
+        f"Received prefix: '{prefix_preview}'"
+    )
 
 engine = create_engine(
     db_url,
