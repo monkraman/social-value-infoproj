@@ -10,7 +10,7 @@ socket.getaddrinfo = _ipv4_first_getaddrinfo
 
 import json
 import httpx
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from openai import OpenAI
 from app.core.config import settings
 
