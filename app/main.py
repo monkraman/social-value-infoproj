@@ -69,12 +69,18 @@ def init_db():
 
 
 # Initialize database schema immediately so test runners and workers have tables ready
-init_db()
+try:
+    init_db()
+except Exception as e:
+    logger.warning(f"[Init DB Warning] Initial schema check during import deferred: {e}")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
+    try:
+        init_db()
+    except Exception as e:
+        logger.error(f"[Lifespan Error] Database initialization failed during startup: {e}")
     # Enforce statutory 3-Year audit log retention policy (1,095 days)
     try:
         with SessionLocal() as db:

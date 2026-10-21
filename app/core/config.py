@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     EMBEDDING_DIMENSION: int = 1536
 
     # Database Settings
-    DATABASE_URL: str = "postgresql+psycopg://postgres@127.0.0.1:5434/social_value_db"
+    DATABASE_URL: str = "postgresql+psycopg://neondb_owner:npg_XnmfhOb0aJI6@ep-sweet-pine-b443ejs6.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require"
 
     model_config = SettingsConfigDict(
         env_file=".env",

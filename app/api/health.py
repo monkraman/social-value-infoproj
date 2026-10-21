@@ -29,3 +29,18 @@ def get_health():
         },
         "embedding_dimension": settings.EMBEDDING_DIMENSION
     }
+
+
+@router.get("/ping")
+def ping():
+    """
+    Lightweight ping endpoint for Swagger testing and Azure liveness verification.
+    """
+    db_status = check_db_connection()
+    return {
+        "status": "pong",
+        "service": "infosys-social-value-backend",
+        "version": "1.0.1",
+        "database_connected": db_status.get("connected", False)
+    }
+
