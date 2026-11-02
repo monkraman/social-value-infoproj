@@ -72,26 +72,43 @@ def _normalize_db_url(raw: str) -> str:
 raw_url = _find_raw_db_url()
 db_url = _normalize_db_url(raw_url)
 
-if not db_url.startswith("postgresql+psycopg://"):
-    prefix_preview = (db_url[:25] + "...") if len(db_url) > 25 else (db_url or "(empty)")
-    raise RuntimeError(
-        f"DATABASE_URL must be a valid PostgreSQL connection string starting with postgresql+psycopg://. "
-        f"Please configure DATABASE_URL in Azure App Service Environment Variables or Connection Strings. "
-        f"Received: '{prefix_preview}'"
+# Support SQLite or PostgreSQL with graceful local fallback if PostgreSQL unreachable
+if db_url.startswith("sqlite"):
+    engine = create_engine(
+        db_url,
+        echo=False,
+        connect_args={"check_same_thread": False}
     )
-
-engine = create_engine(
-    db_url,
-    echo=False,
-    pool_pre_ping=True,
-    connect_args={"connect_timeout": 15}
-)
-
-try:
-    with engine.connect() as connection:
-        connection.execute(text("SELECT 1"))
-except Exception as exc:
-    print(f"[Database Warning] Initial PostgreSQL connection check could not complete: {exc}")
+elif db_url.startswith("postgresql+psycopg://") or db_url.startswith("postgresql://"):
+    if db_url.startswith("postgresql://") and not db_url.startswith("postgresql+psycopg://"):
+        db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+    try:
+        temp_engine = create_engine(
+            db_url,
+            echo=False,
+            pool_pre_ping=True,
+            connect_args={"connect_timeout": 3}
+        )
+        with temp_engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        engine = temp_engine
+    except Exception as exc:
+        _backend_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        _default_sqlite_url = "sqlite:///" + os.path.join(_backend_root, "social_value.db").replace(os.sep, "/")
+        print(f"[Database Warning] PostgreSQL connection check deferred or failed: {exc}. Using local SQLite fallback: {_default_sqlite_url}")
+        engine = create_engine(
+            _default_sqlite_url,
+            echo=False,
+            connect_args={"check_same_thread": False}
+        )
+else:
+    _backend_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    _default_sqlite_url = "sqlite:///" + os.path.join(_backend_root, "social_value.db").replace(os.sep, "/")
+    engine = create_engine(
+        _default_sqlite_url,
+        echo=False,
+        connect_args={"check_same_thread": False}
+    )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

@@ -477,7 +477,7 @@ Produce a JSON response with this exact structure:
             },
             {
                 "name": health_vol_title,
-                "theme": "Community Engagement",
+                "theme": "Community Digital Skills and Youth Outreach",
                 "location": loc,
                 "description": f"Dedicated technical employee volunteering supporting secondary schools and libraries in {loc}.",
                 "delivery_mechanism": "150 volunteering hours per year",
@@ -495,7 +495,7 @@ Produce a JSON response with this exact structure:
             },
             {
                 "name": f"{loc} Core Local SME & VCSE Supply Chain Spend",
-                "theme": "Economic Growth",
+                "theme": "Local SME Employment and Economic Growth",
                 "location": loc,
                 "description": f"Ringfenced procurement spend for local suppliers, catering, and facilities in {loc}.",
                 "delivery_mechanism": f"£{int(core_annual_sme_spend):,} direct local SME spend per year",
@@ -601,7 +601,7 @@ Produce a JSON response with this exact structure:
             },
             {
                 "name": f"{loc} Staff Digital Mentoring & Code Club Volunteering",
-                "theme": "Community Engagement",
+                "theme": "Community Digital Skills and Youth Outreach",
                 "location": loc,
                 "description": f"Structured coding clubs and IT career talks at local secondary schools and libraries in {loc}.",
                 "delivery_mechanism": "250 hours of staff volunteering per year",
@@ -619,7 +619,7 @@ Produce a JSON response with this exact structure:
             },
             {
                 "name": f"{loc} Ringfenced SME & Social Enterprise Supply Chain Spend",
-                "theme": "Economic Growth",
+                "theme": "Local SME Employment and Economic Growth",
                 "location": loc,
                 "description": f"Direct procurement spend ringfenced for local independent businesses, catering, IT hardware, and VCSE suppliers in {loc}.",
                 "delivery_mechanism": f"£{int(needed_annual_sme_spend):,} annual direct spend awarded to local suppliers within {loc} postcodes",
@@ -714,7 +714,7 @@ Produce a JSON response with this exact structure:
             },
             {
                 "name": f"{loc} High-Impact Staff STEM Outreach & Hackathons",
-                "theme": "Community Engagement",
+                "theme": "Community Digital Skills and Youth Outreach",
                 "location": loc,
                 "description": f"Annual community hackathon plus 400 staff volunteering hours mentoring young female and BAME coders in {loc}.",
                 "delivery_mechanism": "400 staff volunteering hours delivered annually",
@@ -732,7 +732,7 @@ Produce a JSON response with this exact structure:
             },
             {
                 "name": f"{loc} Strategic SME & Social Enterprise Supply Chain Multiplier",
-                "theme": "Economic Growth",
+                "theme": "Local SME Employment and Economic Growth",
                 "location": loc,
                 "description": f"Aggressive local subcontracting commitment targeting {loc} small businesses and diverse vendors.",
                 "delivery_mechanism": f"£{int(enhanced_annual_sme_spend):,} annual direct supply chain spend in {loc}",
