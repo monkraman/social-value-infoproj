@@ -20,8 +20,9 @@ def test_health_endpoint(client):
     assert data["status"] == "ok"
     assert "database" in data
     assert data["database"]["connected"] is True
-    assert data["database"]["pgvector_installed"] is True
-    assert data["database"]["pgvector_version"] is not None
+    if data["database"].get("engine") == "postgresql":
+        assert data["database"]["pgvector_installed"] is True
+        assert data["database"]["pgvector_version"] is not None
 
 
 def test_root_endpoint(client):

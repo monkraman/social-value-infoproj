@@ -13,7 +13,9 @@ from app.schemas.calculation import (
     OpportunityRecommendRequest,
     OpportunityRecommendResponse
 )
+from app.schemas.partner import RegionalPartnerCreate, RegionalPartnerUpdate, RegionalPartnerResponse
 from app.services.calculation_service import calculation_service
+from app.services.partner_service import partner_service
 
 router = APIRouter(prefix="/calculations", tags=["Deterministic Calculations & TOMs"])
 
@@ -143,3 +145,42 @@ def calculate_package(req: PackageCalcRequest, db: Session = Depends(get_db)):
         target_weighting_percent=req.target_weighting_percent,
         db=db
     )
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# Regional Partner Ecosystem Endpoints
+# ────────────────────────────────────────────────────────────────────────────
+
+@router.get("/partners", response_model=List[RegionalPartnerResponse])
+def list_regional_partners(
+    location: Optional[str] = Query(None, description="Filter by location/city e.g. Birmingham, Manchester"),
+    theme: Optional[str] = Query(None, description="Filter by theme e.g. Work, Planet, Community, Economy"),
+    search: Optional[str] = Query(None, description="Search term for partner name, focus, or code"),
+    db: Session = Depends(get_db)
+):
+    """List approved regional delivery partners grouped by city/geography."""
+    return partner_service.list_partners(db=db, location=location, theme=theme, search=search)
+
+
+@router.post("/partners", response_model=RegionalPartnerResponse, status_code=201)
+def add_regional_partner(partner_in: RegionalPartnerCreate, db: Session = Depends(get_db)):
+    """Add a new approved regional delivery partner to the ecosystem."""
+    return partner_service.create_partner(db=db, partner_in=partner_in)
+
+
+@router.put("/partners/{partner_id}", response_model=RegionalPartnerResponse)
+def update_regional_partner(partner_id: int, partner_in: RegionalPartnerUpdate, db: Session = Depends(get_db)):
+    """Update details for an approved partner."""
+    updated = partner_service.update_partner(db=db, partner_id=partner_id, partner_in=partner_in)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Partner not found")
+    return updated
+
+
+@router.delete("/partners/{partner_id}")
+def delete_regional_partner(partner_id: int, db: Session = Depends(get_db)):
+    """Remove a partner from the regional ecosystem."""
+    success = partner_service.delete_partner(db=db, partner_id=partner_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Partner not found")
+    return {"message": "Partner successfully removed"}
