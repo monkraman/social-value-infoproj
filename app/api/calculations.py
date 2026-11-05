@@ -148,6 +148,22 @@ def calculate_package(req: PackageCalcRequest, db: Session = Depends(get_db)):
 
 
 # ────────────────────────────────────────────────────────────────────────────
+# Master Initiatives Endpoints (Audited NHS FWS Commitments)
+# ────────────────────────────────────────────────────────────────────────────
+
+@router.get("/initiatives")
+def list_master_initiatives(
+    pillar: Optional[str] = Query(None, description="Filter by pillar e.g. SV1, SV2, SV3"),
+    search: Optional[str] = Query(None, description="Search term across name, partner, or PPN MAC"),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns the 37 audited Master Initiatives from Infosys's NHS FWS Framework.
+    """
+    return calculation_service.get_master_initiatives(pillar=pillar, search=search)
+
+
+# ────────────────────────────────────────────────────────────────────────────
 # Regional Partner Ecosystem Endpoints
 # ────────────────────────────────────────────────────────────────────────────
 
