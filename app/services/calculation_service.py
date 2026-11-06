@@ -1428,14 +1428,13 @@ class CalculationService:
         total_rec_sv = 0.0
 
         # Strategy Selection based on verified catalog:
-        # 1. Apprenticeship / Employment (Work)
-        work_metric = by_code.get("NT1") or by_code.get("NHS-SV2-01")
+        # 1. Apprenticeship / Employment (Work) - INI-17 FWS Ambassador Programme
+        work_metric = by_code.get("NT10") or by_code.get("NT1") or by_code.get("NHS-SV2-01")
         if work_metric:
             alloc_gbp = target_sv_gbp * theme_allocations["Work"]
-            # e.g., NT1 is £215/week. Over N years:
             weeks_needed = max(12.0, round(alloc_gbp / (work_metric.unit_value_gbp * req.duration_years), 0))
             calc = self.calculate_initiative(
-                "Local Apprenticeship & Skills Academy",
+                "FWS Ambassador Programme (Tech Apprenticeships)",
                 work_metric.code,
                 weeks_needed,
                 req.duration_years,
@@ -1443,7 +1442,7 @@ class CalculationService:
             )
             recommendations.append(OpportunityRecommendationItem(
                 toms_code=work_metric.code,
-                initiative_name="Local Apprenticeship & Skills Academy",
+                initiative_name="FWS Ambassador Programme (Tech Apprenticeships)",
                 theme=work_metric.theme,
                 ppn_mac=work_metric.ppn_mapping or "MAC 2.2: Employment and Skills",
                 unit=work_metric.unit,
@@ -1452,19 +1451,19 @@ class CalculationService:
                 duration_years=req.duration_years,
                 total_volume=calc.total_volume,
                 total_social_value_gbp=calc.total_social_value_gbp,
-                why_recommended=f"Aligns directly with UK public sector priority for local career pathways in {req.location}. Addresses skills shortage in {req.industry}.",
-                delivery_approach="Partner with local accredited training providers (e.g. QA Consulting or local FE colleges) to sponsor accredited Level 3/4 apprentices with structured on-the-job mentoring.",
-                evidence_needed=work_metric.evidence_required or "Apprenticeship service registration, monthly payroll timesheets, and course completion certificates."
+                why_recommended=f"Direct contractual initiative from Infosys NHS FWS master commitments (INI-17). Addresses skills shortages in {req.location} through accredited Level 3-6 apprenticeships.",
+                delivery_approach="Delivered by Infosys (employer) in partnership with QA Consulting (accredited training provider). Fully co-funded via UK Apprenticeship Levy.",
+                evidence_needed=work_metric.evidence_required or "Schedule 3b Paragraph 7.1 delivery sign-off: monthly apprentice timesheets, levy ledger, and accredited qualification certificates."
             ))
             total_rec_sv += calc.total_social_value_gbp
 
-        # 2. Sustainable IT & Carbon Avoidance (Planet)
-        planet_metric = by_code.get("NT31") or by_code.get("NHS-SV1-01")
+        # 2. Sustainable IT & Carbon Avoidance (Planet) - INI-01 Sustainable IT Framework
+        planet_metric = by_code.get("NHS-SV1-01") or by_code.get("NT31")
         if planet_metric:
             alloc_gbp = target_sv_gbp * theme_allocations["Planet"]
-            vol_needed = max(5.0, round(alloc_gbp / (planet_metric.unit_value_gbp * req.duration_years), 1))
+            vol_needed = max(1.0, round(alloc_gbp / (planet_metric.unit_value_gbp * req.duration_years), 1))
             calc = self.calculate_initiative(
-                "Sustainable IT & GreenOps Carbon Reduction",
+                "Sustainable IT Framework & GreenOps Observability",
                 planet_metric.code,
                 vol_needed,
                 req.duration_years,
@@ -1472,7 +1471,7 @@ class CalculationService:
             )
             recommendations.append(OpportunityRecommendationItem(
                 toms_code=planet_metric.code,
-                initiative_name="Sustainable IT & GreenOps Carbon Reduction",
+                initiative_name="Sustainable IT Framework & GreenOps Observability",
                 theme=planet_metric.theme,
                 ppn_mac=planet_metric.ppn_mapping or "MAC 4.1: Fighting Climate Change",
                 unit=planet_metric.unit,
@@ -1481,19 +1480,19 @@ class CalculationService:
                 duration_years=req.duration_years,
                 total_volume=calc.total_volume,
                 total_social_value_gbp=calc.total_social_value_gbp,
-                why_recommended="Essential for NHS and Central Government tenders mandating PPN 06/21 Carbon Reduction Plans and Scope 3 supply chain observability.",
-                delivery_approach="Implement GreenOps automated energy telemetry (e.g., Sopht platform), ensure ISO 14001 data center compliance, and optimize computational resource load.",
-                evidence_needed=planet_metric.evidence_required or "Independent Scope 1-3 audit, ISO 14001 certification, and annual carbon reduction dashboard reports."
+                why_recommended="Core environmental commitment from Infosys NHS FWS library (INI-01). Delivers verified digital decarbonisation and Scope 3 observability.",
+                delivery_approach="Delivered by Infosys and Sopht GreenOps platform. Includes RGESN eco-design audits, baseline dashboards, and GDSA case studies (D1-D10 deliverables).",
+                evidence_needed=planet_metric.evidence_required or "Schedule 3b §7.1.1-7.1.9 sign-off: Sopht platform energy telemetry logs and ISO 14001 independent audit report."
             ))
             total_rec_sv += calc.total_social_value_gbp
 
-        # 3. Digital Inclusion / Community Volunteering (Community)
-        comm_metric = by_code.get("NT8") or by_code.get("NHS-SV2-02")
+        # 3. Digital Inclusion / Device Prescribing (Community) - INI-19 Device Prescribing Pilot
+        comm_metric = by_code.get("NT27") or by_code.get("NHS-SV2-01") or by_code.get("NT8")
         if comm_metric:
             alloc_gbp = target_sv_gbp * theme_allocations["Community"]
-            vol_needed = max(2.0, round(alloc_gbp / (comm_metric.unit_value_gbp * req.duration_years), 0))
+            vol_needed = max(500.0 if "£" in comm_metric.unit else 2.0, round(alloc_gbp / (comm_metric.unit_value_gbp * req.duration_years), 0))
             calc = self.calculate_initiative(
-                "Community Digital Inclusion Clinics & Device Access",
+                "NHS Device Prescribing & Digital Inclusion Pilot",
                 comm_metric.code,
                 vol_needed,
                 req.duration_years,
@@ -1501,7 +1500,7 @@ class CalculationService:
             )
             recommendations.append(OpportunityRecommendationItem(
                 toms_code=comm_metric.code,
-                initiative_name="Community Digital Inclusion Clinics & Device Access",
+                initiative_name="NHS Device Prescribing & Digital Inclusion Pilot",
                 theme=comm_metric.theme,
                 ppn_mac=comm_metric.ppn_mapping or "MAC 2.1: Tackling Economic Inequality",
                 unit=comm_metric.unit,
@@ -1510,18 +1509,17 @@ class CalculationService:
                 duration_years=req.duration_years,
                 total_volume=calc.total_volume,
                 total_social_value_gbp=calc.total_social_value_gbp,
-                why_recommended=f"Directly supports high-deprivation resident cohorts in {req.location} through basic digital literacy and healthcare accessibility.",
-                delivery_approach="Collaborate with grassroots partners like Good Things Foundation to host quarterly hands-on digital skills workshops and donate wiped refurbished devices.",
-                evidence_needed=comm_metric.evidence_required or "Signed participant rosters, pre/post feedback questionnaires, and device sanitization logs."
+                why_recommended=f"Audited commitment from Infosys master library (INI-19). Tackles digital poverty for vulnerable patients and residents in {req.location}.",
+                delivery_approach="Delivered by Infosys in partnership with Good Things Foundation. Combines ADISA-sanitized refurbished laptops/tablets with 20GB National Databank SIM cards.",
+                evidence_needed=comm_metric.evidence_required or "Schedule 3b KPI9c sign-off: ADISA data-wipe sanitization certificates, clinical referral logs, and National Databank receipts."
             ))
             total_rec_sv += calc.total_social_value_gbp
 
-        # 4. Local SME & Social Enterprise Supply Chain (Economy)
-        econ_metric = by_code.get("NT14")
+        # 4. Local SME & Social Enterprise Supply Chain (Economy) - INI-09 Local Supply Chain
+        econ_metric = by_code.get("NT18") or by_code.get("NT14")
         if econ_metric:
             alloc_gbp = target_sv_gbp * theme_allocations["Economy"]
-            # NT14 is £0.22 per £1 spent. So spend volume:
-            vol_needed = max(10000.0, round(alloc_gbp / (econ_metric.unit_value_gbp * req.duration_years), 0))
+            vol_needed = max(5000.0, round(alloc_gbp / (econ_metric.unit_value_gbp * req.duration_years), 0))
             calc = self.calculate_initiative(
                 "Local SME & VCSE Supply Chain Integration",
                 econ_metric.code,
@@ -1540,14 +1538,14 @@ class CalculationService:
                 duration_years=req.duration_years,
                 total_volume=calc.total_volume,
                 total_social_value_gbp=calc.total_social_value_gbp,
-                why_recommended="High-scoring criterion in local authority scoring, demonstrating contract cash recirculation within local regional economies.",
+                why_recommended=f"Ensures local economic retention in {req.location} through dedicated Tier-2/Tier-3 subcontracting to local small enterprises and VCSEs.",
                 delivery_approach="Ring-fence tier-2 subcontracts (QA testing, local logistics, catering) for verified local SMEs and VCSEs with prompt 30-day payment terms.",
-                evidence_needed=econ_metric.evidence_required or "Subcontractor agreements, Companies House SME verification, and audited invoice payment ledgers."
+                evidence_needed=econ_metric.evidence_required or "Audited supplier postcode validation, purchase orders, and 30-day payment ledger."
             ))
             total_rec_sv += calc.total_social_value_gbp
 
-        # 5. Modern Slavery Governance Benchmark (Work / Compliance)
-        ms_metric = by_code.get("NHS-SV3-01") or by_code.get("NT10")
+        # 5. Modern Slavery Governance Benchmark (SV3) - INI-27 Unseen MSAT Auditing
+        ms_metric = by_code.get("NHS-SV3-01")
         if ms_metric:
             vol_needed = 2.0  # biannual
             calc = self.calculate_initiative(
