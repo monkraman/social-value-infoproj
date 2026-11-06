@@ -387,7 +387,7 @@ DEFAULT_TOMS_DATA: List[Dict[str, Any]] = [
         "evidence_required": "Schedule 3b Paragraph 7.1 delivery sign-off: RGESN assessment grid, Sopht GreenOps data logs, and published GDSA case study.",
         "ppn_mapping": "MAC 4.1: Effective Stewardship of the Environment",
         "source": "NHS Schedule 8 / Schedule 3b Benchmark",
-        "is_synthetic": false
+        "is_synthetic": False
     },
     {
         "code": "NHS-SV1-02",
@@ -400,7 +400,7 @@ DEFAULT_TOMS_DATA: List[Dict[str, Any]] = [
         "evidence_required": "Independent ISO 14064 third-party audit report and annual NHSBSA emissions dashboard.",
         "ppn_mapping": "MAC 4.1: Effective Stewardship of the Environment",
         "source": "NHS Schedule 8 / Schedule 3b Benchmark",
-        "is_synthetic": false
+        "is_synthetic": False
     },
     {
         "code": "NHS-SV2-01",
@@ -413,7 +413,7 @@ DEFAULT_TOMS_DATA: List[Dict[str, Any]] = [
         "evidence_required": "ADISA sanitization certificate, GP/clinical referral vouchers, and Good Things Foundation recipient records.",
         "ppn_mapping": "MAC 2.1: Educational / Skills Partnerships",
         "source": "NHS Schedule 8 / Schedule 3b Benchmark",
-        "is_synthetic": false
+        "is_synthetic": False
     },
     {
         "code": "NHS-SV3-01",
@@ -426,7 +426,7 @@ DEFAULT_TOMS_DATA: List[Dict[str, Any]] = [
         "evidence_required": "Independent Unseen / third-party audit reports and annual Modern Slavery compliance statement.",
         "ppn_mapping": "MAC 6.3: Modern Slavery and Supply Chain Ethics",
         "source": "NHS Schedule 8 / Schedule 3b Benchmark",
-        "is_synthetic": false
+        "is_synthetic": False
     }
 ]
 

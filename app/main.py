@@ -36,8 +36,9 @@ from sqlalchemy import inspect, text
 
 
 def init_db():
-    with engine.begin() as conn:
-        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
+    if engine.dialect.name == "postgresql":
+        with engine.begin() as conn:
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
 
     Base.metadata.create_all(bind=engine)
     # Safe schema migration check for existing PostgreSQL instances.
