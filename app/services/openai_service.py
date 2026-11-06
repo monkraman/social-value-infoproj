@@ -410,15 +410,20 @@ Produce a JSON response with this exact structure:
         health_apprentice_title = f"{loc} Accredited Healthcare Technology & IT Apprenticeships" if is_health else f"{loc} Accredited Tech Apprenticeships"
         health_vol_title = f"{loc} Staff Health-Tech & STEM Digital Volunteering" if is_health else f"{loc} Staff STEM & Digital Volunteering"
 
-        # 1. CORE PACKAGE (Baseline Compliance: delivers ~80% of target)
-        core_base_sv = (
-            (4.0 * duration * 1250.00) +       # NT8: 4 workshops/yr = £15,000
-            (3.0 * duration * 4850.00) +       # NT3: 3 youth = £43,650
-            (52.0 * duration * 215.00) +      # NT1: 1 apprentice = £33,540
-            (150.0 * duration * 45.00)         # NT10: 150 hrs volunteering = £20,250
-        )  # Base = £112,440 over contract
-        core_needed_nt14_sv = max(50000.0, (target_sv_gbp * 0.80) - core_base_sv)
-        core_annual_sme_spend = round((core_needed_nt14_sv / 0.22) / max(duration, 1), 2)
+        # 1. CORE PACKAGE (Baseline Compliance: delivers 100% of target)
+        clinic_vol = 96.0        # NT8: 96 volunteer hrs/yr
+        youth_vol = 1.0          # NT3: 1 FTE youth per yr
+        apprentice_vol = 1.0     # NT1: 1 FTE apprentice per yr
+        vol_hrs = 150.0          # NT8: 150 volunteer hrs/yr
+
+        core_fixed_sv = (
+            (clinic_vol * duration * 17.48) +
+            (youth_vol * duration * 51561.0) +
+            (apprentice_vol * duration * 45722.0) +
+            (vol_hrs * duration * 17.48)
+        )
+        core_needed_nt18_sv = max(50000.0, target_sv_gbp - core_fixed_sv)
+        core_annual_sme_spend = round((core_needed_nt18_sv / 1.089) / max(duration, 1), 2)
 
         core_inits = [
             {
@@ -428,7 +433,7 @@ Produce a JSON response with this exact structure:
                 "description": health_clinic_desc,
                 "delivery_mechanism": "4 quarterly workshops per contract year (2 hrs each, 12 participants/workshop = 96 learner hours)",
                 "target_beneficiaries": f"Underrepresented residents, jobseekers, and older citizens in {loc}",
-                "annual_volume": 4.0,
+                "annual_volume": clinic_vol,
                 "toms_metric_code": "NT8",
                 "partner": f"{loc} Community Matters" if has_context else None,
                 "evidence_source": "Retrieved Knowledge Base Document" if has_context else "Synthesized Baseline",
@@ -443,10 +448,10 @@ Produce a JSON response with this exact structure:
                 "name": health_youth_title,
                 "theme": "Youth Employment",
                 "location": loc,
-                "description": f"Employability workshops and follow-up coaching for 16–24-year-olds; supporting 3 young people into permanent roles.",
-                "delivery_mechanism": "4 employability workshops per year (2 hours each, targeting 12 young people per session), plus follow-up support",
+                "description": f"Employability workshops and follow-up coaching for 16–24-year-olds; supporting 1 young person into permanent employment annually.",
+                "delivery_mechanism": "4 employability workshops per year (2 hours each, targeting 12 young people per session), plus mentoring to transition 1 youth into employment",
                 "target_beneficiaries": f"Young people (NEET) in {loc}",
-                "annual_volume": 3.0,
+                "annual_volume": youth_vol,
                 "toms_metric_code": "NT3",
                 "partner": f"{loc} Youth Trust" if has_context else None,
                 "evidence_source": "Retrieved Knowledge Base Document" if has_context else "Synthesized Baseline",
@@ -461,10 +466,10 @@ Produce a JSON response with this exact structure:
                 "name": health_apprentice_title,
                 "theme": "Employment & Skills",
                 "location": loc,
-                "description": f"52 training weeks per year delivered on contract delivery for local {loc} school leavers.",
-                "delivery_mechanism": "52 training weeks/year (1 full-time apprentice cohort)",
+                "description": f"1 full-time accredited technical apprentice recruited locally from {loc} schools/colleges annually.",
+                "delivery_mechanism": "52 training weeks/year (1 full-time FTE apprentice cohort)",
                 "target_beneficiaries": f"Local technical apprentices in {loc}",
-                "annual_volume": 52.0,
+                "annual_volume": apprentice_vol,
                 "toms_metric_code": "NT1",
                 "partner": None,
                 "evidence_source": "Infosys Apprenticeship Standard Evidence",
@@ -482,8 +487,8 @@ Produce a JSON response with this exact structure:
                 "description": f"Dedicated technical employee volunteering supporting secondary schools and libraries in {loc}.",
                 "delivery_mechanism": "150 volunteering hours per year",
                 "target_beneficiaries": f"Students and community groups in {loc}",
-                "annual_volume": 150.0,
-                "toms_metric_code": "NT10",
+                "annual_volume": vol_hrs,
+                "toms_metric_code": "NT8",
                 "partner": None,
                 "evidence_source": "Infosys CSR Volunteering Policy",
                 "is_from_knowledge_base": has_context,
@@ -501,7 +506,7 @@ Produce a JSON response with this exact structure:
                 "delivery_mechanism": f"£{int(core_annual_sme_spend):,} direct local SME spend per year",
                 "target_beneficiaries": f"Local SMEs and VCSE organizations in {loc}",
                 "annual_volume": core_annual_sme_spend,
-                "toms_metric_code": "NT14",
+                "toms_metric_code": "NT18",
                 "partner": None,
                 "evidence_source": "Infosys Supply Chain Policy",
                 "is_from_knowledge_base": has_context,
@@ -513,18 +518,21 @@ Produce a JSON response with this exact structure:
             }
         ]
 
-        # 2. LOCALISED PACKAGE (Target: Exactly 10.0% / £1M Target Met with High Place-Based Impact)
-        # Compute exact remaining volume needed on NT14 to meet target_sv_gbp cleanly
-        localised_base_sv = (
-            (8.0 * duration * 1250.00) +       # NT8: 8 workshops/yr = £30k
-            (104.0 * duration * 215.00) +      # NT1: 2 apprentices (104 wks/yr) = £67,080
-            (5.0 * duration * 4850.00) +       # NT3: 5 young people into work = £72,750
-            (250.0 * duration * 45.00) +       # NT10: 250 volunteer hours = £33,750
-            (40.0 * duration * 320.00)         # NT20: 40 devices = £38,400
-        )  # Total base = £241,980 over 3 yrs
+        # 2. LOCALISED PACKAGE (Target: 105% / £1.05M Target Met with High Place-Based Impact)
+        loc_clinic_vol = 96.0        # NT8: 96 volunteer hrs/yr
+        loc_apprentice_vol = 1.0    # NT1: 1 FTE apprentice per yr
+        loc_youth_vol = 1.0         # NT3: 1 FTE young person per yr
+        loc_vol_hrs = 200.0         # NT8: 200 volunteer hrs/yr
 
-        needed_nt14_sv = max(50000.0, target_sv_gbp - localised_base_sv)
-        needed_annual_sme_spend = round((needed_nt14_sv / 0.22) / max(duration, 1), 2)
+        localised_base_sv = (
+            (loc_clinic_vol * duration * 17.48) +
+            (loc_apprentice_vol * duration * 45722.0) +
+            (loc_youth_vol * duration * 51561.0) +
+            (loc_vol_hrs * duration * 17.48)
+        )
+
+        needed_nt18_sv = max(50000.0, (target_sv_gbp * 1.05) - localised_base_sv)
+        needed_annual_sme_spend = round((needed_nt18_sv / 1.089) / max(duration, 1), 2)
 
         localised_inits = [
             {
@@ -534,7 +542,7 @@ Produce a JSON response with this exact structure:
                 "description": f"Targeted workshops held in high-deprivation wards of {loc} focusing on digital literacy, job search, and accessibility.",
                 "delivery_mechanism": "8 targeted sessions per year (4 sessions × 2 hrs × 12 participants/yr = 96 learner hours)",
                 "target_beneficiaries": f"Disadvantaged and older residents across priority wards in {loc}",
-                "annual_volume": 8.0,
+                "annual_volume": loc_clinic_vol,
                 "toms_metric_code": "NT8",
                 "partner": None,
                 "evidence_source": "Retrieved Knowledge Base Document" if has_context else "Localised Proposal",
@@ -549,28 +557,28 @@ Produce a JSON response with this exact structure:
                 "name": f"{loc} Local School-Leaver Tech Apprenticeships",
                 "theme": "Employment & Skills",
                 "location": loc,
-                "description": f"Dedicated apprenticeships recruited directly from {loc} state schools and FE colleges for contract delivery.",
-                "delivery_mechanism": "104 apprenticeship training weeks per year (2 full-time local apprentices)",
+                "description": f"Dedicated full-time apprenticeship recruited directly from {loc} state schools and FE colleges for contract delivery.",
+                "delivery_mechanism": "52 apprenticeship training weeks per year (1 full-time local apprentice)",
                 "target_beneficiaries": f"Young apprentices resident in {loc}",
-                "annual_volume": 104.0,
+                "annual_volume": loc_apprentice_vol,
                 "toms_metric_code": "NT1",
                 "partner": None,
                 "evidence_source": "Infosys Apprenticeship Standard Evidence",
                 "is_from_knowledge_base": has_context,
                 "sessions_per_year": 52.0,
                 "hours_per_session": 37.5,
-                "participants_per_session": 2.0,
-                "indicative_cost_gbp": 16000.0,
+                "participants_per_session": 1.0,
+                "indicative_cost_gbp": 8000.0,
                 "commercial_viability": "Funded via Apprenticeship Levy & Contract Team"
             },
             {
                 "name": f"{loc} NEET Young People Sustained Employment Pathway",
                 "theme": "Youth Employment",
                 "location": loc,
-                "description": f"Intensive coaching and technical work experience transitioning 5 young people per year into permanent roles.",
-                "delivery_mechanism": "Supporting 5 young people per contract year into long-term technology and operations employment",
+                "description": f"Intensive coaching and technical work experience transitioning 1 young person per year into a permanent role.",
+                "delivery_mechanism": "Supporting 1 young person per contract year into long-term technology and operations employment",
                 "target_beneficiaries": f"Young NEET individuals (16-24) across {loc}",
-                "annual_volume": 5.0,
+                "annual_volume": loc_youth_vol,
                 "toms_metric_code": "NT3",
                 "partner": f"{loc} Youth Trust" if has_context else None,
                 "evidence_source": "Retrieved Knowledge Base Document" if has_context else "Localised Proposal",
@@ -578,43 +586,25 @@ Produce a JSON response with this exact structure:
                 "sessions_per_year": 20.0,
                 "hours_per_session": 4.0,
                 "participants_per_session": 5.0,
-                "indicative_cost_gbp": 7500.0,
+                "indicative_cost_gbp": 5000.0,
                 "commercial_viability": "Internal Recruitment Pathway"
-            },
-            {
-                "name": f"{loc} Circular IT Hardware Refurbishment & Family Device Bank",
-                "theme": "Digital Inclusion & Net Zero",
-                "location": loc,
-                "description": f"Data-wiped, certified corporate laptops donated to low-income school children and jobseekers in {loc}.",
-                "delivery_mechanism": "40 refurbished laptops with 12 months connectivity donated annually",
-                "target_beneficiaries": f"Low-income households and students in {loc}",
-                "annual_volume": 40.0,
-                "toms_metric_code": "NT20",
-                "partner": None,
-                "evidence_source": "Infosys Circular Economy Policy",
-                "is_from_knowledge_base": has_context,
-                "sessions_per_year": 4.0,
-                "hours_per_session": 0.0,
-                "participants_per_session": 40.0,
-                "indicative_cost_gbp": 3200.0,
-                "commercial_viability": "Zero-Cost Corporate Asset Repurposing"
             },
             {
                 "name": f"{loc} Staff Digital Mentoring & Code Club Volunteering",
                 "theme": "Community Digital Skills and Youth Outreach",
                 "location": loc,
                 "description": f"Structured coding clubs and IT career talks at local secondary schools and libraries in {loc}.",
-                "delivery_mechanism": "250 hours of staff volunteering per year",
+                "delivery_mechanism": "200 hours of staff volunteering per year",
                 "target_beneficiaries": f"School pupils and adult jobseekers in {loc}",
-                "annual_volume": 250.0,
-                "toms_metric_code": "NT10",
+                "annual_volume": loc_vol_hrs,
+                "toms_metric_code": "NT8",
                 "partner": None,
                 "evidence_source": "Infosys Corporate CSR Archive",
                 "is_from_knowledge_base": has_context,
-                "sessions_per_year": 50.0,
+                "sessions_per_year": 40.0,
                 "hours_per_session": 5.0,
-                "participants_per_session": 20.0,
-                "indicative_cost_gbp": 4500.0,
+                "participants_per_session": 15.0,
+                "indicative_cost_gbp": 3500.0,
                 "commercial_viability": "Corporate Volunteering Policy"
             },
             {
@@ -625,7 +615,7 @@ Produce a JSON response with this exact structure:
                 "delivery_mechanism": f"£{int(needed_annual_sme_spend):,} annual direct spend awarded to local suppliers within {loc} postcodes",
                 "target_beneficiaries": f"Local SMEs, social enterprises, and VCSE suppliers in {loc}",
                 "annual_volume": needed_annual_sme_spend,
-                "toms_metric_code": "NT14",
+                "toms_metric_code": "NT18",
                 "partner": None,
                 "evidence_source": "Infosys Regional Supply Chain Policy Evidence",
                 "is_from_knowledge_base": has_context,
@@ -637,17 +627,28 @@ Produce a JSON response with this exact structure:
             }
         ]
 
-        # 3. ENHANCED PACKAGE (Winning Advantage: Exceeds 10% Target by ~12%)
-        enhanced_annual_sme_spend = round(needed_annual_sme_spend * 1.15, 2)
+        # 3. ENHANCED PACKAGE (Winning Advantage: Exceeds Target by ~15% / 115% Target Met)
+        enh_apprentice_vol = 1.0
+        enh_youth_vol = 2.0
+        enh_vol_hrs = 300.0
+        enh_fixed_sv = (
+            (120.0 * duration * 17.48) +
+            (enh_apprentice_vol * duration * 45722.0) +
+            (enh_youth_vol * duration * 51561.0) +
+            (enh_vol_hrs * duration * 17.48)
+        )
+        enh_needed_nt18_sv = max(50000.0, (target_sv_gbp * 1.15) - enh_fixed_sv)
+        enhanced_annual_sme_spend = round((enh_needed_nt18_sv / 1.089) / max(duration, 1), 2)
+
         enhanced_inits = [
             {
                 "name": f"{loc} Flagship Digital Skills & AI Literacy Academies",
                 "theme": "Digital Inclusion",
                 "location": loc,
                 "description": f"Monthly digital skills bootcamps covering AI essentials, cyber safety, and coding in partnership with {loc} libraries.",
-                "delivery_mechanism": "12 workshops per year (12 sessions × 2.5 hrs × 15 participants/yr = 450 learner hours)",
+                "delivery_mechanism": "120 staff volunteering learner hours delivered annually",
                 "target_beneficiaries": f"Residents, career-changers, and mature learners across {loc}",
-                "annual_volume": 12.0,
+                "annual_volume": 120.0,
                 "toms_metric_code": "NT8",
                 "partner": f"{loc} City Digital Coalition" if has_context else None,
                 "evidence_source": "Infosys Digital Academy Blueprint",
@@ -655,35 +656,35 @@ Produce a JSON response with this exact structure:
                 "sessions_per_year": 12.0,
                 "hours_per_session": 2.5,
                 "participants_per_session": 15.0,
-                "indicative_cost_gbp": 7500.0,
+                "indicative_cost_gbp": 5000.0,
                 "commercial_viability": "Infosys Foundation Supported"
             },
             {
                 "name": f"{loc} Multi-Tier Tech Apprenticeship Programme",
                 "theme": "Employment & Skills",
                 "location": loc,
-                "description": f"156 training weeks per year (3 full-time local apprentices) embedded into software delivery and support.",
-                "delivery_mechanism": "156 apprenticeship training weeks per year",
+                "description": f"Full-time local apprentice cohort embedded into software engineering delivery and operational support.",
+                "delivery_mechanism": "52 training weeks per year (1 FTE local apprentice)",
                 "target_beneficiaries": f"Local apprentices and disadvantaged school leavers in {loc}",
-                "annual_volume": 156.0,
+                "annual_volume": enh_apprentice_vol,
                 "toms_metric_code": "NT1",
                 "partner": None,
                 "evidence_source": "Infosys Apprenticeship Standard Evidence",
                 "is_from_knowledge_base": has_context,
                 "sessions_per_year": 52.0,
                 "hours_per_session": 37.5,
-                "participants_per_session": 3.0,
-                "indicative_cost_gbp": 24000.0,
+                "participants_per_session": 1.0,
+                "indicative_cost_gbp": 8000.0,
                 "commercial_viability": "Levy Funded + Delivery Team Role"
             },
             {
                 "name": f"{loc} Fast-Track NEET Tech Career Placements",
                 "theme": "Youth Employment",
                 "location": loc,
-                "description": f"Paid internship and fast-track hiring pathway for 7 disadvantaged young adults per year.",
-                "delivery_mechanism": "Supporting 7 young people per year into sustained technology roles",
+                "description": f"Paid internship and fast-track hiring pathway supporting 2 disadvantaged young adults per year into permanent roles.",
+                "delivery_mechanism": "Supporting 2 young people per year into sustained technology roles",
                 "target_beneficiaries": f"Underrepresented youth and care leavers in {loc}",
-                "annual_volume": 7.0,
+                "annual_volume": enh_youth_vol,
                 "toms_metric_code": "NT3",
                 "partner": None,
                 "evidence_source": "Infosys Youth Inclusion Blueprint",
@@ -691,54 +692,36 @@ Produce a JSON response with this exact structure:
                 "sessions_per_year": 28.0,
                 "hours_per_session": 4.0,
                 "participants_per_session": 7.0,
-                "indicative_cost_gbp": 10500.0,
+                "indicative_cost_gbp": 7000.0,
                 "commercial_viability": "Corporate Talent Pipeline"
-            },
-            {
-                "name": f"{loc} Large-Scale Device Bank & Broadband Voucher Programme",
-                "theme": "Digital Inclusion & Net Zero",
-                "location": loc,
-                "description": f"75 refurbished laptops and 4G connectivity dongles provided to low-income students in {loc}.",
-                "delivery_mechanism": "75 refurbished devices donated annually",
-                "target_beneficiaries": f"Disadvantaged households and school children in {loc}",
-                "annual_volume": 75.0,
-                "toms_metric_code": "NT20",
-                "partner": None,
-                "evidence_source": "Infosys Sustainability Charter",
-                "is_from_knowledge_base": has_context,
-                "sessions_per_year": 6.0,
-                "hours_per_session": 0.0,
-                "participants_per_session": 75.0,
-                "indicative_cost_gbp": 6000.0,
-                "commercial_viability": "Asset Repurposing with Minor Refurbishment Fee"
             },
             {
                 "name": f"{loc} High-Impact Staff STEM Outreach & Hackathons",
                 "theme": "Community Digital Skills and Youth Outreach",
                 "location": loc,
-                "description": f"Annual community hackathon plus 400 staff volunteering hours mentoring young female and BAME coders in {loc}.",
-                "delivery_mechanism": "400 staff volunteering hours delivered annually",
+                "description": f"Annual community hackathon plus 300 staff volunteering hours mentoring young coders and students in {loc}.",
+                "delivery_mechanism": "300 staff volunteering hours delivered annually",
                 "target_beneficiaries": f"Secondary students and underrepresented groups in tech across {loc}",
-                "annual_volume": 400.0,
-                "toms_metric_code": "NT10",
+                "annual_volume": enh_vol_hrs,
+                "toms_metric_code": "NT8",
                 "partner": None,
                 "evidence_source": "Infosys CSR Archive",
                 "is_from_knowledge_base": has_context,
-                "sessions_per_year": 80.0,
+                "sessions_per_year": 60.0,
                 "hours_per_session": 5.0,
                 "participants_per_session": 25.0,
-                "indicative_cost_gbp": 6000.0,
+                "indicative_cost_gbp": 4500.0,
                 "commercial_viability": "Volunteering Allowance"
             },
             {
                 "name": f"{loc} Strategic SME & Social Enterprise Supply Chain Multiplier",
                 "theme": "Local SME Employment and Economic Growth",
                 "location": loc,
-                "description": f"Aggressive local subcontracting commitment targeting {loc} small businesses and diverse vendors.",
+                "description": f"Strategic local subcontracting commitment targeting {loc} small businesses and diverse vendors.",
                 "delivery_mechanism": f"£{int(enhanced_annual_sme_spend):,} annual direct supply chain spend in {loc}",
                 "target_beneficiaries": f"Local SMEs, social enterprises, and minority-owned suppliers in {loc}",
                 "annual_volume": enhanced_annual_sme_spend,
-                "toms_metric_code": "NT14",
+                "toms_metric_code": "NT18",
                 "partner": None,
                 "evidence_source": "Infosys Supplier Diversity Policy",
                 "is_from_knowledge_base": has_context,
