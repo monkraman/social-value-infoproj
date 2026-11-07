@@ -3,6 +3,12 @@ from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+ENV_FILE_PATH = BASE_DIR / ".env"
+
+
 class Settings(BaseSettings):
     APP_NAME: str = "Infosys Social Value RFP Response Builder POC"
     APP_ENV: str = "development"
@@ -27,7 +33,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+psycopg://postgres:postgres@localhost:5432/social_value_db"
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=[str(ENV_FILE_PATH), ".env"],
         env_file_encoding="utf-8",
         extra="ignore"
     )

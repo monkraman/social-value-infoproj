@@ -387,7 +387,7 @@ Produce a JSON response with this exact structure:
         has_context = bool(context_text and loc.lower() in context_text.lower())
 
         # Check priorities
-        has_net_zero = any("net zero" in p or "green" in p or "carbon" in p or "environment" in p for p in priorities_lower)
+        has_net_zero = any(w in p for p in priorities_lower for w in ["net zero", "green", "greenery", "carbon", "environment", "climate", "planet", "decarbonis"])
         has_supply_chain = any("supply" in p or "sme" in p or "vcse" in p or "spend" in p for p in priorities_lower)
         has_youth = any("youth" in p or "young" in p or "apprentic" in p or "neet" in p for p in priorities_lower)
         has_digital = any("digital" in p or "tech" in p or "it " in p or "literacy" in p for p in priorities_lower) or not priorities
@@ -732,6 +732,235 @@ Produce a JSON response with this exact structure:
                 "commercial_viability": "Integrated Project Delivery Operations"
             }
         ]
+
+        if has_net_zero:
+            nt31_proxy = 252.11
+            nt8_proxy = 17.48
+            nt18_proxy = 1.089
+
+            # 1. Core Package (100% Target)
+            core_nt31_sv = target_sv_gbp * 0.55
+            core_nt31_ewaste_sv = target_sv_gbp * 0.25
+            core_vol_hrs = 100.0
+            core_nt8_sv = core_vol_hrs * duration * nt8_proxy
+            core_needed_nt18 = max(10000.0, target_sv_gbp - (core_nt31_sv + core_nt31_ewaste_sv + core_nt8_sv))
+
+            core_annual_tco2 = round((core_nt31_sv / nt31_proxy) / max(duration, 1), 1)
+            core_annual_ewaste_tco2 = round((core_nt31_ewaste_sv / nt31_proxy) / max(duration, 1), 1)
+            core_annual_green_spend = round((core_needed_nt18 / nt18_proxy) / max(duration, 1), 2)
+
+            core_inits = [
+                {
+                    "name": f"{loc} Enterprise IT Decarbonisation & Cloud GreenOps Monitoring",
+                    "theme": "Planet: Decarbonising & Safeguarding our World",
+                    "location": loc,
+                    "description": f"Continuous energy and cloud workload optimization reducing Scope 2/3 carbon emissions across {loc} public sector IT delivery.",
+                    "delivery_mechanism": f"{core_annual_tco2} tCO2e greenhouse gas emissions avoided annually ({round(core_annual_tco2 * duration, 1)} tCO2e over {duration} yrs)",
+                    "target_beneficiaries": f"Local environment, public health, and climate resilience in {loc}",
+                    "annual_volume": core_annual_tco2,
+                    "toms_metric_code": "NT31",
+                    "partner": f"{loc} Climate Action Partnership" if has_context else None,
+                    "evidence_source": "ISO 14001 Audited Energy Telemetry & Social Value Portal Verification",
+                    "is_from_knowledge_base": has_context,
+                    "indicative_cost_gbp": 4500.0,
+                    "commercial_viability": "GreenOps Telemetry Integration"
+                },
+                {
+                    "name": f"{loc} Circular Economy IT Asset Refurbishment & Zero-Landfill Hardware Re-use",
+                    "theme": "Planet: Decarbonising & Safeguarding our World",
+                    "location": loc,
+                    "description": f"ADISA-certified data sanitization and refurbishment of decommissioned IT hardware, avoiding raw extraction and landfill emissions.",
+                    "delivery_mechanism": f"{core_annual_ewaste_tco2} tCO2e carbon emissions avoided annually through circular hardware extension",
+                    "target_beneficiaries": f"Digitally excluded residents and environmental protection across {loc}",
+                    "annual_volume": core_annual_ewaste_tco2,
+                    "toms_metric_code": "NT31",
+                    "partner": f"{loc} Digital Device Bank & E-Waste Network" if has_context else None,
+                    "evidence_source": "ADISA Data-Wipe Certificates & Waste Transfer Notes",
+                    "is_from_knowledge_base": has_context,
+                    "indicative_cost_gbp": 3500.0,
+                    "commercial_viability": "Corporate Hardware Asset Depreciation Allowance"
+                },
+                {
+                    "name": f"{loc} Staff Green Champions & Sustainability STEM Mentoring",
+                    "theme": "Work & Community",
+                    "location": loc,
+                    "description": f"Employee-led climate education, green IT awareness, and environmental hackathons delivered in {loc} schools and community centres.",
+                    "delivery_mechanism": f"{core_vol_hrs} hours of employer-supported green volunteering per contract year",
+                    "target_beneficiaries": f"Students, school pupils, and community groups across {loc}",
+                    "annual_volume": core_vol_hrs,
+                    "toms_metric_code": "NT8",
+                    "partner": None,
+                    "evidence_source": "Corporate Volunteering Time Logs",
+                    "is_from_knowledge_base": has_context,
+                    "indicative_cost_gbp": 2500.0,
+                    "commercial_viability": "Zero Incremental Cost (CSR Allowance)"
+                },
+                {
+                    "name": f"{loc} Low-Carbon & Net Zero Verified Local Supply Chain Spend",
+                    "theme": "Economy: Supporting Regional Business",
+                    "location": loc,
+                    "description": f"Ringfenced procurement expenditure dedicated to local verified SMEs with Net Zero carbon reduction plans in {loc}.",
+                    "delivery_mechanism": f"£{int(core_annual_green_spend):,} annual direct spend awarded to local green suppliers within {loc}",
+                    "target_beneficiaries": f"Local SMEs, social enterprises, and circular economy suppliers in {loc}",
+                    "annual_volume": core_annual_green_spend,
+                    "toms_metric_code": "NT18",
+                    "partner": None,
+                    "evidence_source": "Accounts Payable Ledger & Supplier ISO 14001 Audits",
+                    "is_from_knowledge_base": has_context,
+                    "indicative_cost_gbp": 5000.0,
+                    "commercial_viability": "Core Project Operating Procurement"
+                }
+            ]
+
+            # 2. Localised Package (105% Target)
+            loc_target = target_sv_gbp * 1.05
+            loc_nt31_sv = loc_target * 0.55
+            loc_nt31_ewaste_sv = loc_target * 0.25
+            loc_vol_hrs = 120.0
+            loc_nt8_sv = loc_vol_hrs * duration * nt8_proxy
+            loc_needed_nt18 = max(10000.0, loc_target - (loc_nt31_sv + loc_nt31_ewaste_sv + loc_nt8_sv))
+
+            loc_annual_tco2 = round((loc_nt31_sv / nt31_proxy) / max(duration, 1), 1)
+            loc_annual_ewaste_tco2 = round((loc_nt31_ewaste_sv / nt31_proxy) / max(duration, 1), 1)
+            loc_annual_green_spend = round((loc_needed_nt18 / nt18_proxy) / max(duration, 1), 2)
+
+            localised_inits = [
+                {
+                    "name": f"{loc} Regional CleanTech & Digital Decarbonisation Hub",
+                    "theme": "Planet: Decarbonising & Safeguarding our World",
+                    "location": loc,
+                    "description": f"Tailored place-based carbon avoidance framework targeting {loc} public sector facilities and digital supply operations.",
+                    "delivery_mechanism": f"{loc_annual_tco2} tCO2e emissions avoided annually across regional delivery postcodes",
+                    "target_beneficiaries": f"Local council estate and residents across priority wards in {loc}",
+                    "annual_volume": loc_annual_tco2,
+                    "toms_metric_code": "NT31",
+                    "partner": f"{loc} Climate Action Alliance" if has_context else None,
+                    "evidence_source": "Regional Carbon Audit & Energy Telemetry",
+                    "is_from_knowledge_base": has_context,
+                    "indicative_cost_gbp": 5500.0,
+                    "commercial_viability": "Regional Net Zero Innovation Grant Alignment"
+                },
+                {
+                    "name": f"{loc} Ward-Level Circular E-Waste Refurbishment & Family Device Bank",
+                    "theme": "Planet: Decarbonising & Safeguarding our World",
+                    "location": loc,
+                    "description": f"Certified computer re-use and battery-safe recycling dedicated to {loc} community centres, stopping electronic waste.",
+                    "delivery_mechanism": f"{loc_annual_ewaste_tco2} tCO2e e-waste embodied emissions saved per contract year",
+                    "target_beneficiaries": f"Low-income households and environmental preservation in {loc}",
+                    "annual_volume": loc_annual_ewaste_tco2,
+                    "toms_metric_code": "NT31",
+                    "partner": f"{loc} Community E-Waste & Digital Bank" if has_context else None,
+                    "evidence_source": "ADISA Certified Sanitization & WEEE Waste Consignment Notes",
+                    "is_from_knowledge_base": has_context,
+                    "indicative_cost_gbp": 4200.0,
+                    "commercial_viability": "Corporate Hardware Asset Depreciation Allowance"
+                },
+                {
+                    "name": f"{loc} Community Green Skills & Sustainability Workshops",
+                    "theme": "Work & Community",
+                    "location": loc,
+                    "description": f"Local green coding, environmental monitoring, and sustainability career clinics for jobseekers and students in {loc}.",
+                    "delivery_mechanism": f"{loc_vol_hrs} hours of staff environmental volunteering annually",
+                    "target_beneficiaries": f"Local jobseekers, students, and community groups across {loc}",
+                    "annual_volume": loc_vol_hrs,
+                    "toms_metric_code": "NT8",
+                    "partner": None,
+                    "evidence_source": "Community Volunteering Attendance Records",
+                    "is_from_knowledge_base": has_context,
+                    "indicative_cost_gbp": 3000.0,
+                    "commercial_viability": "Corporate Volunteering Policy"
+                },
+                {
+                    "name": f"{loc} Ringfenced Local Green SME & Eco-Supplier Supply Chain Spend",
+                    "theme": "Economy: Supporting Regional Business",
+                    "location": loc,
+                    "description": f"Ringfenced procurement expenditure dedicated to local micro-businesses and VCSEs supporting sustainability in {loc}.",
+                    "delivery_mechanism": f"£{int(loc_annual_green_spend):,} annual direct supply chain spend in {loc}",
+                    "target_beneficiaries": f"Local SMEs, social enterprises, and circular economy vendors in {loc}",
+                    "annual_volume": loc_annual_green_spend,
+                    "toms_metric_code": "NT18",
+                    "partner": None,
+                    "evidence_source": "Purchase Orders & Local Vendor Postcode Validation",
+                    "is_from_knowledge_base": has_context,
+                    "indicative_cost_gbp": 6000.0,
+                    "commercial_viability": "Project Delivery Subcontracting"
+                }
+            ]
+
+            # 3. Enhanced Package (115% Target)
+            enh_target = target_sv_gbp * 1.15
+            enh_nt31_sv = enh_target * 0.58
+            enh_nt31_ewaste_sv = enh_target * 0.25
+            enh_vol_hrs = 180.0
+            enh_nt8_sv = enh_vol_hrs * duration * nt8_proxy
+            enh_needed_nt18 = max(10000.0, enh_target - (enh_nt31_sv + enh_nt31_ewaste_sv + enh_nt8_sv))
+
+            enh_annual_tco2 = round((enh_nt31_sv / nt31_proxy) / max(duration, 1), 1)
+            enh_annual_ewaste_tco2 = round((enh_nt31_ewaste_sv / nt31_proxy) / max(duration, 1), 1)
+            enh_annual_green_spend = round((enh_needed_nt18 / nt18_proxy) / max(duration, 1), 2)
+
+            enhanced_inits = [
+                {
+                    "name": f"{loc} Decarbonisation Acceleration & Scope 1-3 Observability",
+                    "theme": "Planet: Decarbonising & Safeguarding our World",
+                    "location": loc,
+                    "description": f"Comprehensive digital decarbonisation suite delivering ISO 14001 certified telemetry, cloud efficiency, and carbon offsetting across {loc}.",
+                    "delivery_mechanism": f"{enh_annual_tco2} tCO2e annual verified greenhouse gas reductions ({round(enh_annual_tco2 * duration, 1)} tCO2e over {duration} yrs)",
+                    "target_beneficiaries": f"Regional environment, NHS/Council Net Zero goals, and {loc} citizens",
+                    "annual_volume": enh_annual_tco2,
+                    "toms_metric_code": "NT31",
+                    "partner": f"{loc} Net Zero Consortium" if has_context else None,
+                    "evidence_source": "Sopht GreenOps Observability Telemetry & Third-Party Audit",
+                    "is_from_knowledge_base": has_context,
+                    "indicative_cost_gbp": 7000.0,
+                    "commercial_viability": "GreenOps Telemetry Platform Integration"
+                },
+                {
+                    "name": f"{loc} Circular IT Hardware Bank & Zero-Landfill Decommissioning",
+                    "theme": "Planet: Decarbonising & Safeguarding our World",
+                    "location": loc,
+                    "description": f"100% circular asset extension pipeline for all computing equipment, donating sanitized laptops to vulnerable households across {loc}.",
+                    "delivery_mechanism": f"{enh_annual_ewaste_tco2} tCO2e avoided emissions per year via circular hardware reuse",
+                    "target_beneficiaries": f"Digitally disadvantaged families and local environment in {loc}",
+                    "annual_volume": enh_annual_ewaste_tco2,
+                    "toms_metric_code": "NT31",
+                    "partner": f"{loc} Digital Inclusion & Hardware Reuse Network" if has_context else None,
+                    "evidence_source": "ADISA Data-Sanitization Certificates & Consignment Slips",
+                    "is_from_knowledge_base": has_context,
+                    "indicative_cost_gbp": 5000.0,
+                    "commercial_viability": "Corporate Hardware Asset Depreciation Allowance"
+                },
+                {
+                    "name": f"{loc} Technical Green Skills Hackathons & Employee Outreach",
+                    "theme": "Work & Community",
+                    "location": loc,
+                    "description": f"Structured corporate volunteering mentoring students on AI-driven climate solutions and sustainable computing.",
+                    "delivery_mechanism": f"{enh_vol_hrs} hours of employer-supported green volunteering annually",
+                    "target_beneficiaries": f"Secondary school pupils, college students, and community groups in {loc}",
+                    "annual_volume": enh_vol_hrs,
+                    "toms_metric_code": "NT8",
+                    "partner": None,
+                    "evidence_source": "CSR Volunteering Audit Trail",
+                    "is_from_knowledge_base": has_context,
+                    "indicative_cost_gbp": 4000.0,
+                    "commercial_viability": "Corporate Volunteering Policy"
+                },
+                {
+                    "name": f"{loc} Strategic Net Zero Supply Chain Multiplier",
+                    "theme": "Economy: Supporting Regional Business",
+                    "location": loc,
+                    "description": f"High-impact procurement commitment ringfenced for local small suppliers with carbon reduction commitments.",
+                    "delivery_mechanism": f"£{int(enh_annual_green_spend):,} annual direct supply chain spend in {loc}",
+                    "target_beneficiaries": f"Local green SMEs, social enterprises, and diverse vendors in {loc}",
+                    "annual_volume": enh_annual_green_spend,
+                    "toms_metric_code": "NT18",
+                    "partner": None,
+                    "evidence_source": "Spend Ledger & Local Supplier Postcode Proof",
+                    "is_from_knowledge_base": has_context,
+                    "indicative_cost_gbp": 8000.0,
+                    "commercial_viability": "Project Subcontracting Allocation"
+                }
+            ]
 
         result = {
             "core_package": {

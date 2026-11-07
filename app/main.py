@@ -1,13 +1,3 @@
-import socket
-
-# Windows IPv6 blackhole mitigation: prioritize IPv4 addresses to prevent 20-30s connection timeouts
-_orig_getaddrinfo = socket.getaddrinfo
-def _ipv4_first_getaddrinfo(*args, **kwargs):
-    res = _orig_getaddrinfo(*args, **kwargs)
-    ipv4 = [r for r in res if r[0] == socket.AF_INET]
-    return ipv4 if ipv4 else res
-socket.getaddrinfo = _ipv4_first_getaddrinfo
-
 import time
 import uuid
 from fastapi import FastAPI, Request, Response
@@ -67,13 +57,6 @@ def init_db():
     with SessionLocal() as db:
         auth_service.ensure_default_superadmin(db)
 
-
-
-# Initialize database schema immediately so test runners and workers have tables ready
-try:
-    init_db()
-except Exception as e:
-    logger.warning(f"[Init DB Warning] Initial schema check during import deferred: {e}")
 
 
 @asynccontextmanager

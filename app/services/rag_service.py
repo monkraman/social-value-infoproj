@@ -314,6 +314,7 @@ class RAGService:
         opportunity_dict = req.model_dump()
         target_sv_gbp = round(req.contract_value_gbp * (req.social_value_weighting_percent / 100.0), 2)
         opportunity_dict["target_social_value_gbp"] = target_sv_gbp
+        opportunity_dict["duration_years"] = req.contract_duration_years
 
         # Step 5: Send context to LLM for structured initiative recommendations
         llm_raw = openai_service.generate_recommendation_from_llm(
@@ -486,6 +487,7 @@ class RAGService:
         opportunity_dict = req.model_dump()
         target_sv_gbp = round(req.contract_value_gbp * (req.social_value_weighting_percent / 100.0), 2)
         opportunity_dict["target_social_value_gbp"] = target_sv_gbp
+        opportunity_dict["duration_years"] = req.contract_duration_years
 
         # Step 5: Multi-turn LLM call with FULL conversation history
         llm_raw = openai_service.generate_recommendation_with_conversation(

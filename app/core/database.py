@@ -9,12 +9,14 @@ import os
 import socket
 
 # IPv6 blackhole mitigation: prioritize IPv4 addresses
-_orig_getaddrinfo = socket.getaddrinfo
-def _ipv4_first_getaddrinfo(*args, **kwargs):
-    res = _orig_getaddrinfo(*args, **kwargs)
-    ipv4 = [r for r in res if r[0] == socket.AF_INET]
-    return ipv4 if ipv4 else res
-socket.getaddrinfo = _ipv4_first_getaddrinfo
+if not hasattr(socket, "_custom_ipv4_patched"):
+    _orig_getaddrinfo = socket.getaddrinfo
+    def _ipv4_first_getaddrinfo(*args, **kwargs):
+        res = _orig_getaddrinfo(*args, **kwargs)
+        ipv4 = [r for r in res if r[0] == socket.AF_INET]
+        return ipv4 if ipv4 else res
+    socket.getaddrinfo = _ipv4_first_getaddrinfo
+    socket._custom_ipv4_patched = True
 
 # Discover connection string from environment, Azure Connection Strings prefixes, or settings
 def _find_raw_db_url() -> str:
