@@ -515,13 +515,11 @@ class PromptInterpreterService:
                  for init in current_initiatives[:6]]
             ) if current_initiatives else "None yet"
 
+            orig_request_summary = previous_prompt or f"Build a Social Value bid response for {prev_client} in {prev_location}"
             conversation_turns = [
                 {
                     "role": "user",
-                    "content": (
-                        f"Original request: {previous_prompt or 'Build a Social Value bid response for '
-                        + prev_client + ' in ' + prev_location}"
-                    )
+                    "content": f"Original request: {orig_request_summary}"
                 },
                 {
                     "role": "assistant",
