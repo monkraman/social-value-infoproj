@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 from typing import List, Dict, Optional, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -407,6 +409,22 @@ DEFAULT_TOMS_DATA: List[Dict[str, Any]] = [
         "is_synthetic": False
     }
 ]
+
+MASTER_INITIATIVES_PATH = Path(__file__).resolve().parent.parent / "data" / "master_initiatives.json"
+
+
+def _load_master_initiatives() -> List[Dict[str, Any]]:
+    """Load the 37 NHS FWS master initiatives (confidential valuation fields excluded)."""
+    try:
+        with open(MASTER_INITIATIVES_PATH, encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception as exc:
+        print(f"[CalculationService Warning] Could not load master initiatives: {exc}")
+        return []
+
+
+MASTER_INITIATIVES_DATA: List[Dict[str, Any]] = _load_master_initiatives()
+
 
 class CalculationService:
     """

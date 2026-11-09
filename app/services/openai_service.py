@@ -9,10 +9,70 @@ def _ipv4_first_getaddrinfo(*args, **kwargs):
 socket.getaddrinfo = _ipv4_first_getaddrinfo
 
 import json
+import math
 import httpx
 from typing import Dict, Any, List, Optional
 from openai import OpenAI
 from app.core.config import settings
+
+
+# Shared rules telling the LLM how to map initiatives to the official TOMs catalog.
+# Volumes MUST be expressed in the unit of the chosen measure, because the backend computes
+# Social Value as annual_volume × duration × unit_value_gbp for that measure.
+TOMS_MAPPING_RULES = (
+    "2. TOMs MAPPING: toms_metric_code MUST be one of the 'code' values in the TOMs catalog provided. Never invent codes.\n"
+    "3. VOLUME UNITS: annual_volume MUST be expressed in the 'unit' of the chosen measure. Examples:\n"
+    "   - NT8 / NT29 / NT17 (unit: staff volunteering hours): annual_volume = sessions_per_year × hours_per_session × staff per session (e.g. 12 sessions × 3 hrs × 2 staff = 72).\n"
+    "   - NT11 (unit: hrs × attendees): annual_volume = sessions_per_year × hours_per_session × participants_per_session.\n"
+    "   - NT10 (unit: weeks): one full-time apprentice for a year = 52 weeks; 2 apprentices = 104.\n"
+    "   - NT1 / NT3 / NT4 / NT76 (unit: people FTE): number of people recruited per year (typically 1 to 5). These carry very high unit values, so keep them realistic.\n"
+    "   - NT13 / NT12 (unit: weeks): placement weeks per year across all participants.\n"
+    "   - NT14 / NT18 / NT19 (unit: £ spend): annual £ spend with VCSEs / local suppliers / local SMEs.\n"
+    "   - NT27 / NT26 / NT28 / NT16 (unit: £ invested): annual £ (cash or in-kind) invested, e.g. donated refurbished devices valued at cost.\n"
+    "   - NT31 / NT31a (unit: tCO2e): tonnes of CO2e reduced per year beyond the 2.4% baseline.\n"
+    "4. REALISM: Prefer credible, deliverable volumes over inflating volumes to hit the target. If the target cannot be met credibly, say so in validation_required.\n"
+)
+
+_INITIATIVE_EXAMPLE = """      {
+        "name": "Initiative Title",
+        "theme": "Theme matching a client priority",
+        "location": "__LOC__",
+        "description": "Clear delivery scope addressing client priorities",
+        "delivery_mechanism": "e.g. 12 school career sessions per year, 3 hours each, 2 Infosys volunteers per session",
+        "target_beneficiaries": "Beneficiary group",
+        "annual_volume": 72.0,
+        "toms_metric_code": "NT8",
+        "partner": null,
+        "evidence_source": "Filename of the retrieved evidence chunk, or 'Model recommended'",
+        "is_from_knowledge_base": false,
+        "sessions_per_year": 12.0,
+        "hours_per_session": 3.0,
+        "participants_per_session": 25.0
+      }"""
+
+GENERATION_SCHEMA_EXAMPLE = (
+    "{\n"
+    "  \"core_package\": {\n"
+    "    \"rationale\": \"Baseline package addressing core contractual compliance\",\n"
+    "    \"initiatives\": [\n" + _INITIATIVE_EXAMPLE + "\n    ],\n"
+    "    \"expected_impact\": [\"Qualitative impact statement (no £ figures)\"],\n"
+    "    \"dependencies\": [\"Key dependency\"]\n"
+    "  },\n"
+    "  \"enhanced_package\": { \"rationale\": \"...\", \"initiatives\": [ ... ], \"expected_impact\": [ ... ], \"dependencies\": [ ... ] },\n"
+    "  \"localised_package\": { \"rationale\": \"...\", \"initiatives\": [ ... ], \"expected_impact\": [ ... ], \"dependencies\": [ ... ] },\n"
+    "  \"assumptions\": [\"Assumption regarding delivery, resources, or timeline\"],\n"
+    "  \"validation_required\": [\"Points needing bid team confirmation\"]\n"
+    "}"
+)
+
+GEMINI_GENERATION_TIMEOUT_SECONDS = settings.GEMINI_GENERATION_TIMEOUT_SECONDS
+GEMINI_INTERPRET_TIMEOUT_SECONDS = settings.GEMINI_INTERPRET_TIMEOUT_SECONDS
+
+
+def _ceil_to(value: float, decimals: int) -> float:
+    """Round up so volumes sized to a target never fall short of it due to rounding."""
+    factor = 10 ** decimals
+    return math.ceil(value * factor) / factor
 
 
 class LLMService:
@@ -40,7 +100,7 @@ class LLMService:
                 payload = {
                     "contents": [{"parts": [{"text": prompt}]}]
                 }
-                with httpx.Client(timeout=15.0) as client:
+                with httpx.Client(timeout=GEMINI_INTERPRET_TIMEOUT_SECONDS) as client:
                     r = client.post(url, json=payload)
                     if r.status_code == 200:
                         text_resp = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
@@ -152,9 +212,9 @@ class LLMService:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
                 payload = {
                     "contents": [{"parts": [{"text": f"{system_prompt}\n\n{user_content}"}]}],
-                    "generationConfig": {"temperature": 0.1, "maxOutputTokens": 1024}
+                    "generationConfig": {"temperature": 0.1, "maxOutputTokens": 1024, "responseMimeType": "application/json"}
                 }
-                with httpx.Client(timeout=6.0) as client:
+                with httpx.Client(timeout=GEMINI_INTERPRET_TIMEOUT_SECONDS) as client:
                     r = client.post(url, json=payload)
                     if r.status_code == 200:
                         raw = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
@@ -216,17 +276,11 @@ class LLMService:
             f"- 'enhanced_package': Competitive win-rate maximizer delivering 110% - 120% of target (~£{target_sv_gbp * 1.15:,.0f}) to secure maximum evaluation scores.\n\n"
             "CRITICAL DELIVERY REQUIREMENTS:\n"
             f"1. THEMATIC ALIGNMENT: All initiatives must directly address the client's stated priority themes ({priorities_str}). Do not propose unrelated generic items.\n"
-            "2. PROPORTIONAL VOLUMES: Set realistic annual volumes across the contract duration:\n"
-            "   - NT8 (Workshops/Clinics): workshops/year (e.g. 4 to 12 sessions/yr), hours_per_session (e.g. 2.0 to 3.0), participants_per_session (e.g. 12 to 15).\n"
-            "   - NT1 (Apprenticeships): apprentice training weeks/year (e.g. 52 to 156 wks/yr).\n"
-            "   - NT3 (Youth Employment Support): young people supported into sustained jobs/year (e.g. 3 to 8/yr).\n"
-            "   - NT10 (Volunteering): employee volunteering hours/year (e.g. 150 to 300 hrs/yr).\n"
-            "   - NT20 (Hardware Refurbishment): refurbished devices donated/year (e.g. 40 to 80 devices/yr).\n"
-            "   - NT14 (Local SME/VCSE Spend): direct annual spend awarded to local SMEs and VCSE partners (scaled to achieve the target Social Value).\n"
-            f"3. APPROVED REGIONAL PARTNERS: Where appropriate, assign approved local partners relevant to {loc} (e.g. St Basils Youth Charity, Birmingham Community Matters, West Midlands Digital Device Bank, BMet College, Regional Chamber of Commerce).\n"
-            "4. COMMERCIAL FEASIBILITY: Provide realistic benchmark internal delivery costs (e.g. NT8: £350/session, NT1: £45/wk, NT3: £750/person, NT20: £80/device, NT14: 2% management fee) and summarize the commercial comparison in commercial_viability_summary so the bid team can compare options.\n"
-            "5. OPERATIONAL METRICS: Explicitly include sessions_per_year, hours_per_session and participants_per_session on each initiative.\n"
-            "6. Output ONLY a valid JSON object matching the exact schema."
+            + TOMS_MAPPING_RULES
+            + f"5. PARTNERS: Only name a partner if it appears in the retrieved evidence. Otherwise set partner to null; the backend assigns approved partners for {loc}.\n"
+            "6. COSTS: Do NOT output costs or SVROI figures. The backend calculates delivery cost and Social Value deterministically.\n"
+            "7. OPERATIONAL METRICS: Include sessions_per_year, hours_per_session and participants_per_session on each initiative.\n"
+            "8. Output ONLY a valid JSON object matching the exact schema."
         )
 
         user_content = f"""
@@ -239,7 +293,7 @@ OPPORTUNITY DETAILS:
 - Client Priorities: {priorities_str}
 - Original Tender Prompt: {opportunity.get('raw_prompt') or 'Not specified'}
 
-AVAILABLE SYNTHETIC POC TOMs PROXY CATALOG:
+TOMs CATALOG (Open Access TOM System 2024/2025 proxy values; use ONLY these codes):
 {json.dumps(toms_catalog, indent=2)}
 
 RETRIEVED KNOWLEDGE BASE EVIDENCE:
@@ -247,55 +301,7 @@ RETRIEVED KNOWLEDGE BASE EVIDENCE:
 
 Produce a JSON response with this exact structure:
 {{
-  "core_package": {{
-    "rationale": "High confidence, baseline package addressing core contractual compliance",
-    "indicative_delivery_cost_gbp": 38000.0,
-    "commercial_viability_summary": "Low-cost compliance option with high operational feasibility",
-    "initiatives": [
-      {{
-        "name": "Initiative Title",
-        "theme": "Theme matching priority",
-        "location": "{loc}",
-        "description": "Clear delivery scope addressing client priorities",
-        "delivery_mechanism": "e.g. 4 workshops per year (2 hours each, 12 participants per workshop = 96 learner hours)",
-        "target_beneficiaries": "Beneficiary group",
-        "annual_volume": 4.0,
-        "toms_metric_code": "NT8",
-        "partner": "Approved Partner Name",
-        "evidence_source": "Infosys Core Offer & Regional Partner Repository",
-        "is_from_knowledge_base": true,
-        "sessions_per_year": 4.0,
-        "hours_per_session": 2.0,
-        "participants_per_session": 12.0,
-        "indicative_cost_gbp": 2800.0,
-        "commercial_viability": "Low Cost Volunteer Delivery"
-      }}
-    ],
-    "expected_impact": ["Impact bullet 1"],
-    "dependencies": ["Key dependency 1"]
-  }},
-  "enhanced_package": {{
-    "rationale": "Expanded high-value package delivering decisive win advantage",
-    "indicative_delivery_cost_gbp": 125000.0,
-    "commercial_viability_summary": "Winning Bid Investment (9.5x SVROI). High-impact commitments designed to win competitive bids against incumbent suppliers.",
-    "initiatives": [...],
-    "expected_impact": [...],
-    "dependencies": [...]
-  }},
-  "localised_package": {{
-    "rationale": "Place-based package tailored specifically for {loc} achieving the full 10% mandate",
-    "indicative_delivery_cost_gbp": 78000.0,
-    "commercial_viability_summary": "Optimized Place-Based Model (13.1x SVROI). Directly achieves 10% target with optimal commercial viability.",
-    "initiatives": [...],
-    "expected_impact": [...],
-    "dependencies": [...]
-  }},
-  "assumptions": [
-    "Assumption regarding delivery, resources, or timeline"
-  ],
-  "validation_required": [
-    "Commercial, partner availability, or local council alignment points needing bid team confirmation"
-}}
+{GENERATION_SCHEMA_EXAMPLE.replace("__LOC__", loc)}
 """
 
         provider = settings.active_provider
@@ -306,9 +312,9 @@ Produce a JSON response with this exact structure:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
                 payload = {
                     "contents": [{"parts": [{"text": f"{system_prompt}\n\n{user_content}"}]}],
-                    "generationConfig": {"temperature": 0.2, "maxOutputTokens": 4096}
+                    "generationConfig": {"temperature": 0.2, "maxOutputTokens": 8192, "responseMimeType": "application/json"}
                 }
-                with httpx.Client(timeout=8.0) as client:
+                with httpx.Client(timeout=GEMINI_GENERATION_TIMEOUT_SECONDS) as client:
                     r = client.post(url, json=payload)
                     if r.status_code == 200:
                         raw_json = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
@@ -412,18 +418,18 @@ Produce a JSON response with this exact structure:
 
         # 1. CORE PACKAGE (Baseline Compliance: delivers 100% of target)
         clinic_vol = 96.0        # NT8: 96 volunteer hrs/yr
-        youth_vol = 1.0          # NT3: 1 FTE youth per yr
-        apprentice_vol = 1.0     # NT1: 1 FTE apprentice per yr
+        youth_vol = 1.0          # NT4: 1 NEET young person recruited per yr
+        apprentice_vol = 52.0    # NT10: 1 apprentice x 52 weeks/yr
         vol_hrs = 150.0          # NT8: 150 volunteer hrs/yr
 
         core_fixed_sv = (
             (clinic_vol * duration * 17.48) +
-            (youth_vol * duration * 51561.0) +
-            (apprentice_vol * duration * 45722.0) +
+            (youth_vol * duration * 53013.0) +
+            (apprentice_vol * duration * 309.73) +
             (vol_hrs * duration * 17.48)
         )
         core_needed_nt18_sv = max(50000.0, target_sv_gbp - core_fixed_sv)
-        core_annual_sme_spend = round((core_needed_nt18_sv / 1.089) / max(duration, 1), 2)
+        core_annual_sme_spend = _ceil_to((core_needed_nt18_sv / 1.089) / max(duration, 1), 2)
 
         core_inits = [
             {
@@ -452,7 +458,7 @@ Produce a JSON response with this exact structure:
                 "delivery_mechanism": "4 employability workshops per year (2 hours each, targeting 12 young people per session), plus mentoring to transition 1 youth into employment",
                 "target_beneficiaries": f"Young people (NEET) in {loc}",
                 "annual_volume": youth_vol,
-                "toms_metric_code": "NT3",
+                "toms_metric_code": "NT4",
                 "partner": f"{loc} Youth Trust" if has_context else None,
                 "evidence_source": "Retrieved Knowledge Base Document" if has_context else "Synthesized Baseline",
                 "is_from_knowledge_base": has_context,
@@ -470,7 +476,7 @@ Produce a JSON response with this exact structure:
                 "delivery_mechanism": "52 training weeks/year (1 full-time FTE apprentice cohort)",
                 "target_beneficiaries": f"Local technical apprentices in {loc}",
                 "annual_volume": apprentice_vol,
-                "toms_metric_code": "NT1",
+                "toms_metric_code": "NT10",
                 "partner": None,
                 "evidence_source": "Infosys Apprenticeship Standard Evidence",
                 "is_from_knowledge_base": has_context,
@@ -520,19 +526,19 @@ Produce a JSON response with this exact structure:
 
         # 2. LOCALISED PACKAGE (Target: 105% / £1.05M Target Met with High Place-Based Impact)
         loc_clinic_vol = 96.0        # NT8: 96 volunteer hrs/yr
-        loc_apprentice_vol = 1.0    # NT1: 1 FTE apprentice per yr
-        loc_youth_vol = 1.0         # NT3: 1 FTE young person per yr
+        loc_apprentice_vol = 52.0   # NT10: 1 apprentice x 52 weeks/yr
+        loc_youth_vol = 1.0         # NT4: 1 NEET young person recruited per yr
         loc_vol_hrs = 200.0         # NT8: 200 volunteer hrs/yr
 
         localised_base_sv = (
             (loc_clinic_vol * duration * 17.48) +
-            (loc_apprentice_vol * duration * 45722.0) +
-            (loc_youth_vol * duration * 51561.0) +
+            (loc_apprentice_vol * duration * 309.73) +
+            (loc_youth_vol * duration * 53013.0) +
             (loc_vol_hrs * duration * 17.48)
         )
 
         needed_nt18_sv = max(50000.0, (target_sv_gbp * 1.05) - localised_base_sv)
-        needed_annual_sme_spend = round((needed_nt18_sv / 1.089) / max(duration, 1), 2)
+        needed_annual_sme_spend = _ceil_to((needed_nt18_sv / 1.089) / max(duration, 1), 2)
 
         localised_inits = [
             {
@@ -561,7 +567,7 @@ Produce a JSON response with this exact structure:
                 "delivery_mechanism": "52 apprenticeship training weeks per year (1 full-time local apprentice)",
                 "target_beneficiaries": f"Young apprentices resident in {loc}",
                 "annual_volume": loc_apprentice_vol,
-                "toms_metric_code": "NT1",
+                "toms_metric_code": "NT10",
                 "partner": None,
                 "evidence_source": "Infosys Apprenticeship Standard Evidence",
                 "is_from_knowledge_base": has_context,
@@ -579,7 +585,7 @@ Produce a JSON response with this exact structure:
                 "delivery_mechanism": "Supporting 1 young person per contract year into long-term technology and operations employment",
                 "target_beneficiaries": f"Young NEET individuals (16-24) across {loc}",
                 "annual_volume": loc_youth_vol,
-                "toms_metric_code": "NT3",
+                "toms_metric_code": "NT4",
                 "partner": f"{loc} Youth Trust" if has_context else None,
                 "evidence_source": "Retrieved Knowledge Base Document" if has_context else "Localised Proposal",
                 "is_from_knowledge_base": has_context,
@@ -628,17 +634,17 @@ Produce a JSON response with this exact structure:
         ]
 
         # 3. ENHANCED PACKAGE (Winning Advantage: Exceeds Target by ~15% / 115% Target Met)
-        enh_apprentice_vol = 1.0
+        enh_apprentice_vol = 52.0  # NT10: 1 apprentice x 52 weeks/yr
         enh_youth_vol = 2.0
         enh_vol_hrs = 300.0
         enh_fixed_sv = (
             (120.0 * duration * 17.48) +
-            (enh_apprentice_vol * duration * 45722.0) +
-            (enh_youth_vol * duration * 51561.0) +
+            (enh_apprentice_vol * duration * 309.73) +
+            (enh_youth_vol * duration * 53013.0) +
             (enh_vol_hrs * duration * 17.48)
         )
         enh_needed_nt18_sv = max(50000.0, (target_sv_gbp * 1.15) - enh_fixed_sv)
-        enhanced_annual_sme_spend = round((enh_needed_nt18_sv / 1.089) / max(duration, 1), 2)
+        enhanced_annual_sme_spend = _ceil_to((enh_needed_nt18_sv / 1.089) / max(duration, 1), 2)
 
         enhanced_inits = [
             {
@@ -667,7 +673,7 @@ Produce a JSON response with this exact structure:
                 "delivery_mechanism": "52 training weeks per year (1 FTE local apprentice)",
                 "target_beneficiaries": f"Local apprentices and disadvantaged school leavers in {loc}",
                 "annual_volume": enh_apprentice_vol,
-                "toms_metric_code": "NT1",
+                "toms_metric_code": "NT10",
                 "partner": None,
                 "evidence_source": "Infosys Apprenticeship Standard Evidence",
                 "is_from_knowledge_base": has_context,
@@ -685,7 +691,7 @@ Produce a JSON response with this exact structure:
                 "delivery_mechanism": "Supporting 2 young people per year into sustained technology roles",
                 "target_beneficiaries": f"Underrepresented youth and care leavers in {loc}",
                 "annual_volume": enh_youth_vol,
-                "toms_metric_code": "NT3",
+                "toms_metric_code": "NT4",
                 "partner": None,
                 "evidence_source": "Infosys Youth Inclusion Blueprint",
                 "is_from_knowledge_base": has_context,
@@ -745,9 +751,9 @@ Produce a JSON response with this exact structure:
             core_nt8_sv = core_vol_hrs * duration * nt8_proxy
             core_needed_nt18 = max(10000.0, target_sv_gbp - (core_nt31_sv + core_nt31_ewaste_sv + core_nt8_sv))
 
-            core_annual_tco2 = round((core_nt31_sv / nt31_proxy) / max(duration, 1), 1)
-            core_annual_ewaste_tco2 = round((core_nt31_ewaste_sv / nt31_proxy) / max(duration, 1), 1)
-            core_annual_green_spend = round((core_needed_nt18 / nt18_proxy) / max(duration, 1), 2)
+            core_annual_tco2 = _ceil_to((core_nt31_sv / nt31_proxy) / max(duration, 1), 1)
+            core_annual_ewaste_tco2 = _ceil_to((core_nt31_ewaste_sv / nt31_proxy) / max(duration, 1), 1)
+            core_annual_green_spend = _ceil_to((core_needed_nt18 / 1.089) / max(duration, 1), 2)
 
             core_inits = [
                 {
@@ -820,9 +826,9 @@ Produce a JSON response with this exact structure:
             loc_nt8_sv = loc_vol_hrs * duration * nt8_proxy
             loc_needed_nt18 = max(10000.0, loc_target - (loc_nt31_sv + loc_nt31_ewaste_sv + loc_nt8_sv))
 
-            loc_annual_tco2 = round((loc_nt31_sv / nt31_proxy) / max(duration, 1), 1)
-            loc_annual_ewaste_tco2 = round((loc_nt31_ewaste_sv / nt31_proxy) / max(duration, 1), 1)
-            loc_annual_green_spend = round((loc_needed_nt18 / nt18_proxy) / max(duration, 1), 2)
+            loc_annual_tco2 = _ceil_to((loc_nt31_sv / nt31_proxy) / max(duration, 1), 1)
+            loc_annual_ewaste_tco2 = _ceil_to((loc_nt31_ewaste_sv / nt31_proxy) / max(duration, 1), 1)
+            loc_annual_green_spend = _ceil_to((loc_needed_nt18 / 1.089) / max(duration, 1), 2)
 
             localised_inits = [
                 {
@@ -895,9 +901,9 @@ Produce a JSON response with this exact structure:
             enh_nt8_sv = enh_vol_hrs * duration * nt8_proxy
             enh_needed_nt18 = max(10000.0, enh_target - (enh_nt31_sv + enh_nt31_ewaste_sv + enh_nt8_sv))
 
-            enh_annual_tco2 = round((enh_nt31_sv / nt31_proxy) / max(duration, 1), 1)
-            enh_annual_ewaste_tco2 = round((enh_nt31_ewaste_sv / nt31_proxy) / max(duration, 1), 1)
-            enh_annual_green_spend = round((enh_needed_nt18 / nt18_proxy) / max(duration, 1), 2)
+            enh_annual_tco2 = _ceil_to((enh_nt31_sv / nt31_proxy) / max(duration, 1), 1)
+            enh_annual_ewaste_tco2 = _ceil_to((enh_nt31_ewaste_sv / nt31_proxy) / max(duration, 1), 1)
+            enh_annual_green_spend = _ceil_to((enh_needed_nt18 / 1.089) / max(duration, 1), 2)
 
             enhanced_inits = [
                 {
@@ -966,7 +972,7 @@ Produce a JSON response with this exact structure:
             "core_package": {
                 "rationale": f"High confidence baseline compliance package addressing core tender priorities in {loc}.",
                 "indicative_delivery_cost_gbp": 28000.0,
-                "commercial_viability_summary": "Highly Viable / Low Delivery Overhead (27.8x SVROI). Primarily delivered through internal volunteering, levy funding, and baseline operational spend.",
+                "commercial_viability_summary": "Primarily delivered through internal volunteering, levy funding, and baseline operational spend.",
                 "initiatives": core_inits,
                 "expected_impact": [
                     f"Direct support for local jobseekers and digitally excluded residents across {loc}",
@@ -981,12 +987,12 @@ Produce a JSON response with this exact structure:
             "enhanced_package": {
                 "rationale": f"Market-leading winning package exceeding {client}'s {target_pct}% target weighting to secure decisive tender score advantage.",
                 "indicative_delivery_cost_gbp": 62000.0,
-                "commercial_viability_summary": "Competitive Investment / High Evaluation Advantage (18.1x SVROI). High-impact commitments designed to win competitive bids against incumbent suppliers.",
+                "commercial_viability_summary": "Higher-commitment option designed to strengthen evaluation scores.",
                 "initiatives": enhanced_inits,
                 "expected_impact": [
-                    f"Surpasses {client}'s £{int(target_sv_gbp):,} target weighting by over 12%, maximizing commercial score",
-                    f"Substantial digital poverty reduction through 225 total refurbished laptops with connectivity",
-                    f"Comprehensive 3-tier local apprentice cohort delivering verified economic value"
+                    f"Sized to exceed {client}'s £{int(target_sv_gbp):,} target; confirm against the calculated total",
+                    f"Expanded digital skills and youth employment activity across {loc}",
+                    f"Local apprenticeship pathway for {loc} residents"
                 ],
                 "dependencies": [
                     "Corporate hardware decommission schedule sign-off",
@@ -994,12 +1000,12 @@ Produce a JSON response with this exact structure:
                 ]
             },
             "localised_package": {
-                "rationale": f"Hyper-targeted place-based package tailored exactly to {client}'s 10% target (£{int(target_sv_gbp):,}) with ward-level social inclusion focus.",
+                "rationale": f"Place-based package sized to {client}'s {target_pct}% target (£{int(target_sv_gbp):,}) with ward-level social inclusion focus.",
                 "indicative_delivery_cost_gbp": 42000.0,
-                "commercial_viability_summary": "Optimized Place-Based Model (23.8x SVROI). Direct match to 10% target with zero excess delivery overhead.",
+                "commercial_viability_summary": "Place-based option focused on local partners and priority wards.",
                 "initiatives": localised_inits,
                 "expected_impact": [
-                    f"Delivers exactly 100% of the £{int(target_sv_gbp):,} Social Value target commitment",
+                    f"Sized to the £{int(target_sv_gbp):,} Social Value target; confirm against the calculated total",
                     f"Focuses intervention in high-deprivation wards of {loc} with targeted 96 learner hours",
                     f"Direct retention of contract wealth within {loc} SME supply chains"
                 ],
@@ -1062,10 +1068,17 @@ Produce a JSON response with this exact structure:
             f"- 'enhanced_package': Ambitious winning bid proposal delivering 110% - 120% of target (~£{target_sv_gbp * 1.15:,.0f}) to maximize competitive win-rate.\n\n"
             "CRITICAL RULES:\n"
             "1. You MUST read ALL previous conversation turns carefully and incorporate ALL feedback given across turns.\n"
-            "2. Adapt initiative themes and titles so they directly address client priorities (e.g. healthcare digital literacy clinics, health-tech apprenticeships).\n"
-            "3. Operational Metrics: Explicitly specify sessions_per_year, hours_per_session and participants_per_session for every initiative.\n"
-            "4. Commercial Delivery Cost: Provide realistic benchmark delivery costs and summarize commercial trade-offs in commercial_viability_summary so the bid team can compare options.\n"
-            "5. Return ONLY valid JSON matching the exact schema requested with keys: core_package, enhanced_package, localised_package, assumptions, validation_required."
+            + TOMS_MAPPING_RULES
+            + "5. Adapt initiative themes and titles so they directly address client priorities.\n"
+            "6. Include sessions_per_year, hours_per_session and participants_per_session for every initiative.\n"
+            "7. Do NOT output costs or SVROI figures; the backend calculates them deterministically.\n"
+            "8. Only name a partner if it appears in the retrieved evidence; otherwise set partner to null.\n\n"
+            "TOMs CATALOG (Open Access TOM System 2024/2025 proxy values; use ONLY these codes):\n"
+            f"{json.dumps(toms_catalog, indent=2)}\n\n"
+            "RETRIEVED KNOWLEDGE BASE EVIDENCE:\n"
+            f"{context_text if context_text.strip() else 'No knowledge-base evidence retrieved.'}\n\n"
+            "Return ONLY valid JSON with this exact structure:\n"
+            f"{GENERATION_SCHEMA_EXAMPLE.replace('__LOC__', loc)}"
         )
 
         # Build the full messages array with real conversation history
@@ -1090,9 +1103,9 @@ Produce a JSON response with this exact structure:
                 )
                 payload = {
                     "contents": [{"parts": [{"text": full_context}]}],
-                    "generationConfig": {"temperature": 0.2, "maxOutputTokens": 4096}
+                    "generationConfig": {"temperature": 0.2, "maxOutputTokens": 8192, "responseMimeType": "application/json"}
                 }
-                with httpx.Client(timeout=25.0) as client:
+                with httpx.Client(timeout=GEMINI_GENERATION_TIMEOUT_SECONDS) as client:
                     r = client.post(url, json=payload)
                     if r.status_code == 200:
                         raw = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()

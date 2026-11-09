@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 
 from app.schemas.response import (
@@ -146,15 +146,87 @@ APPROVED_PARTNER_ECOSYSTEM: Dict[str, Dict[str, str]] = {
     }
 }
 
-# Benchmarked Indicative Delivery Unit Costs (£/unit)
-INDICATIVE_UNIT_DELIVERY_COSTS: Dict[str, float] = {
-    "NT1": 45.0,    # £45/week mentorship & workplace coaching
-    "NT3": 750.0,   # £750/person casework & intensive coaching for NEET youth
-    "NT8": 350.0,   # £350/workshop venue, materials & certified trainer
-    "NT10": 10.0,   # £10/hour volunteer coordination & school outreach
-    "NT14": 0.02,   # 2% local SME supply chain onboarding & auditing
-    "NT20": 80.0,   # £80/device wiping, hardware refurb & 12m data SIM
+# The partner map above was originally keyed with legacy codes that did not match the
+# official catalog (e.g. "NT8" meant digital-inclusion workshops). Re-key each city map so
+# the keys line up with the measures in calculation_service.DEFAULT_TOMS_DATA.
+_LEGACY_PARTNER_CODE_MAP: Dict[str, str] = {
+    "NT8": "NT27",   # digital inclusion -> community networks (digital skills sessions)
+    "NT10": "NT8",   # schools / STEM outreach -> support for students at local institutions
+    "NT1": "NT10",   # apprenticeship hub -> employment of new apprentices
+    "NT3": "NT4",    # youth employment charity -> NEET recruitment
+    "NT20": "NT28",  # device bank -> community project donations (in-kind)
+    "NT14": "NT19",  # chamber / SME network -> spend with local SMEs
 }
+for _city, _partners in APPROVED_PARTNER_ECOSYSTEM.items():
+    for _old, _new in _LEGACY_PARTNER_CODE_MAP.items():
+        if _old in _partners:
+            _partners[f"__{_new}"] = _partners.pop(_old)
+    for _key in [k for k in _partners if k.startswith("__")]:
+        _partners[_key[2:]] = _partners.pop(_key)
+
+# Indicative internal delivery cost assumptions (£ per TOMs unit), keyed by official measure code.
+# These are planning benchmarks only and must be replaced with Infosys finance inputs before bid use.
+INDICATIVE_UNIT_DELIVERY_COSTS: Dict[str, float] = {
+    # Work — people (per FTE / person recruited): recruitment, onboarding & wraparound support
+    "NT1": 2500.0, "NT3": 3000.0, "NT4": 3000.0, "NT76": 3000.0, "NT5": 3500.0, "NT6": 3500.0,
+    # Work — weeks of training / placements
+    "NT9": 150.0, "NT10": 45.0, "NT80": 100.0, "NT12": 150.0, "NT13": 450.0,
+    # Work / Economy / Community — staff hours (time cost of employer-supported volunteering)
+    "NT8": 25.0, "NT99": 25.0, "NT17": 25.0, "NT29": 25.0, "NT15": 60.0, "NT11": 30.0,
+    # Economy — supply chain spend: only the management / onboarding overhead is incremental
+    "NT14": 0.02, "NT18": 0.02, "NT19": 0.02,
+    # Donations / £-invested measures: every £ counted is a £ spent
+    "NT16": 1.0, "NT26": 1.0, "NT27": 1.0, "NT28": 1.0, "NT116": 1.0, "NT119": 1.0,
+    # Planet
+    "NT31": 100.0, "NT31a": 100.0, "NT32": 0.05, "NT87": 2.0,
+}
+DEFAULT_UNIT_DELIVERY_COST = 25.0
+
+
+def _to_float(value: Any, default: float = 0.0) -> float:
+    """Null-safe float conversion for LLM-supplied values (handles None, '', '1,200')."""
+    if value is None or value == "":
+        return default
+    try:
+        return float(str(value).replace(",", "").replace("£", "").strip())
+    except (TypeError, ValueError):
+        return default
+
+
+def _to_optional_float(value: Any) -> Optional[float]:
+    if value is None or value == "":
+        return None
+    converted = _to_float(value, default=-1.0)
+    return converted if converted >= 0 else None
+
+
+def _volume_consistency_issue(initiative: Any, metric: Any) -> Optional[str]:
+    """Checks the TOMs annual volume against the operational metrics for hour-based measures.
+
+    - Staff hours measures (e.g. NT8, NT29): volume >= sessions × hours per session.
+    - Hours × attendees measures (NT11): volume = sessions × hours × participants.
+    """
+    if not metric or initiative.sessions_per_year is None or initiative.hours_per_session is None:
+        return None
+    unit = metric.unit.lower()
+    if "hours" not in unit and "hrs" not in unit:
+        return None
+    expected = initiative.sessions_per_year * initiative.hours_per_session
+    if "attendees" in unit:
+        if initiative.participants_per_session is None:
+            return None
+        expected *= initiative.participants_per_session
+        mismatch = abs(initiative.annual_volume - expected) > 0.01
+    else:
+        # Staff hours: several volunteers may attend each session, so the volume can exceed
+        # sessions × hours, but it can never be lower.
+        mismatch = initiative.annual_volume < expected - 0.01
+    if mismatch:
+        return (
+            f"{initiative.name}: annual TOMs volume ({initiative.annual_volume:g} {metric.unit}) differs from the "
+            f"operational plan ({expected:g}); reconcile before using the impact estimate."
+        )
+    return None
 
 
 class RAGService:
@@ -183,7 +255,8 @@ class RAGService:
         pkg_name: str,
         req: OpportunityRequest,
         retrieved_items: List[Any],
-        context_text: str
+        context_text: str,
+        db: Optional[Session] = None
     ) -> SocialValuePackage:
         raw_initiatives = pkg_data.get("initiatives", [])
         processed_items: List[InitiativeItem] = []
@@ -197,16 +270,15 @@ class RAGService:
             )
 
             final_partner = self._resolve_partner(raw_init, req.location, context_text)
-            annual_vol = float(raw_init.get("annual_volume", 1.0))
-            toms_code = raw_init.get("toms_metric_code")
+            annual_vol = max(0.0, _to_float(raw_init.get("annual_volume"), 0.0))
+            toms_code = (str(raw_init.get("toms_metric_code") or "").strip().upper() or None)
+            if toms_code and toms_code.endswith("A"):
+                toms_code = toms_code[:-1] + "a"  # official code casing, e.g. NT31a
 
-            # Deterministic Delivery Cost Calculation
-            raw_cost = float(raw_init.get("indicative_cost_gbp") or 0.0)
-            if raw_cost > 0:
-                init_cost = round(raw_cost, 2)
-            else:
-                unit_cost = INDICATIVE_UNIT_DELIVERY_COSTS.get(toms_code, 35.0)
-                init_cost = round(annual_vol * req.contract_duration_years * unit_cost, 2)
+            # Deterministic delivery cost: always derived from volume × duration × benchmark
+            # unit cost, never from an LLM-supplied figure.
+            unit_cost = INDICATIVE_UNIT_DELIVERY_COSTS.get(toms_code or "", DEFAULT_UNIT_DELIVERY_COST)
+            init_cost = round(annual_vol * req.contract_duration_years * unit_cost, 2)
             total_delivery_cost += init_cost
 
             init_item = InitiativeItem(
@@ -221,9 +293,9 @@ class RAGService:
                 partner=final_partner,
                 evidence_source=evidence_source if source_is_retrieved else "Infosys Core Offer & Approved Partner Repository",
                 is_from_knowledge_base=bool(raw_init.get("is_from_knowledge_base", False) or source_is_retrieved),
-                sessions_per_year=raw_init.get("sessions_per_year"),
-                hours_per_session=raw_init.get("hours_per_session"),
-                participants_per_session=raw_init.get("participants_per_session"),
+                sessions_per_year=_to_optional_float(raw_init.get("sessions_per_year")),
+                hours_per_session=_to_optional_float(raw_init.get("hours_per_session")),
+                participants_per_session=_to_optional_float(raw_init.get("participants_per_session")),
                 indicative_cost_gbp=init_cost,
                 commercial_viability=f"£{init_cost:,.2f} delivery cost over {req.contract_duration_years} yrs"
             )
@@ -235,16 +307,22 @@ class RAGService:
             initiatives=[item.model_dump() for item in processed_items],
             contract_value_gbp=req.contract_value_gbp,
             duration_years=req.contract_duration_years,
-            target_weighting_percent=req.social_value_weighting_percent
+            target_weighting_percent=req.social_value_weighting_percent,
+            db=db
         )
 
         total_delivery_cost = round(total_delivery_cost, 2)
         total_sv = calculation_result.total_social_value_gbp
-        svroi = round(total_sv / total_delivery_cost, 1) if total_delivery_cost > 0 else 6.5
-        commercial_summary = (
-            f"Estimated internal delivery investment of £{total_delivery_cost:,.2f} creates "
-            f"£{total_sv:,.2f} Social Value ({svroi}x SVROI multiplier)."
-        )
+        if total_delivery_cost > 0:
+            svroi = round(total_sv / total_delivery_cost, 1)
+            commercial_summary = (
+                f"Estimated internal delivery investment of £{total_delivery_cost:,.2f} (benchmark assumptions) creates "
+                f"£{total_sv:,.2f} Social Value ({svroi}x indicative SVROI)."
+            )
+        else:
+            commercial_summary = (
+                f"£{total_sv:,.2f} Social Value calculated. Delivery cost not available, so SVROI cannot be calculated."
+            )
 
         return SocialValuePackage(
             name=pkg_name,
@@ -308,7 +386,7 @@ class RAGService:
                 "unit_value_gbp": m.unit_value_gbp,
                 "description": m.description
             }
-            for m in calculation_service.get_all_metrics()
+            for m in calculation_service.get_all_metrics(db=db, active_only=True)
         ]
 
         opportunity_dict = req.model_dump()
@@ -325,13 +403,13 @@ class RAGService:
 
         # Step 6: Apply DETERMINISTIC CALCULATION LAYER to each package
         core_package = self._build_social_value_package(
-            llm_raw.get("core_package", {}), "Core Package", req, retrieved_items, context_text
+            llm_raw.get("core_package", {}), "Core Package", req, retrieved_items, context_text, db=db
         )
         enhanced_package = self._build_social_value_package(
-            llm_raw.get("enhanced_package", {}), "Enhanced Package", req, retrieved_items, context_text
+            llm_raw.get("enhanced_package", {}), "Enhanced Package", req, retrieved_items, context_text, db=db
         )
         localised_package = self._build_social_value_package(
-            llm_raw.get("localised_package", {}), "Localised Package", req, retrieved_items, context_text
+            llm_raw.get("localised_package", {}), "Localised Package", req, retrieved_items, context_text, db=db
         )
 
         # Step 7: Grounding summary and validation check
@@ -345,7 +423,7 @@ class RAGService:
 
         validation_items = list(llm_raw.get("validation_required", []))
         validation_items.append(
-            "POC limitation: the active TOMs catalog uses synthetic proxy values. Replace and verify rates against the approved National TOMs source before using impact totals in a bid."
+            "Proxy values come from the Open Access TOM System 2024/2025 catalog held in the tool. Confirm the framework version the client will evaluate against before using impact totals in a bid."
         )
         all_packages = [core_package, enhanced_package, localised_package]
         all_initiatives = [initiative for package in all_packages for initiative in package.initiatives]
@@ -375,20 +453,16 @@ class RAGService:
         validation_items.append(
             "Commercial feasibility evaluated using benchmarked delivery cost models (£/unit). Final commercial bid sign-off requires partner and operational confirmation."
         )
-        known_metrics = {metric.code: metric for metric in calculation_service.get_all_metrics()}
+        known_metrics = {metric.code.upper(): metric for metric in calculation_service.get_all_metrics(db=db, active_only=True)}
         for initiative in all_initiatives:
             metric = known_metrics.get((initiative.toms_metric_code or "").upper())
             if initiative.toms_metric_code and metric is None:
                 validation_items.append(f"{initiative.name}: TOMs code {initiative.toms_metric_code} is not in the available POC catalog; its impact value is zero until mapped.")
             elif metric and metric.theme.lower() not in initiative.theme.lower() and initiative.theme.lower() not in metric.theme.lower():
                 validation_items.append(f"{initiative.name}: selected TOMs measure theme ({metric.theme}) may not match initiative theme ({initiative.theme}); review the mapping.")
-            if metric and initiative.sessions_per_year is not None:
-                if metric.unit.lower() in {"workshops", "sessions"} and abs(initiative.annual_volume - initiative.sessions_per_year) > 0.01:
-                    validation_items.append(f"{initiative.name}: annual TOMs volume ({initiative.annual_volume}) differs from sessions per year ({initiative.sessions_per_year}); reconcile before using the impact estimate.")
-                if metric.unit.lower() == "hours" and initiative.hours_per_session is not None:
-                    expected_hours = initiative.sessions_per_year * initiative.hours_per_session
-                    if abs(initiative.annual_volume - expected_hours) > 0.01:
-                        validation_items.append(f"{initiative.name}: annual TOMs hours ({initiative.annual_volume}) differs from sessions × hours ({expected_hours:g}); reconcile the volume.")
+            volume_issue = _volume_consistency_issue(initiative, metric)
+            if volume_issue:
+                validation_items.append(volume_issue)
             theme_terms = set(re.findall(r"[a-z]+", initiative.theme.lower()))
             if req.priorities and not any(theme_terms.intersection(set(re.findall(r"[a-z]+", priority.lower()))) for priority in req.priorities):
                 validation_items.append(f"{initiative.name}: confirm this initiative addresses at least one client priority theme ({', '.join(req.priorities)}).")
@@ -397,7 +471,7 @@ class RAGService:
                 validation_items.append(f"{initiative.name}: delivery location '{initiative.location}' differs from requested location '{req.location}'; confirm geographic fit.")
         if len(retrieved_items) == 0:
             validation_items.append(
-                f"Grounded directly in National TOMs Database, PPN 06/20 Model Award Criteria, and Approved Regional Partner Ecosystem for {req.location}."
+                f"No knowledge-base evidence was retrieved for {req.location}; initiatives are based on the TOMs catalog and model suggestions only and need validation."
             )
 
         # Step 8: Build transparent AI reasoning chain for procurement audit
@@ -415,7 +489,7 @@ class RAGService:
             AIReasoningStep(
                 step_number=3,
                 title="National TOMs Metric Allocation",
-                detail="Mapped suggested commitments to the POC TOMs proxy catalog. Values are synthetic and must be replaced with the approved National TOMs source before bid use."
+                detail="Mapped suggested commitments to measures in the TOMs catalog database (Open Access TOM System 2024/2025 proxy values). Unknown measure codes are valued at zero and flagged."
             ),
             AIReasoningStep(
                 step_number=4,
@@ -435,7 +509,7 @@ class RAGService:
             enhanced_package=enhanced_package,
             localised_package=localised_package,
             assumptions=llm_raw.get("assumptions", []),
-            validation_required=validation_items,
+            validation_required=list(dict.fromkeys(validation_items)),
             retrieved_evidence_chunks=len(retrieved_items),
             grounding_summary=grounding_summary,
             ai_reasoning_chain=reasoning_chain,
@@ -481,7 +555,7 @@ class RAGService:
                 "unit": m.unit, "unit_value_gbp": m.unit_value_gbp,
                 "description": m.description
             }
-            for m in calculation_service.get_all_metrics()
+            for m in calculation_service.get_all_metrics(db=db, active_only=True)
         ]
 
         opportunity_dict = req.model_dump()
@@ -499,13 +573,13 @@ class RAGService:
 
         # Steps 6-8: Same deterministic calculation pipeline as generate_response
         core_package = self._build_social_value_package(
-            llm_raw.get("core_package", {}), "Core Package", req, retrieved_items, context_text
+            llm_raw.get("core_package", {}), "Core Package", req, retrieved_items, context_text, db=db
         )
         enhanced_package = self._build_social_value_package(
-            llm_raw.get("enhanced_package", {}), "Enhanced Package", req, retrieved_items, context_text
+            llm_raw.get("enhanced_package", {}), "Enhanced Package", req, retrieved_items, context_text, db=db
         )
         localised_package = self._build_social_value_package(
-            llm_raw.get("localised_package", {}), "Localised Package", req, retrieved_items, context_text
+            llm_raw.get("localised_package", {}), "Localised Package", req, retrieved_items, context_text, db=db
         )
 
         grounding_summary = {
@@ -518,7 +592,7 @@ class RAGService:
         }
 
         validation_items = list(llm_raw.get("validation_required", []))
-        validation_items.append("POC limitation: TOMs rates are synthetic proxy values; confirm against the approved National TOMs source before bid use.")
+        validation_items.append("Proxy values come from the Open Access TOM System 2024/2025 catalog held in the tool. Confirm the framework version the client will evaluate against before using impact totals in a bid.")
         validation_items.append("Commercial feasibility evaluated using benchmarked delivery cost models (£/unit). Final commercial bid sign-off requires partner and operational confirmation.")
         all_conversation_initiatives = [item for package in (core_package, enhanced_package, localised_package) for item in package.initiatives]
         for package in (core_package, enhanced_package, localised_package):
@@ -526,7 +600,7 @@ class RAGService:
             if calculation and not calculation.target_met:
                 gap = max(0.0, calculation.target_social_value_gbp - calculation.total_social_value_gbp)
                 validation_items.append(f"{package.name}: current POC proxy value is below target by £{gap:,.2f}; review approved priority-aligned options rather than adding unrelated themes.")
-        known_codes = {metric.code: metric for metric in calculation_service.get_all_metrics()}
+        known_codes = {metric.code.upper(): metric for metric in calculation_service.get_all_metrics(db=db, active_only=True)}
         for initiative in all_conversation_initiatives:
             metric = known_codes.get((initiative.toms_metric_code or "").upper())
             if not initiative.is_from_knowledge_base:
@@ -537,13 +611,9 @@ class RAGService:
                 validation_items.append(f"{initiative.name}: TOMs code {initiative.toms_metric_code} is not in the available POC catalog; impact value is zero until mapped.")
             elif metric and metric.theme.lower() not in initiative.theme.lower() and initiative.theme.lower() not in metric.theme.lower():
                 validation_items.append(f"{initiative.name}: review possible mismatch between initiative theme ({initiative.theme}) and metric theme ({metric.theme}).")
-            if metric and initiative.sessions_per_year is not None:
-                if metric.unit.lower() in {"workshops", "sessions"} and abs(initiative.annual_volume - initiative.sessions_per_year) > 0.01:
-                    validation_items.append(f"{initiative.name}: annual TOMs volume differs from sessions per year; reconcile before using the impact estimate.")
-                if metric.unit.lower() == "hours" and initiative.hours_per_session is not None:
-                    expected_hours = initiative.sessions_per_year * initiative.hours_per_session
-                    if abs(initiative.annual_volume - expected_hours) > 0.01:
-                        validation_items.append(f"{initiative.name}: annual TOMs hours differ from sessions × hours; reconcile before using the impact estimate.")
+            volume_issue = _volume_consistency_issue(initiative, metric)
+            if volume_issue:
+                validation_items.append(volume_issue)
             theme_terms = set(re.findall(r"[a-z]+", initiative.theme.lower()))
             if req.priorities and not any(theme_terms.intersection(set(re.findall(r"[a-z]+", priority.lower()))) for priority in req.priorities):
                 validation_items.append(f"{initiative.name}: confirm fit to the client priority themes ({', '.join(req.priorities)}).")
@@ -555,7 +625,7 @@ class RAGService:
             validation_items.append("No delivery partner is named; confirm whether an approved local partner is needed for the client priorities and contract location.")
         if len(retrieved_items) == 0:
             validation_items.append(
-                "No documents in knowledge base. Using synthetic baseline; ingest case studies for grounded evidence."
+                "No knowledge-base evidence was retrieved; initiatives are not grounded in Infosys documents. Ingest case studies for grounded evidence."
             )
 
         reasoning_chain = [
@@ -593,7 +663,7 @@ class RAGService:
             enhanced_package=enhanced_package,
             localised_package=localised_package,
             assumptions=llm_raw.get("assumptions", []),
-            validation_required=validation_items,
+            validation_required=list(dict.fromkeys(validation_items)),
             retrieved_evidence_chunks=len(retrieved_items),
             grounding_summary=grounding_summary,
             ai_reasoning_chain=reasoning_chain,

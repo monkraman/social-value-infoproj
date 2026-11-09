@@ -30,7 +30,7 @@ def test_natural_language_prompt_rfp(client):
     assert "localised_package" in data["result"]
     result = data["result"]
     assert result["is_mock"] is True
-    assert "synthetic proxy values" in " ".join(result["validation_required"]).lower()
+    assert "open access tom system 2024/2025" in " ".join(result["validation_required"]).lower()
     allowed_themes = ("digital", "youth", "employment")
     for package_key in ("core_package", "enhanced_package", "localised_package"):
         package = result[package_key]

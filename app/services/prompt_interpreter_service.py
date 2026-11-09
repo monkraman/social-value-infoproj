@@ -15,6 +15,16 @@ from app.core.config import settings
 import json
 
 
+def _safe_number(value: Any, default: float) -> float:
+    """Converts LLM output such as None, '£10,000,000' or '3' to float, falling back to default."""
+    if value is None or value == "":
+        return default
+    try:
+        return float(str(value).replace(",", "").replace("£", "").replace("%", "").strip())
+    except (TypeError, ValueError):
+        return default
+
+
 class PromptInterpreterService:
     """
     Interprets natural language user prompts on the backend,
@@ -77,10 +87,16 @@ class PromptInterpreterService:
             if not priorities_val:
                 priorities_val = ["Local Skills & Employment", "Local Economic Growth", "Community Wellbeing"]
 
+            # LLMs may return null / strings for numeric fields; never let that crash the request.
+            duration_val = _safe_number(llm_parsed.get("contract_duration_years"), 3.0)
+            value_val = _safe_number(llm_parsed.get("contract_value_gbp"), 10000000.0)
+            weighting_val = _safe_number(llm_parsed.get("social_value_weighting_percent"), 10.0)
+            if not isinstance(priorities_val, list):
+                priorities_val = [str(priorities_val)]
             req_params = {
-                "contract_duration_years": int(llm_parsed.get("contract_duration_years", 3)),
-                "contract_value_gbp": float(llm_parsed.get("contract_value_gbp", 10000000.0)),
-                "social_value_weighting_percent": float(llm_parsed.get("social_value_weighting_percent", 10.0)),
+                "contract_duration_years": max(1, int(round(duration_val))),
+                "contract_value_gbp": value_val if value_val > 0 else 10000000.0,
+                "social_value_weighting_percent": weighting_val if 0 < weighting_val <= 100 else 10.0,
                 "client": client_val,
                 "location": loc_val,
                 "priorities": priorities_val,

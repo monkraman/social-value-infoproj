@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: Optional[str] = None
     GEMINI_MODEL: str = "gemini-3.8-flash"
     GEMINI_EMBEDDING_MODEL: str = "gemini-embedding-001"
+    # Seconds to wait for Gemini before falling back (large JSON generations need time)
+    GEMINI_GENERATION_TIMEOUT_SECONDS: float = 90.0
+    GEMINI_INTERPRET_TIMEOUT_SECONDS: float = 30.0
 
     # OpenAI Settings
     OPENAI_API_KEY: Optional[str] = None
