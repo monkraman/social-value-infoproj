@@ -1,0 +1,1245 @@
+{
+  "source": "Monk_Spaces_SV_Knowledge_Base_NHS_FWS 2.xlsx",
+  "edition": "Open Access TOM System Edition 2025",
+  "imported_at": "2026-11-10T08:15:47Z",
+  "settings": {
+    "default_region": "North East",
+    "default_industry": "Computer programming, consultancy and related services",
+    "carbon_baseline_rate": 0.024,
+    "nt19_factor": 1.0073
+  },
+  "measures": [
+    {
+      "code": "NT1",
+      "theme": "Work",
+      "outcome": "Creating local employment opportunities",
+      "name": "Local people employed or retained",
+      "unit": "no. people FTE",
+      "proxy_gbp": 37666.5,
+      "localised": true,
+      "unit_guidance": "No. people (FTE) * length of contract (in years) where the maximum number of FTE per person per year is 1.0; "
+    },
+    {
+      "code": "NT3",
+      "theme": "Work",
+      "outcome": "Creating equal employment opportunities",
+      "name": "Long-term unemployed people recruited",
+      "unit": "no. people FTE",
+      "proxy_gbp": 51561.0,
+      "localised": false,
+      "unit_guidance": "No. people FTE (capped at 1 year per employee);"
+    },
+    {
+      "code": "NT4",
+      "theme": "Work",
+      "outcome": "Creating equal employment opportunities",
+      "name": "Employees recruited who are Not in Education Employment or Training (16-24 y.o.)",
+      "unit": "no. people FTE",
+      "proxy_gbp": 53013.0,
+      "localised": false,
+      "unit_guidance": "No. people FTE (capped at 1 year per employee);"
+    },
+    {
+      "code": "NT76",
+      "theme": "Work",
+      "outcome": "Creating equal employment opportunities",
+      "name": "Unemployed people recruited",
+      "unit": "no. people FTE",
+      "proxy_gbp": 50713.0,
+      "localised": false,
+      "unit_guidance": "No. people FTE (capped at 1 year per employee);"
+    },
+    {
+      "code": "NT5",
+      "theme": "Work",
+      "outcome": "Creating equal employment opportunities",
+      "name": "Unemployed ex-offenders aged 18 and over recruited",
+      "unit": "no. people FTE",
+      "proxy_gbp": 55922.0,
+      "localised": false,
+      "unit_guidance": "No. people FTE (capped at 1 year per employee);"
+    },
+    {
+      "code": "NT6",
+      "theme": "Work",
+      "outcome": "Creating equal employment opportunities",
+      "name": "Unemployed individuals with disabilities recruited",
+      "unit": "no. people FTE",
+      "proxy_gbp": 51889.0,
+      "localised": false,
+      "unit_guidance": "No. people FTE (capped at 1 year per employee);"
+    },
+    {
+      "code": "NT9",
+      "theme": "Work",
+      "outcome": "Providing skills and experience for good work",
+      "name": "Accredited training for new employees",
+      "unit": "no. weeks",
+      "proxy_gbp": 347.0,
+      "localised": false,
+      "unit_guidance": "Training Weeks;"
+    },
+    {
+      "code": "NT10",
+      "theme": "Work",
+      "outcome": "Providing skills and experience for good work",
+      "name": "Employment of new apprentices",
+      "unit": "no. weeks",
+      "proxy_gbp": 309.73,
+      "localised": false,
+      "unit_guidance": "Employment Weeks;"
+    },
+    {
+      "code": "NT80",
+      "theme": "Work",
+      "outcome": "Providing skills and experience for good work",
+      "name": "Upskilling of existing employees through accredited training",
+      "unit": "no. weeks",
+      "proxy_gbp": 13.02,
+      "localised": false,
+      "unit_guidance": "Training Weeks;"
+    },
+    {
+      "code": "NT11",
+      "theme": "Work",
+      "outcome": "Providing skills and experience for good work",
+      "name": "Personalised support to help unemployed people into work",
+      "unit": "no. hrs (total session duration)*no. attendees",
+      "proxy_gbp": 110.99,
+      "localised": false,
+      "unit_guidance": "Attendee Hours;"
+    },
+    {
+      "code": "NT12",
+      "theme": "Work",
+      "outcome": "Providing good work opportunities",
+      "name": "Meaningful unpaid work placements while Not in Employment Education or Training",
+      "unit": "no. weeks",
+      "proxy_gbp": 96.53,
+      "localised": false,
+      "unit_guidance": "No. weeks on placement per person.Working days can be counted pro rata (total  working days divided by 5) but a week has to include at least 3 working days per week."
+    },
+    {
+      "code": "NT13",
+      "theme": "Work",
+      "outcome": "Providing good work opportunities",
+      "name": "Meaningful paid work placements",
+      "unit": "no. weeks",
+      "proxy_gbp": 412.38,
+      "localised": false,
+      "unit_guidance": "No. weeks on placement per person.Working days can be counted pro rata (total  working days divided by 5) but a week has to include at least 3 working days per week."
+    },
+    {
+      "code": "NT8",
+      "theme": "Work",
+      "outcome": "Developing skills and experience for future work",
+      "name": "Support for students at local educational institutions",
+      "unit": "no. staff volunteering hours",
+      "proxy_gbp": 17.48,
+      "localised": false,
+      "unit_guidance": "Volunteering Hours;"
+    },
+    {
+      "code": "NT99",
+      "theme": "Work",
+      "outcome": "Developing skills and experience for future work",
+      "name": "Support for enabling visits of school children or local residents",
+      "unit": "no. staff volunteering hours",
+      "proxy_gbp": 17.48,
+      "localised": false,
+      "unit_guidance": "Volunteering Hours;"
+    },
+    {
+      "code": "NT14",
+      "theme": "Economy",
+      "outcome": "Building diverse and sustainable supply chains",
+      "name": "Spend with VCSEs in the supply chain",
+      "unit": "£",
+      "proxy_gbp": 0.12,
+      "localised": false,
+      "unit_guidance": "Total amount of £ spent with VCSEs in the supply chain."
+    },
+    {
+      "code": "NT18",
+      "theme": "Economy",
+      "outcome": "Building diverse and sustainable supply chains",
+      "name": "Spend with local companies in the supply chain",
+      "unit": "£",
+      "proxy_gbp": 0.990909603164808,
+      "localised": true,
+      "unit_guidance": "Total amount of £ spent with the supply chain within the defined local area."
+    },
+    {
+      "code": "NT19",
+      "theme": "Economy",
+      "outcome": "Building diverse and sustainable supply chains",
+      "name": "Spend with local SMEs in the supply chain",
+      "unit": "£",
+      "proxy_gbp": 0.998143243267912,
+      "localised": true,
+      "unit_guidance": "Total amount of £ spent with SMEs in the supply chain within the defined local area."
+    },
+    {
+      "code": "NT15",
+      "theme": "Economy",
+      "outcome": "Promoting a diverse and resilient business community",
+      "name": "Expert support to VCSEs and SMEs",
+      "unit": "no. staff expert hours",
+      "proxy_gbp": 106.34,
+      "localised": false,
+      "unit_guidance": "Expert Hours;"
+    },
+    {
+      "code": "NT16",
+      "theme": "Economy",
+      "outcome": "Promoting a diverse and resilient business community",
+      "name": "Support for VCSEs through donations",
+      "unit": "£ invested",
+      "proxy_gbp": 1.0,
+      "localised": false,
+      "unit_guidance": "Total £ invested;"
+    },
+    {
+      "code": "NT17",
+      "theme": "Economy",
+      "outcome": "Promoting a diverse and resilient business community",
+      "name": "Support for VCSEs through volunteering",
+      "unit": "no. staff volunteering hours",
+      "proxy_gbp": 17.48,
+      "localised": false,
+      "unit_guidance": "Volunteering Hours;"
+    },
+    {
+      "code": "NT28",
+      "theme": "Community",
+      "outcome": "Building resilient communities",
+      "name": "Support for local community projects through donations",
+      "unit": "£ invested",
+      "proxy_gbp": 1.0,
+      "localised": false,
+      "unit_guidance": "Total £ invested;"
+    },
+    {
+      "code": "NT29",
+      "theme": "Community",
+      "outcome": "Building resilient communities",
+      "name": "Support for local community projects through volunteering",
+      "unit": "no. staff volunteering hours",
+      "proxy_gbp": 17.48,
+      "localised": false,
+      "unit_guidance": "Volunteering Hours;"
+    },
+    {
+      "code": "NT26",
+      "theme": "Community",
+      "outcome": "Building community wellbeing",
+      "name": "Support for community health or wellbeing interventions",
+      "unit": "£ invested inc. time, materials, equipment etc",
+      "proxy_gbp": 1.0,
+      "localised": false,
+      "unit_guidance": "Total resources invested;"
+    },
+    {
+      "code": "NT27",
+      "theme": "Community",
+      "outcome": "Building community wellbeing",
+      "name": "Support for initiatives focused on strengthening community networks",
+      "unit": "£ invested inc. time, materials, equipment etc",
+      "proxy_gbp": 1.0,
+      "localised": false,
+      "unit_guidance": "Total resources invested;"
+    },
+    {
+      "code": "NT31",
+      "theme": "Planet",
+      "outcome": "Restoring our climate and improving air quality through decarbonisation",
+      "name": "Reductions in scope 1 & 2 CO2e emissions through decarbonisation",
+      "unit": "tCO2e",
+      "proxy_gbp": 252.11,
+      "localised": false,
+      "unit_guidance": "Recorded tonnes of carbon dioxide equivalent (CO2e) reduced;"
+    },
+    {
+      "code": "NT31a",
+      "theme": "Planet",
+      "outcome": "Restoring our climate and improving air quality through decarbonisation",
+      "name": "Reductions in scope 3 CO2e emissions through decarbonisation",
+      "unit": "tCO2e",
+      "proxy_gbp": 252.11,
+      "localised": false,
+      "unit_guidance": "Recorded tonnes of carbon dioxide equivalent (CO2e) reduced;"
+    },
+    {
+      "code": "NT32",
+      "theme": "Planet",
+      "outcome": "Restoring our climate and improving air quality through transport",
+      "name": "Reductions in car miles from a green transport programme",
+      "unit": "miles saved",
+      "proxy_gbp": 0.0708,
+      "localised": false,
+      "unit_guidance": "Recorded miles reduced;"
+    },
+    {
+      "code": "NT116",
+      "theme": "Planet",
+      "outcome": "Promoting environmentally sustainable procurement",
+      "name": "Expert support on carbon reduction to SMEs in the supply chain",
+      "unit": "£ invested inc. time, materials, equipment etc",
+      "proxy_gbp": 1.0,
+      "localised": false,
+      "unit_guidance": "Total resources invested;"
+    },
+    {
+      "code": "NT119",
+      "theme": "Planet",
+      "outcome": "Protecting and restoring biodiversity and ecosystems",
+      "name": "Support for green spaces, biodiversity or ecosystems",
+      "unit": "£ invested inc. time, materials, equipment etc",
+      "proxy_gbp": 1.0,
+      "localised": false,
+      "unit_guidance": "Total resources invested;"
+    },
+    {
+      "code": "NT87",
+      "theme": "Planet",
+      "outcome": "Transitioning to a regenerative economy",
+      "name": "Reductions in plastics used",
+      "unit": "kg",
+      "proxy_gbp": 116.52,
+      "localised": false,
+      "unit_guidance": "Plastic reduction;"
+    }
+  ],
+  "regions": [
+    {
+      "region": "North East",
+      "median_wage_gbp": 37666.5,
+      "regional_gva": 1.57187659583916
+    },
+    {
+      "region": "North West",
+      "median_wage_gbp": 38436.5,
+      "regional_gva": 1.41727169786185
+    },
+    {
+      "region": "Yorkshire and The Humber",
+      "median_wage_gbp": 38344.0,
+      "regional_gva": 1.52451208952241
+    },
+    {
+      "region": "East Midlands",
+      "median_wage_gbp": 38769.5,
+      "regional_gva": 1.29639867670241
+    },
+    {
+      "region": "West Midlands",
+      "median_wage_gbp": 38507.5,
+      "regional_gva": 1.33796265458825
+    },
+    {
+      "region": "East of England",
+      "median_wage_gbp": 40357.0,
+      "regional_gva": 1.27134261417882
+    },
+    {
+      "region": "London",
+      "median_wage_gbp": 45722.0,
+      "regional_gva": 1.36130908767957
+    },
+    {
+      "region": "South East",
+      "median_wage_gbp": 41528.75,
+      "regional_gva": 1.22061990719155
+    },
+    {
+      "region": "South West",
+      "median_wage_gbp": 39413.0,
+      "regional_gva": 1.29098114967029
+    },
+    {
+      "region": "Wales",
+      "median_wage_gbp": 38936.25,
+      "regional_gva": 1.44952509475636
+    },
+    {
+      "region": "Scotland",
+      "median_wage_gbp": 41055.25,
+      "regional_gva": 1.41334905636469
+    },
+    {
+      "region": "Northern Ireland",
+      "median_wage_gbp": 39767.0,
+      "regional_gva": 1.39566299337367
+    }
+  ],
+  "industries": [
+    {
+      "industry": "Products of agriculture, hunting and related services",
+      "gva_multiplier": 1.79650109836496
+    },
+    {
+      "industry": "Products of forestry, logging and related services",
+      "gva_multiplier": 1.85514085052154
+    },
+    {
+      "industry": "Fish and other fishing products; aquaculture products; support services to fishing",
+      "gva_multiplier": 1.55705012720394
+    },
+    {
+      "industry": "Coal and lignite",
+      "gva_multiplier": 1.8073606051898
+    },
+    {
+      "industry": "Extraction Of Crude Petroleum And Natural Gas  & Mining Of Metal Ores",
+      "gva_multiplier": 1.78232890087751
+    },
+    {
+      "industry": "Other mining and quarrying products",
+      "gva_multiplier": 1.52747397779954
+    },
+    {
+      "industry": "Mining support services",
+      "gva_multiplier": 1.52368529018252
+    },
+    {
+      "industry": "Preserved meat and meat products",
+      "gva_multiplier": 1.76626317298139
+    },
+    {
+      "industry": "Processed and preserved fish, crustaceans, molluscs, fruit and vegetables",
+      "gva_multiplier": 1.74172286067582
+    },
+    {
+      "industry": "Vegetable and animal oils and fats",
+      "gva_multiplier": 1.38367106959529
+    },
+    {
+      "industry": "Dairy products",
+      "gva_multiplier": 1.79206425076312
+    },
+    {
+      "industry": "Grain mill products, starches and starch products",
+      "gva_multiplier": 1.51671812957376
+    },
+    {
+      "industry": "Bakery and farinaceous products",
+      "gva_multiplier": 1.78328872282089
+    },
+    {
+      "industry": "Other food products",
+      "gva_multiplier": 1.6834253568124
+    },
+    {
+      "industry": "Prepared animal feeds",
+      "gva_multiplier": 1.66291299295462
+    },
+    {
+      "industry": "Alcoholic beverages  & Tobacco products",
+      "gva_multiplier": 1.69901495574237
+    },
+    {
+      "industry": "Soft drinks",
+      "gva_multiplier": 1.70390897759976
+    },
+    {
+      "industry": "Textiles",
+      "gva_multiplier": 1.50854775779184
+    },
+    {
+      "industry": "Wearing apparel",
+      "gva_multiplier": 1.74428018437407
+    },
+    {
+      "industry": "Leather and related products",
+      "gva_multiplier": 1.56191341917551
+    },
+    {
+      "industry": "Wood and of products of wood and cork, except furniture; articles of straw and plaiting materials",
+      "gva_multiplier": 1.33245499235785
+    },
+    {
+      "industry": "Paper and paper products",
+      "gva_multiplier": 1.44305012903517
+    },
+    {
+      "industry": "Printing and recording services",
+      "gva_multiplier": 1.46318539913424
+    },
+    {
+      "industry": "Coke and refined petroleum products",
+      "gva_multiplier": 1.03145397441165
+    },
+    {
+      "industry": "Paints, varnishes and similar coatings, printing ink and mastics",
+      "gva_multiplier": 1.42356110690799
+    },
+    {
+      "industry": "Soap and detergents, cleaning and polishing preparations, perfumes and toilet preparations",
+      "gva_multiplier": 1.50196883994138
+    },
+    {
+      "industry": "Other chemical products",
+      "gva_multiplier": 1.31169701248184
+    },
+    {
+      "industry": "Industrial gases, inorganics and fertilisers (all inorganic chemicals) - 20.11/13/15",
+      "gva_multiplier": 1.32168970302655
+    },
+    {
+      "industry": "Petrochemicals - 20.14/16/17/60",
+      "gva_multiplier": 1.33177645903312
+    },
+    {
+      "industry": "Dyestuffs, agro-chemicals - 20.12/20",
+      "gva_multiplier": 1.37874908515539
+    },
+    {
+      "industry": "Basic pharmaceutical products and pharmaceutical preparations",
+      "gva_multiplier": 1.47068598233027
+    },
+    {
+      "industry": "Rubber and plastic products",
+      "gva_multiplier": 1.32670161633245
+    },
+    {
+      "industry": "Cement, lime, plaster and articles of concrete, cement and plaster",
+      "gva_multiplier": 1.56691139201393
+    },
+    {
+      "industry": "Glass, refractory, clay, other porcelain and ceramic, stone and abrasive products - 23.1-4/7-9",
+      "gva_multiplier": 1.49445652814816
+    },
+    {
+      "industry": "Basic iron and steel",
+      "gva_multiplier": 1.39442547850005
+    },
+    {
+      "industry": "Other basic metals and casting",
+      "gva_multiplier": 1.18189183847581
+    },
+    {
+      "industry": "Weapons and ammunition",
+      "gva_multiplier": 1.58238424141439
+    },
+    {
+      "industry": "Fabricated metal products, excl. machinery and equipment and weapons & ammunition",
+      "gva_multiplier": 1.43377840307156
+    },
+    {
+      "industry": "Computer, electronic and optical products",
+      "gva_multiplier": 1.5951674257633
+    },
+    {
+      "industry": "Electrical equipment",
+      "gva_multiplier": 1.371954387186
+    },
+    {
+      "industry": "Machinery and equipment n.e.c.",
+      "gva_multiplier": 1.38999315384305
+    },
+    {
+      "industry": "Motor vehicles, trailers and semi-trailers",
+      "gva_multiplier": 1.30766784573246
+    },
+    {
+      "industry": "Ships and boats",
+      "gva_multiplier": 1.67946663777871
+    },
+    {
+      "industry": "Air and spacecraft and related machinery",
+      "gva_multiplier": 1.49807609319291
+    },
+    {
+      "industry": "Other transport equipment",
+      "gva_multiplier": 1.38032825484655
+    },
+    {
+      "industry": "Furniture",
+      "gva_multiplier": 1.55000786111008
+    },
+    {
+      "industry": "Other manufactured goods",
+      "gva_multiplier": 1.48992780149822
+    },
+    {
+      "industry": "Repair and maintenance of ships and boats",
+      "gva_multiplier": 1.67264442979169
+    },
+    {
+      "industry": "Repair and maintenance of aircraft and spacecraft",
+      "gva_multiplier": 1.59240080988585
+    },
+    {
+      "industry": "Rest of repair; Installation - 33.11-14/17/19/20",
+      "gva_multiplier": 1.49599411764148
+    },
+    {
+      "industry": "Electricity, transmission and distribution",
+      "gva_multiplier": 1.71420870807938
+    },
+    {
+      "industry": "Gas; distribution of gaseous fuels through mains; steam and air conditioning supply",
+      "gva_multiplier": 1.70255555166477
+    },
+    {
+      "industry": "Natural water; water treatment and supply services",
+      "gva_multiplier": 1.89110386375978
+    },
+    {
+      "industry": "Sewerage services; sewage sludge",
+      "gva_multiplier": 1.94710758985012
+    },
+    {
+      "industry": "Waste collection, treatment and disposal services; materials recovery services",
+      "gva_multiplier": 1.5857429571797
+    },
+    {
+      "industry": "Remediation services and other waste management services",
+      "gva_multiplier": 1.88663237835198
+    },
+    {
+      "industry": "Construction",
+      "gva_multiplier": 1.79999701772908
+    },
+    {
+      "industry": "Wholesale and retail trade and repair services of motor vehicles and motorcycles",
+      "gva_multiplier": 1.68993925773315
+    },
+    {
+      "industry": "Wholesale trade services, except of motor vehicles and motorcycles",
+      "gva_multiplier": 1.64650980090398
+    },
+    {
+      "industry": "Retail trade services, except of motor vehicles and motorcycles",
+      "gva_multiplier": 1.7819598606503
+    },
+    {
+      "industry": "Rail transport services",
+      "gva_multiplier": 1.81621375005629
+    },
+    {
+      "industry": "Land transport services and transport services via pipelines, excluding rail transport",
+      "gva_multiplier": 1.70401302370324
+    },
+    {
+      "industry": "Water transport services",
+      "gva_multiplier": 1.69870363513158
+    },
+    {
+      "industry": "Air transport services",
+      "gva_multiplier": 1.37311679547742
+    },
+    {
+      "industry": "Warehousing and support services for transportation",
+      "gva_multiplier": 1.75618088395671
+    },
+    {
+      "industry": "Postal and courier services",
+      "gva_multiplier": 1.73911097287789
+    },
+    {
+      "industry": "Accommodation services",
+      "gva_multiplier": 1.84249757185472
+    },
+    {
+      "industry": "Food and beverage serving services",
+      "gva_multiplier": 1.77453480712556
+    },
+    {
+      "industry": "Publishing services",
+      "gva_multiplier": 1.71973424521755
+    },
+    {
+      "industry": "Motion Picture, Video & TV Programme Production, Sound Recording & Music Publishing Activities & Programming And Broadcasting Activities",
+      "gva_multiplier": 1.65525708053592
+    },
+    {
+      "industry": "Telecommunications services",
+      "gva_multiplier": 1.57603374771635
+    },
+    {
+      "industry": "Computer programming, consultancy and related services",
+      "gva_multiplier": 1.63039910753032
+    },
+    {
+      "industry": "Information services",
+      "gva_multiplier": 1.67472139040631
+    },
+    {
+      "industry": "Financial services, except insurance and pension funding",
+      "gva_multiplier": 1.77958437846948
+    },
+    {
+      "industry": "Insurance, reinsurance and pension funding services, except compulsory social security",
+      "gva_multiplier": 1.56836329059232
+    },
+    {
+      "industry": "Services auxiliary to financial services and insurance services",
+      "gva_multiplier": 1.67757982139904
+    },
+    {
+      "industry": "Real estate services on a fee or contract basis",
+      "gva_multiplier": 1.87185768549883
+    },
+    {
+      "industry": "Owner-Occupiers' Housing Services",
+      "gva_multiplier": 1.97486584823069
+    },
+    {
+      "industry": "Real estate services, excluding on a fee or contract basis and imputed rent",
+      "gva_multiplier": 1.85609747563744
+    },
+    {
+      "industry": "Legal services",
+      "gva_multiplier": 1.81312900110074
+    },
+    {
+      "industry": "Accounting, bookkeeping and auditing services; tax consulting services",
+      "gva_multiplier": 1.68990449786952
+    },
+    {
+      "industry": "Services of head offices; management consulting services",
+      "gva_multiplier": 1.50458625069232
+    },
+    {
+      "industry": "Architectural and engineering services; technical testing and analysis services",
+      "gva_multiplier": 1.60277280003324
+    },
+    {
+      "industry": "Scientific research and development services",
+      "gva_multiplier": 1.69108468662385
+    },
+    {
+      "industry": "Advertising and market research services",
+      "gva_multiplier": 1.77529061598622
+    },
+    {
+      "industry": "Other professional, scientific and technical services",
+      "gva_multiplier": 1.80189751077581
+    },
+    {
+      "industry": "Veterinary services",
+      "gva_multiplier": 1.80970444177876
+    },
+    {
+      "industry": "Rental and leasing services",
+      "gva_multiplier": 1.79797804201394
+    },
+    {
+      "industry": "Employment services",
+      "gva_multiplier": 1.78343918462056
+    },
+    {
+      "industry": "Travel agency, tour operator and other reservation services and related services",
+      "gva_multiplier": 1.60025185221023
+    },
+    {
+      "industry": "Security and investigation services",
+      "gva_multiplier": 1.86949659345148
+    },
+    {
+      "industry": "Services to buildings and landscape",
+      "gva_multiplier": 1.87416515995667
+    },
+    {
+      "industry": "Office administrative, office support and other business support services",
+      "gva_multiplier": 1.64974462666881
+    },
+    {
+      "industry": "Public administration and defence services; compulsory social security services",
+      "gva_multiplier": 1.76902948498459
+    },
+    {
+      "industry": "Education services",
+      "gva_multiplier": 1.87497784076927
+    },
+    {
+      "industry": "Human health services",
+      "gva_multiplier": 1.71892683201856
+    },
+    {
+      "industry": "Residential Care  & Social Work Activities",
+      "gva_multiplier": 1.8873746450302
+    },
+    {
+      "industry": "Creative, arts and entertainment services",
+      "gva_multiplier": 1.81089691958982
+    },
+    {
+      "industry": "Libraries, archives, museums and other cultural services",
+      "gva_multiplier": 1.79550207736079
+    },
+    {
+      "industry": "Gambling and betting services",
+      "gva_multiplier": 1.80927943896676
+    },
+    {
+      "industry": "Sports services and amusement and recreation services",
+      "gva_multiplier": 1.753531409328
+    },
+    {
+      "industry": "Services furnished by membership organisations",
+      "gva_multiplier": 1.78773317153142
+    },
+    {
+      "industry": "Repair services of computers and personal and household goods",
+      "gva_multiplier": 1.6991729430259
+    },
+    {
+      "industry": "Other personal services",
+      "gva_multiplier": 1.83901554078367
+    }
+  ],
+  "initiative_library": [
+    {
+      "id": "INI-01",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "Sustainable IT Framework (Phases 1–3)",
+      "what": "RGESN maturity assessment, Sopht GreenOps platform, baseline dashboards, targeted trainings, scenario analysis, action plan, GDSA case study, monitoring, advisory and communications (deliverables D1–D10).",
+      "delivered_by": "Infosys / Sopht",
+      "attribution": "Direct",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-02",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "Carbon emissions baselining & supplier-attributed monitoring",
+      "what": "Scope 1/2/3 baseline at contract start, refreshed each FY; spend-allocated supplier emissions; annual NHS-specific emissions dashboard; independent verification.",
+      "delivered_by": "Monk Spaces / Infosys",
+      "attribution": "Direct",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-03",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "Net Zero Leadership training",
+      "what": "Interactive workshops with the Centre for Sustainable Healthcare for board-level NHS leaders.",
+      "delivered_by": "CSH / Oracle",
+      "attribution": "Partner-led (indirect)",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-04",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "Health & Nature online module",
+      "what": "30-minute online module on nature and health for NHS staff.",
+      "delivered_by": "Oracle / CSH",
+      "attribution": "Partner-led (indirect)",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-05",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "Mandatory Sustainability & Green IT training (Infosys workforce)",
+      "what": "Mandatory 4-hour training on Infosys Lex for the full contract workforce.",
+      "delivered_by": "Infosys",
+      "attribution": "Direct",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-06",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "CSH Green Space & Health training course",
+      "what": "Oracle funds NHS staff on Green Health Routes to attend a 6-hour CSH course plus workshops.",
+      "delivered_by": "Oracle (funds) / CSH",
+      "attribution": "Partner-led (indirect)",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-07",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "Data centre efficiency programme",
+      "what": "PUE 1.3 by Jan 2030; ISO 50001/14001; Climate Neutral Data Centre Pact; 100% renewable data centres.",
+      "delivered_by": "Oracle / Infosys",
+      "attribution": "Partner-led (indirect)",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-08",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "Energy-efficient (green) coding across FWS",
+      "what": "Developer training on sustainable coding and Green IT awareness for all Infosys developers on the contract.",
+      "delivered_by": "Infosys / Sopht",
+      "attribution": "Direct",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-09",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "Nudge Programme — Workforce Sustainable Behaviour app",
+      "what": "Voluntary app nudging NHS staff to cut commuting, travel and paper footprint.",
+      "delivered_by": "Infosys DX",
+      "attribution": "Direct",
+      "measures": [
+        "NT31a"
+      ]
+    },
+    {
+      "id": "INI-10",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "Commitment to renewables",
+      "what": "Partners prioritise renewable electricity; avoid ~150 tCO2e scope 2 per year across 15 years.",
+      "delivered_by": "Oracle / Infosys",
+      "attribution": "Partner-led (indirect)",
+      "measures": [
+        "NT31"
+      ]
+    },
+    {
+      "id": "INI-11",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "Supplier emissions transparency",
+      "what": "Supplier screening and ESG assessments; target 50% cut in scope 2 & 3 supply-chain emissions.",
+      "delivered_by": "Infosys",
+      "attribution": "Direct",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-12",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "IT equipment recovery (Design for Environment)",
+      "what": "Oracle recovers 100% of data-centre IT equipment, <0.1% to landfill.",
+      "delivered_by": "Oracle",
+      "attribution": "Partner-led (indirect)",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-13",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "Social Value Scorecard & Oracle Carbon Calculator",
+      "what": "Periodic scorecard; OCI carbon calculator tracking 50% of emissions within 5 years.",
+      "delivered_by": "Infosys / Oracle / Monk Spaces",
+      "attribution": "Direct",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-14",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "Green Health Routes (5) and Oracle donation",
+      "what": "Oracle funds and resources five community biodiverse green spaces / NHS green health routes in deprived areas; £85,000 donation.",
+      "delivered_by": "Oracle / CSH (NHS Forest)",
+      "attribution": "Partner-led (indirect)",
+      "measures": [
+        "NT119"
+      ]
+    },
+    {
+      "id": "INI-15",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "Community Innovation Fund",
+      "what": "£25,000 every other year across five regions for workforce, wellbeing and sustainability projects.",
+      "delivered_by": "Infosys (NHSBSA on steering group)",
+      "attribution": "Direct",
+      "measures": [
+        "NT28"
+      ]
+    },
+    {
+      "id": "INI-16",
+      "pillar": "SV1",
+      "mac": "MAC 4.1",
+      "name": "Reforestation donation",
+      "what": "One-off separately funded reforestation donation.",
+      "delivered_by": "Infosys",
+      "attribution": "Direct",
+      "measures": [
+        "NT119"
+      ]
+    },
+    {
+      "id": "INI-17",
+      "pillar": "SV2",
+      "mac": "MAC 2.2",
+      "name": "FWS Ambassador Programme (apprenticeships)",
+      "what": "80 Level 3/4 apprentices from under-represented / deprived groups providing on-site FWS support; ~10% progress to Level 4.",
+      "delivered_by": "Infosys (employer) / QA Consulting (training)",
+      "attribution": "Direct",
+      "measures": [
+        "NT10",
+        "NT4"
+      ]
+    },
+    {
+      "id": "INI-18",
+      "pillar": "SV2",
+      "mac": "MAC 2.2",
+      "name": "E-Waste Pipeline for prison leavers",
+      "what": "11 prison leavers / ex-offenders trained and employed refurbishing devices for the device prescribing programme.",
+      "delivered_by": "Good Things Foundation (Infosys contractually responsible)",
+      "attribution": "Supply chain (Infosys accountable)",
+      "measures": [
+        "NT1",
+        "NT5"
+      ]
+    },
+    {
+      "id": "INI-19",
+      "pillar": "SV2",
+      "mac": "MAC 2.2",
+      "name": "Device Prescribing Pilot Programme",
+      "what": "Primary-care referrals to volunteer digital consultants who prescribe refurbished devices, connectivity and access to the National Digital Inclusion Network.",
+      "delivered_by": "Infosys / Good Things Foundation",
+      "attribution": "Direct",
+      "measures": [
+        "NT27"
+      ]
+    },
+    {
+      "id": "INI-20",
+      "pillar": "SV2",
+      "mac": "MAC 2.2",
+      "name": "Springboard (NHS-Tech online learning)",
+      "what": "Certified tech training and learning hours on Infosys Springboard for high-barrier resident / patient groups.",
+      "delivered_by": "Infosys",
+      "attribution": "Direct",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-21",
+      "pillar": "SV2",
+      "mac": "MAC 2.2",
+      "name": "Work-Ready Clubs & Maker Zones",
+      "what": "Weekly after-school clubs for 16–18 year-olds; two Maker Zones in the North West.",
+      "delivered_by": "Oracle / Onside Youth",
+      "attribution": "Partner-led (indirect)",
+      "measures": [
+        "NT27"
+      ]
+    },
+    {
+      "id": "INI-22",
+      "pillar": "SV2",
+      "mac": "MAC 2.2",
+      "name": "Springpod virtual work experience",
+      "what": "Live and pre-recorded virtual work experience for NHS / NHS-tech settings.",
+      "delivered_by": "Springpod / QA Consulting (Infosys-funded)",
+      "attribution": "Direct",
+      "measures": [
+        "NT27"
+      ]
+    },
+    {
+      "id": "INI-23",
+      "pillar": "SV2",
+      "mac": "MAC 2.2",
+      "name": "Tech Returners programme",
+      "what": "12-week online reskilling, mentoring and job-placement support for experienced professionals returning after a career break.",
+      "delivered_by": "Infosys / Oracle",
+      "attribution": "Direct",
+      "measures": [
+        "NT11"
+      ]
+    },
+    {
+      "id": "INI-24",
+      "pillar": "SV2",
+      "mac": "MAC 2.2",
+      "name": "Young learners in further education (Sutton Trust + MAT)",
+      "what": "Cash donations and health-tech learning content via Sutton Trust Online and a Multi-Academy Trust; summer schools.",
+      "delivered_by": "Infosys / Oracle / Sutton Trust / MAT",
+      "attribution": "Direct",
+      "measures": [
+        "NT16"
+      ]
+    },
+    {
+      "id": "INI-25",
+      "pillar": "SV2",
+      "mac": "MAC 2.2",
+      "name": "Accessibility review",
+      "what": "Quarterly accessibility review.",
+      "delivered_by": "Infosys",
+      "attribution": "Direct",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-26",
+      "pillar": "SV3",
+      "mac": "MAC 6.3",
+      "name": "FWS free of modern slavery (MSAT ≥80%)",
+      "what": "Bi-annual Home Office MSAT ≥80% (Green RAG); top-3 suppliers complete MSAT; policies, audits, training.",
+      "delivered_by": "Infosys",
+      "attribution": "Direct",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-27",
+      "pillar": "SV3",
+      "mac": "MAC 6.3",
+      "name": "Unseen NHS Clinical Modern Slavery Detection training & Learning Academy",
+      "what": "Infosys funds Unseen (Hope for Justice) to deliver clinical detection training and an awareness academy for NHS staff.",
+      "delivered_by": "Infosys (funds) / Unseen",
+      "attribution": "Direct",
+      "measures": [
+        "NT16"
+      ]
+    },
+    {
+      "id": "INI-28",
+      "pillar": "SV3",
+      "mac": "MAC 6.3",
+      "name": "Oracle × Unseen e-learning for NHS procurement staff",
+      "what": "Two additional modules for NHS procurement staff.",
+      "delivered_by": "Oracle / Unseen",
+      "attribution": "Partner-led (indirect)",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-29",
+      "pillar": "SV3",
+      "mac": "MAC 6.3",
+      "name": "Community support grant to Unseen",
+      "what": "Grant supporting Unseen technology initiatives and Infosys–Unseen partnership programmes.",
+      "delivered_by": "Infosys",
+      "attribution": "Direct",
+      "measures": [
+        "NT16"
+      ]
+    },
+    {
+      "id": "INI-30",
+      "pillar": "SV3",
+      "mac": "MAC 6.3",
+      "name": "Innovation research grant / bursary",
+      "what": "Research grant / bursary via NHSBSA Student Services.",
+      "delivered_by": "Infosys / NHSBSA",
+      "attribution": "Direct",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-31",
+      "pillar": "SV3",
+      "mac": "MAC 6.3",
+      "name": "Five modern slavery PhDs",
+      "what": "Fund five PhDs with a university selected by Infosys; competitive call via the Governance Committee.",
+      "delivered_by": "Infosys / partner university",
+      "attribution": "Direct",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-32",
+      "pillar": "SV3",
+      "mac": "MAC 6.3",
+      "name": "PhD implementation fund",
+      "what": "Fund to implement, test and verify the PhD recommendations.",
+      "delivered_by": "Infosys",
+      "attribution": "Direct",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-33",
+      "pillar": "SV3",
+      "mac": "MAC 6.3",
+      "name": "Modern Slavery Awareness Champion",
+      "what": "Awareness champion and social-scientist support.",
+      "delivered_by": "Infosys",
+      "attribution": "Direct",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-34",
+      "pillar": "ALL",
+      "mac": "—",
+      "name": "Programme governance (SV Director, committee, reporting, travel, comms)",
+      "what": "Social Value Director, quarterly Governance Committee, dashboards, travel and communication artefacts.",
+      "delivered_by": "Infosys",
+      "attribution": "Overhead",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-35",
+      "pillar": "SV2",
+      "mac": "—",
+      "name": "SV2 subject-matter expert (programme support)",
+      "what": "UK-based Senior Consultant supporting SV2 delivery.",
+      "delivered_by": "Infosys",
+      "attribution": "Overhead",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-36",
+      "pillar": "SV3",
+      "mac": "—",
+      "name": "SV3 subject-matter expert (programme support)",
+      "what": "Consultant supporting SV3 delivery.",
+      "delivered_by": "Infosys",
+      "attribution": "Overhead",
+      "measures": [
+        "—"
+      ]
+    },
+    {
+      "id": "INI-37",
+      "pillar": "SV3",
+      "mac": "—",
+      "name": "Gender sensitivity training (cost line, no commitment)",
+      "what": "£150,000 in the bid cost tracker; no matching commitment in Schedule 8 or the scorecard.",
+      "delivered_by": "TBC",
+      "attribution": "Orphan cost",
+      "measures": [
+        "—"
+      ]
+    }
+  ],
+  "patterns": [],
+  "measure_mac": [],
+  "capability": [],
+  "wording": []
+}

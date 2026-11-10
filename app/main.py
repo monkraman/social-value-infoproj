@@ -19,7 +19,8 @@ from app.api import (
     responses_router,
     calculations_router,
     auth_router,
-    audit_router
+    audit_router,
+    generator_router
 )
 from app.api.auth import get_current_user
 
@@ -188,6 +189,7 @@ app.include_router(documents_router, dependencies=_require_user)
 app.include_router(search_router, dependencies=_require_user)
 app.include_router(responses_router, dependencies=_require_user)
 app.include_router(calculations_router, dependencies=_require_user)
+app.include_router(generator_router, dependencies=_require_user)
 
 
 @app.get("/")
