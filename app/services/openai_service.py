@@ -14,6 +14,7 @@ import httpx
 from typing import Dict, Any, List, Optional
 from openai import OpenAI
 from app.core.config import settings
+from app.services.llm_client import gemini_generate, strip_code_fence
 
 
 # Shared rules telling the LLM how to map initiatives to the official TOMs catalog.
@@ -96,29 +97,14 @@ class LLMService:
         # 1. Google Gemini via Fast REST API
         if provider == "gemini" and settings.is_gemini_configured:
             try:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
-                payload = {
-                    "contents": [{"parts": [{"text": prompt}]}]
+                text_resp = gemini_generate(prompt, timeout=GEMINI_INTERPRET_TIMEOUT_SECONDS).strip()
+                return {
+                    "prompt": prompt,
+                    "response": text_resp,
+                    "model": f"Google Gemini ({settings.GEMINI_MODEL} + fallbacks)",
+                    "provider": "gemini",
+                    "is_mock": False
                 }
-                with httpx.Client(timeout=GEMINI_INTERPRET_TIMEOUT_SECONDS) as client:
-                    r = client.post(url, json=payload)
-                    if r.status_code == 200:
-                        text_resp = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
-                        return {
-                            "prompt": prompt,
-                            "response": text_resp,
-                            "model": f"Google Gemini ({settings.GEMINI_MODEL})",
-                            "provider": "gemini",
-                            "is_mock": False
-                        }
-                    else:
-                        return {
-                            "prompt": prompt,
-                            "response": f"Gemini API Error (HTTP {r.status_code}): {r.text}",
-                            "model": settings.GEMINI_MODEL,
-                            "provider": "gemini",
-                            "is_mock": True
-                        }
             except Exception as e:
                 return {
                     "prompt": prompt,
@@ -209,23 +195,13 @@ class LLMService:
         # 1. Google Gemini Provider
         if provider == "gemini" and settings.is_gemini_configured:
             try:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
-                payload = {
-                    "contents": [{"parts": [{"text": f"{system_prompt}\n\n{user_content}"}]}],
-                    "generationConfig": {"temperature": 0.1, "maxOutputTokens": 1024, "responseMimeType": "application/json"}
-                }
-                with httpx.Client(timeout=GEMINI_INTERPRET_TIMEOUT_SECONDS) as client:
-                    r = client.post(url, json=payload)
-                    if r.status_code == 200:
-                        raw = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
-                        cleaned = raw
-                        if "```json" in cleaned:
-                            cleaned = cleaned.split("```json", 1)[1].split("```", 1)[0].strip()
-                        elif "```" in cleaned:
-                            cleaned = cleaned.split("```", 1)[1].split("```", 1)[0].strip()
-                        return json.loads(cleaned)
-                    else:
-                        print(f"[LLMService] Gemini prompt interpretation HTTP {r.status_code}: {r.text[:200]}")
+                raw = gemini_generate(
+                    user_content,
+                    system=system_prompt,
+                    generation_config={"temperature": 0.1, "maxOutputTokens": 4096, "responseMimeType": "application/json"},
+                    timeout=GEMINI_INTERPRET_TIMEOUT_SECONDS,
+                )
+                return json.loads(strip_code_fence(raw))
             except Exception as e:
                 print(f"[LLMService] Gemini prompt interpretation warning: {e}")
 
@@ -309,27 +285,15 @@ Produce a JSON response with this exact structure:
         # 1. Google Gemini Provider via Fast REST API
         if provider == "gemini" and settings.is_gemini_configured:
             try:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
-                payload = {
-                    "contents": [{"parts": [{"text": f"{system_prompt}\n\n{user_content}"}]}],
-                    "generationConfig": {"temperature": 0.2, "maxOutputTokens": 8192, "responseMimeType": "application/json"}
-                }
-                with httpx.Client(timeout=GEMINI_GENERATION_TIMEOUT_SECONDS) as client:
-                    r = client.post(url, json=payload)
-                    if r.status_code == 200:
-                        raw_json = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
-                        cleaned = raw_json
-                        if "```json" in cleaned:
-                            cleaned = cleaned.split("```json", 1)[1].split("```", 1)[0].strip()
-                        elif "```" in cleaned:
-                            cleaned = cleaned.split("```", 1)[1].split("```", 1)[0].strip()
-                        data = json.loads(cleaned)
-                        data["is_mock"] = False
-                        return data
-                    else:
-                        err_snippet = r.text[:300]
-                        print(f"[LLMService] Gemini HTTP {r.status_code}: {err_snippet}")
-                        raise RuntimeError(f"Gemini API Error ({r.status_code}): {err_snippet}")
+                raw_json = gemini_generate(
+                    user_content,
+                    system=system_prompt,
+                    generation_config={"temperature": 0.2, "maxOutputTokens": 16384, "responseMimeType": "application/json"},
+                    timeout=GEMINI_GENERATION_TIMEOUT_SECONDS,
+                )
+                data = json.loads(strip_code_fence(raw_json))
+                data["is_mock"] = False
+                return data
             except Exception as e:
                 print(f"[LLMService] Gemini primary generation unavailable: {e}. Checking fallback options...")
                 # Try OpenAI if configured
@@ -1097,29 +1061,14 @@ Produce a JSON response with this exact structure:
                     full_context += f"\n[{role_label}]:\n{turn['content']}\n"
                 full_context += "\n=== END THREAD ===\n\nNow generate the improved Social Value proposal JSON:"
 
-                url = (
-                    f"https://generativelanguage.googleapis.com/v1beta/models/"
-                    f"{settings.GEMINI_MODEL}:generateContent?key={settings.GEMINI_API_KEY}"
+                raw = gemini_generate(
+                    full_context,
+                    generation_config={"temperature": 0.2, "maxOutputTokens": 16384, "responseMimeType": "application/json"},
+                    timeout=GEMINI_GENERATION_TIMEOUT_SECONDS,
                 )
-                payload = {
-                    "contents": [{"parts": [{"text": full_context}]}],
-                    "generationConfig": {"temperature": 0.2, "maxOutputTokens": 8192, "responseMimeType": "application/json"}
-                }
-                with httpx.Client(timeout=GEMINI_GENERATION_TIMEOUT_SECONDS) as client:
-                    r = client.post(url, json=payload)
-                    if r.status_code == 200:
-                        raw = r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
-                        if "```json" in raw:
-                            raw = raw.split("```json", 1)[1].split("```", 1)[0].strip()
-                        elif "```" in raw:
-                            raw = raw.split("```", 1)[1].split("```", 1)[0].strip()
-                        data = json.loads(raw)
-                        data["is_mock"] = False
-                        return data
-                    else:
-                        err_snippet = r.text[:300]
-                        print(f"[LLMService] Gemini conversation HTTP {r.status_code}: {err_snippet}")
-                        raise RuntimeError(f"Gemini Refinement API Error ({r.status_code}): {err_snippet}")
+                data = json.loads(strip_code_fence(raw))
+                data["is_mock"] = False
+                return data
             except Exception as e:
                 print(f"[LLMService] Gemini refinement unavailable: {e}. Checking fallback options...")
                 if settings.is_openai_configured:

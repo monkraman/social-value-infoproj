@@ -20,10 +20,12 @@ class Settings(BaseSettings):
 
     # Google Gemini Settings (Free Tier available at ai.google.dev)
     GEMINI_API_KEY: Optional[str] = None
-    GEMINI_MODEL: str = "gemini-3.8-flash"
+    GEMINI_MODEL: str = "gemini-3.5-flash"
+    # Tried in order when GEMINI_MODEL is over quota, overloaded, retired or times out
+    GEMINI_FALLBACK_MODELS: str = "gemini-3.5-flash,gemini-flash-lite-latest,gemini-3.5-flash-lite"
     GEMINI_EMBEDDING_MODEL: str = "gemini-embedding-001"
     # Seconds to wait for Gemini before falling back (large JSON generations need time)
-    GEMINI_GENERATION_TIMEOUT_SECONDS: float = 90.0
+    GEMINI_GENERATION_TIMEOUT_SECONDS: float = 150.0
     GEMINI_INTERPRET_TIMEOUT_SECONDS: float = 30.0
 
     # OpenAI Settings
