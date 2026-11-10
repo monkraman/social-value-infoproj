@@ -41,6 +41,9 @@ class TenderForm:
     duration_years: float
     themes: List[str] = field(default_factory=list)
     industry: Optional[str] = None
+    client: Optional[str] = None
+    # The buyer's own words (prompt mode). Gives the AI context; never used for any number.
+    brief: Optional[str] = None
 
     @property
     def target_gbp(self) -> float:

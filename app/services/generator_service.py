@@ -50,6 +50,10 @@ def build_prompt(form: TenderForm, tables: dict) -> tuple[str, str]:
         "duration_years": form.duration_years,
         "themes": form.themes,
     }
+    if form.client:
+        tender["client"] = form.client
+    if form.brief:
+        tender["client_brief"] = form.brief
     library = [{k: i[k] for k in ("name", "pillar", "mac", "attribution", "measures")} for i in tables["initiative_library"]]
     user = "\n\n".join(
         [

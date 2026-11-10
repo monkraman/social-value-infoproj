@@ -7,6 +7,7 @@ from app.knowledge import load_tables
 from app.services.generator_service import generate
 from app.services.initiative_valuation import TenderForm
 from app.services.llm_client import LLMUnavailable
+from app.services.tender_prompt import parse_tender_prompt
 
 router = APIRouter(prefix="/generator", tags=["Initiative Generator"])
 
@@ -19,6 +20,18 @@ class GeneratorRequest(BaseModel):
     duration_years: float = Field(..., gt=0, le=30)
     themes: List[str] = Field(default_factory=list)
     industry: Optional[str] = None
+    client: Optional[str] = None
+    brief: Optional[str] = Field(default=None, max_length=5000)
+
+
+class ParseRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=5000)
+
+
+@router.post("/parse")
+def parse_prompt(req: ParseRequest):
+    """Fill the form from a plain-English tender description. No AI; reports what was not found."""
+    return parse_tender_prompt(req.text, load_tables())
 
 
 @router.get("/options")
