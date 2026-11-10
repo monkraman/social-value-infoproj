@@ -9,8 +9,8 @@ from app.main import app
 
 
 @pytest.fixture
-def client():
-    return TestClient(app)
+def client(authed_client):
+    return authed_client
 
 
 def test_natural_language_prompt_rfp(client):

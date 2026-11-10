@@ -14,7 +14,7 @@ router = APIRouter(prefix="/documents", tags=["Documents"])
 
 
 @router.post("/ingest", response_model=DocumentIngestResponse, status_code=status.HTTP_201_CREATED)
-async def ingest_document(
+def ingest_document(
     file: UploadFile = File(..., description="Document file to ingest (PDF, DOCX, XLSX, TXT)"),
     db: Session = Depends(get_db)
 ):
@@ -34,7 +34,9 @@ async def ingest_document(
         )
 
     try:
-        file_bytes = await file.read()
+        # Sync endpoint on purpose: FastAPI runs it in a worker thread, so the slow
+        # extraction / embedding / DB work never blocks the async event loop.
+        file_bytes = file.file.read()
         if not file_bytes:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

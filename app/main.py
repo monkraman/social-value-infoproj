@@ -1,6 +1,7 @@
+import asyncio
 import time
 import uuid
-from fastapi import FastAPI, Request, Response
+from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
@@ -20,6 +21,7 @@ from app.api import (
     auth_router,
     audit_router
 )
+from app.api.auth import get_current_user
 
 
 from sqlalchemy import inspect, text
@@ -112,6 +114,14 @@ app.add_middleware(
 )
 
 
+def _persist_audit_record(audit_kwargs: dict) -> None:
+    try:
+        with SessionLocal() as db:
+            audit_service.record_log(db=db, **audit_kwargs)
+    except Exception as log_err:
+        logger.error(f"Could not persist audit record: {log_err}")
+
+
 @app.middleware("http")
 async def audit_logging_middleware(request: Request, call_next):
     """
@@ -146,36 +156,38 @@ async def audit_logging_middleware(request: Request, call_next):
                 logger.warning(
                     f"{request.method} {path} - {status_code} ({duration_ms}ms) | IP: {client_ip} | Error: {error_msg or 'HTTP Error'}"
                 )
-                try:
-                    with SessionLocal() as db:
-                        audit_service.record_log(
-                            db=db,
-                            request_id=request_id,
-                            message=f"{request.method} {path} returned HTTP {status_code}",
-                            event_type="ERROR_EXCEPTION" if error_msg else "API_ERROR",
-                            severity="ERROR" if status_code >= 500 else "WARNING",
-                            endpoint=path,
-                            method=request.method,
-                            status_code=status_code,
-                            duration_ms=duration_ms,
-                            client_ip=client_ip,
-                            error_detail=error_msg
-                        )
-                except Exception as log_err:
-                    logger.error(f"Could not persist audit record: {log_err}")
+                audit_kwargs = dict(
+                    request_id=request_id,
+                    message=f"{request.method} {path} returned HTTP {status_code}",
+                    event_type="ERROR_EXCEPTION" if error_msg else "API_ERROR",
+                    severity="ERROR" if status_code >= 500 else "WARNING",
+                    endpoint=path,
+                    method=request.method,
+                    status_code=status_code,
+                    duration_ms=duration_ms,
+                    client_ip=client_ip,
+                    error_detail=error_msg,
+                )
+                # The DB write is blocking (remote Postgres round-trips take seconds);
+                # run it in a worker thread so it never stalls the async event loop.
+                asyncio.get_running_loop().run_in_executor(None, _persist_audit_record, audit_kwargs)
             else:
                 logger.info(f"{request.method} {path} - {status_code} ({duration_ms}ms) | IP: {client_ip}")
 
 
 # Register API Routers
+# Public: health checks and the auth endpoints themselves (login/register/status/me).
 app.include_router(health_router)
 app.include_router(auth_router)
-app.include_router(audit_router)
-app.include_router(ai_router)
-app.include_router(documents_router)
-app.include_router(search_router)
-app.include_router(responses_router)
-app.include_router(calculations_router)
+
+# Protected: every other router requires a valid Bearer token.
+_require_user = [Depends(get_current_user)]
+app.include_router(audit_router, dependencies=_require_user)
+app.include_router(ai_router, dependencies=_require_user)
+app.include_router(documents_router, dependencies=_require_user)
+app.include_router(search_router, dependencies=_require_user)
+app.include_router(responses_router, dependencies=_require_user)
+app.include_router(calculations_router, dependencies=_require_user)
 
 
 @app.get("/")

@@ -292,7 +292,9 @@ class RAGService:
                 toms_metric_code=toms_code,
                 partner=final_partner,
                 evidence_source=evidence_source if source_is_retrieved else "Infosys Core Offer & Approved Partner Repository",
-                is_from_knowledge_base=bool(raw_init.get("is_from_knowledge_base", False) or source_is_retrieved),
+                # Only claim knowledge-base provenance when the cited source is an actually
+                # retrieved document; otherwise the label above already says "Core Offer".
+                is_from_knowledge_base=source_is_retrieved,
                 sessions_per_year=_to_optional_float(raw_init.get("sessions_per_year")),
                 hours_per_session=_to_optional_float(raw_init.get("hours_per_session")),
                 participants_per_session=_to_optional_float(raw_init.get("participants_per_session")),
