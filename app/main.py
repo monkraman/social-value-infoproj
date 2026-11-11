@@ -58,7 +58,7 @@ def init_db():
                     conn.execute(text(f"ALTER TABLE prompt_history ADD COLUMN {column} {definition};"))
 
     with SessionLocal() as db:
-        auth_service.ensure_default_superadmin(db)
+        auth_service.bootstrap_initial_admin(db)
 
 
 
@@ -99,19 +99,11 @@ app = FastAPI(
 # CORS configuration (supports local and deployed origins with credentials)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://nice-moss-0c037f310.3.azurestaticapps.net",
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:8000",
-    ],
-    allow_origin_regex=r"^https?://.*$",
+    allow_origins=[o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
+    expose_headers=["X-Request-ID", "Content-Disposition"],
 )
 
 

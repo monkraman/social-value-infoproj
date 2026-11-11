@@ -34,6 +34,22 @@ class Settings(BaseSettings):
     OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
     EMBEDDING_DIMENSION: int = 1536
 
+    # Security Settings
+    # JWT signing key. Set a long random value in every deployed environment; if unset,
+    # a random key is generated per process (sessions end on restart, but tokens can't be forged).
+    JWT_SECRET_KEY: Optional[str] = None
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # 8-hour sessions
+    # One-time bootstrap: creates this superadmin only when the users table is empty.
+    INITIAL_ADMIN_EMAIL: Optional[str] = None
+    INITIAL_ADMIN_PASSWORD: Optional[str] = None
+    # Comma-separated browser origins allowed to call the API.
+    CORS_ORIGINS: str = (
+        "https://nice-moss-0c037f310.3.azurestaticapps.net,"
+        "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000"
+    )
+    LOGIN_MAX_FAILURES: int = 5
+    LOGIN_LOCKOUT_MINUTES: int = 15
+
     # Database Settings (Set via .env or Azure App Service Environment Variables)
     DATABASE_URL: str = "postgresql+psycopg://postgres:postgres@localhost:5432/social_value_db"
 
