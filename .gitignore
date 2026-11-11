@@ -55,3 +55,7 @@ desktop.ini
 ~$*.xlsx
 ~$*.pptx
 ~$*
+
+# Locally generated credentials and seed lists (never commit)
+*.local.txt
+*.local.json
