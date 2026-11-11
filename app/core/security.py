@@ -4,6 +4,7 @@ import json
 import base64
 import re
 import secrets
+import threading
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 
@@ -12,13 +13,38 @@ from app.core.config import settings
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
-if settings.JWT_SECRET_KEY and len(settings.JWT_SECRET_KEY) >= 32:
-    SECRET_KEY = settings.JWT_SECRET_KEY
-else:
-    # No configured key: use a random one for this process. Tokens can't be forged,
-    # but everyone is signed out when the server restarts. Set JWT_SECRET_KEY to avoid that.
-    SECRET_KEY = secrets.token_urlsafe(48)
-    print("[Security] JWT_SECRET_KEY is not set (or under 32 chars); using a random per-process key.")
+_secret_key: Optional[str] = None
+_secret_lock = threading.Lock()
+
+
+def _load_or_create_db_secret() -> str:
+    """Random signing key generated once and kept in the database, so every worker
+    and every restart signs with the same key without any manual configuration."""
+    from sqlalchemy import text
+    from app.core.database import engine
+
+    with engine.begin() as conn:
+        conn.execute(text(
+            "CREATE TABLE IF NOT EXISTS app_secrets (name VARCHAR(64) PRIMARY KEY, value TEXT NOT NULL)"
+        ))
+        conn.execute(
+            text("INSERT INTO app_secrets (name, value) VALUES ('jwt_secret', :v) ON CONFLICT (name) DO NOTHING"),
+            {"v": secrets.token_urlsafe(48)},
+        )
+        return conn.execute(text("SELECT value FROM app_secrets WHERE name = 'jwt_secret'")).scalar_one()
+
+
+def get_secret_key() -> str:
+    """JWT_SECRET_KEY from the environment if set (>= 32 chars), else the database-held key."""
+    global _secret_key
+    if _secret_key is None:
+        with _secret_lock:
+            if _secret_key is None:
+                if settings.JWT_SECRET_KEY and len(settings.JWT_SECRET_KEY) >= 32:
+                    _secret_key = settings.JWT_SECRET_KEY
+                else:
+                    _secret_key = _load_or_create_db_secret()
+    return _secret_key
 
 # OWASP 2023 guidance for PBKDF2-HMAC-SHA256.
 PBKDF2_ITERATIONS = 600_000
@@ -146,7 +172,7 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
     payload_b64 = _b64url_encode(json.dumps(payload, separators=(",", ":")).encode("utf-8"))
 
     signing_input = f"{header_b64}.{payload_b64}".encode("utf-8")
-    signature = hmac.new(SECRET_KEY.encode("utf-8"), signing_input, hashlib.sha256).digest()
+    signature = hmac.new(get_secret_key().encode("utf-8"), signing_input, hashlib.sha256).digest()
     return f"{header_b64}.{payload_b64}.{_b64url_encode(signature)}"
 
 
@@ -163,7 +189,7 @@ def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
             return None
 
         signing_input = f"{header_b64}.{payload_b64}".encode("utf-8")
-        expected_sig = hmac.new(SECRET_KEY.encode("utf-8"), signing_input, hashlib.sha256).digest()
+        expected_sig = hmac.new(get_secret_key().encode("utf-8"), signing_input, hashlib.sha256).digest()
         if not hmac.compare_digest(_b64url_encode(expected_sig), sig_b64):
             return None
 
