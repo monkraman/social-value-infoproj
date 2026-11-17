@@ -31,6 +31,81 @@ _MONEY_TEXT = re.compile(r"£\s?\d[\d,.]*\s?(k|m|bn|million|billion)?\b", re.IGN
 
 ALWAYS_ASK = "Confirm cost, delivery owner and evidence before committing."
 
+# The "Framework version" written in the Measure-MAC sheet, by the id the frontend sends.
+FRAMEWORK_VERSIONS = {
+    "PPN0620": "SV Model 06/20",
+    "PPN002": "SV Model 2025 (PPN 002)",
+    "PPN026": "SV Model 2027 (PPN 026)",
+}
+
+_MEASURE_CODE = re.compile(r"NT\d+[a-z]?", re.IGNORECASE)
+
+
+def _measure_codes(raw: Any) -> set:
+    """TOM codes from a track-record 'measures' cell, which is a list or its string form."""
+    items = _MEASURE_CODE.findall(raw) if isinstance(raw, str) else (raw or [])
+    return {str(c).strip() for c in items if _MEASURE_CODE.fullmatch(str(c).strip())}
+
+
+def _mac(raw: Any) -> str:
+    """'MAC 2.2' -> '2.2'. Returns '' for the em dash the sheets use for 'none'."""
+    text = re.sub(r"^mac\s*", "", str(raw or "").strip(), flags=re.IGNORECASE).strip()
+    return "" if text in ("", "—", "-", "None") else text
+
+
+def mac_index(tables: dict, framework: Optional[str]) -> Dict[str, List[Tuple[str, str]]]:
+    """measure code -> [(mac, strength)] under `framework`, from the Measure-MAC map."""
+    wanted = FRAMEWORK_VERSIONS.get(str(framework or "").strip().upper())
+    index: Dict[str, List[Tuple[str, str]]] = {}
+    for row in tables.get("measure_mac") or []:
+        if wanted and str(row.get("Framework version") or "") != wanted:
+            continue
+        code, mac = str(row.get("Measure code") or "").strip(), _mac(row.get("MAC"))
+        if code and mac:
+            index.setdefault(code, []).append((mac, str(row.get("Strength") or "Supporting")))
+    return index
+
+
+def _check_citations(
+    cites: Any, track: Dict[str, dict], proposed: set, claimed: List[str],
+    index: Dict[str, List[Tuple[str, str]]], name: str, checks: List[str],
+) -> List[dict]:
+    """Rule D2: keep a citation only where the data shows a shared outcome.
+
+    Three signals, all from the tables — never from how alike the wording is:
+      a) the past initiative used one of the measures now proposed;
+      b) its own criterion is one this initiative claims (same framework numbering);
+      c) its measures serve one of the claimed criteria under this framework.
+    """
+    kept: List[dict] = []
+    for cite in cites or []:
+        if not isinstance(cite, dict):
+            continue
+        ident = str(cite.get("id") or "").strip()
+        past = track.get(ident)
+        if past is None:
+            checks.append(f"{name}: dropped citation '{ident or '(no id)'}' — not in the track record.")
+            continue
+        past_measures = _measure_codes(past.get("measures"))
+        via_measure = bool(proposed & past_measures)
+        via_own_mac = _mac(past.get("mac")) in claimed if claimed else False
+        via_map = any(mac in claimed for code in past_measures for mac, _ in index.get(code, ()))
+        if not (via_measure or via_own_mac or via_map):
+            checks.append(
+                f"{name}: dropped citation {ident} ({past.get('name')}) — it shares no criterion "
+                "and no measure with this initiative (D2)."
+            )
+            continue
+        kept.append({
+            "id": ident,
+            "name": past.get("name"),
+            "what": past.get("what"),
+            "mac": past.get("mac"),
+            "measures": sorted(past_measures),
+            "why": str(cite.get("why") or ""),
+        })
+    return kept[:3]  # D4
+
 
 @dataclass
 class TenderForm:
@@ -42,6 +117,9 @@ class TenderForm:
     themes: List[str] = field(default_factory=list)
     industry: Optional[str] = None
     client: Optional[str] = None
+    # "PPN0620", "PPN002" or "PPN026". Selects the rows of the Measure-MAC map the AI is shown;
+    # when it is None the whole map is passed and the AI takes the framework from the brief.
+    framework: Optional[str] = None
     # The buyer's own words (prompt mode). Gives the AI context; never used for any number.
     brief: Optional[str] = None
 
@@ -98,6 +176,8 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
     """Value the AI's proposed initiatives against the tables and apply the rules."""
     checks: List[str] = []
     measures = {m["code"]: m for m in tables["measures"]}
+    track = {str(i.get("id") or "").strip(): i for i in tables.get("initiative_library") or []}
+    index = mac_index(tables, form.framework)
     initiatives_out = []
     totals = {"infosys_gbp": 0.0, "partner_gbp": 0.0, "conditional_gbp": 0.0}
 
@@ -170,6 +250,29 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
                 out.update(status=CONDITIONAL, note=f"Counts only beyond the measured {rate:.1%}/yr baseline (A-13).")
                 questions.append("What is the measured previous-year carbon baseline?")
 
+        # A1/A2: a claimed criterion has to be reachable from a measure actually proposed.
+        claimed = [m for m in (_mac(x) for x in (ini.get("macs") or [])) if m]
+        proposed = {l["measure"] for l in lines_out if l["measure"] in measures}
+        if index and proposed:
+            served: Dict[str, str] = {}
+            for code in proposed:
+                for mac, strength in index.get(code, ()):
+                    if served.get(mac) != "Direct":
+                        served[mac] = strength
+            for mac in claimed:
+                if mac not in served:
+                    checks.append(f"{name}: dropped claimed criterion MAC {mac} — no proposed measure serves it (A1).")
+            claimed = [m for m in claimed if m in served]
+            if claimed and not any(served.get(m) == "Direct" for m in claimed):
+                checks.append(
+                    f"{name}: only supporting links to MAC {', '.join(claimed)} — needs a direct measure to score (A2)."
+                )
+        done_before = _check_citations(ini.get("done_before"), track, proposed, claimed, index, name, checks)
+
+        no_tom_reason = str(ini.get("no_tom_reason") or "").strip() or None
+        if not lines_out and not no_tom_reason:
+            questions.append("No TOM measure was proposed and no reason was given — confirm how this is evidenced.")
+
         counted = sum(l["value_gbp"] for l in lines_out if l["status"] == COUNTED)
         conditional = sum(l["value_gbp"] for l in lines_out if l["status"] == CONDITIONAL)
         totals["partner_gbp" if partner_led else "infosys_gbp"] += counted
@@ -182,6 +285,9 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
             "description": ini.get("description"),
             "attribution": "Partner-led" if partner_led else "Infosys",
             "partner": ini.get("partner"),
+            "macs": claimed,
+            "no_tom_reason": no_tom_reason,
+            "done_before": done_before,
             "lines": lines_out,
             "value_gbp": round(counted, 2),
             "conditional_gbp": round(conditional, 2),
