@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = (
         "https://nice-moss-0c037f310.3.azurestaticapps.net,"
         "https://frontend-social-value-tool.vercel.app,"
+        "https://socialvalue.monkspaces.com,"
         "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000"
     )
     # Extra origins matched by pattern: this project's Vercel preview deployments only.
