@@ -21,6 +21,7 @@ class GeneratorRequest(BaseModel):
     themes: List[str] = Field(default_factory=list)
     industry: Optional[str] = None
     client: Optional[str] = None
+    framework: Optional[str] = Field(default=None, pattern=r"^(PPN0620|PPN002|PPN026)$")
     brief: Optional[str] = Field(default=None, max_length=5000)
 
 

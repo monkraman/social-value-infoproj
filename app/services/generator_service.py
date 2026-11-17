@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from app.knowledge import load_tables
-from app.services.initiative_valuation import TenderForm, localised_proxy, value_initiatives
+from app.services.initiative_valuation import FRAMEWORK_VERSIONS, TenderForm, localised_proxy, value_initiatives
 from app.services.llm_client import complete_json
 
 RULES = (Path(__file__).resolve().parent.parent / "knowledge" / "rules.md").read_text(encoding="utf-8")
@@ -21,8 +21,14 @@ Return JSON only, exactly this shape:
       "description": "What is delivered, where, for whom",
       "attribution": "Infosys" or "Partner-led",
       "partner": "Partner name or null",
+      "macs": ["2.2", "2.3"],
+      "no_tom_reason": null,
       "lines": [
         {"measure": "NT8", "units": 864, "people": null, "basis": "12 sessions x 3 hrs x 8 staff x 3 years"}
+      ],
+      "done_before": [
+        {"id": "INI-17", "shared_mac": "2.2", "shared_measures": ["NT10"],
+         "why": "Both place apprentices from under-represented groups into contract roles"}
       ],
       "bid_paragraph": "First-draft paragraph, no £ figures",
       "questions": ["Question Infosys must answer before committing"]
@@ -30,7 +36,33 @@ Return JSON only, exactly this shape:
   ]
 }
 Propose 5 to 8 initiatives. Units are whole-of-contract totals in the measure's unit.
+"macs" are the criteria this initiative claims, from the MEASURE-MAC MAP.
+"no_tom_reason" is set only when "lines" is empty: why no TOM measure fits (rule A4).
+"done_before" cites INFOSYS TRACK RECORD entries by id, or is [] when nothing serves the
+same outcome. A citation that shares neither a criterion nor a measure will be dropped.
 """
+
+
+def measure_mac_rows(tables: dict, framework: str | None) -> list[dict]:
+    """The Measure-MAC map for one framework, or all of it when the tender does not name one."""
+    rows = tables.get("measure_mac") or []
+    wanted = FRAMEWORK_VERSIONS.get(str(framework or "").strip().upper())
+    out = []
+    for r in rows:
+        version = str(r.get("Framework version") or "")
+        if wanted and version != wanted:
+            continue
+        if str(r.get("MAC") or "—") == "—":
+            continue  # not scored under this framework; the AI only needs the links that exist
+        out.append({
+            "measure": r.get("Measure code"),
+            "framework": version,
+            "mac": r.get("MAC"),
+            "strength": r.get("Strength"),
+            "criterion": r.get("Criterion it serves"),
+            "why": r.get("Why"),
+        })
+    return out
 
 
 def build_prompt(form: TenderForm, tables: dict) -> tuple[str, str]:
@@ -52,15 +84,23 @@ def build_prompt(form: TenderForm, tables: dict) -> tuple[str, str]:
     }
     if form.client:
         tender["client"] = form.client
+    if form.framework:
+        tender["framework"] = form.framework
     if form.brief:
         tender["client_brief"] = form.brief
-    library = [{k: i[k] for k in ("name", "pillar", "mac", "attribution", "measures")} for i in tables["initiative_library"]]
+    # "id" and "what" are what make a citation checkable: without them the AI cannot say
+    # which past initiative it means, or judge whether it served the same outcome.
+    track = [{k: i[k] for k in ("id", "name", "what", "pillar", "mac", "attribution", "measures")}
+             for i in tables["initiative_library"]]
+    mac_map = measure_mac_rows(tables, form.framework)
     user = "\n\n".join(
         [
             "TENDER:\n" + json.dumps(tender, indent=1),
             "VALID TOM MEASURES:\n" + json.dumps(measures, indent=1),
-            "REFERENCE INITIATIVES (shapes Infosys has used before):\n" + json.dumps(library, indent=1),
+            "INFOSYS TRACK RECORD (already committed on past contracts — cite by id, never re-propose):\n"
+            + json.dumps(track, indent=1, default=str),
         ]
+        + ([f"MEASURE-MAC MAP:\n{json.dumps(mac_map, indent=1, default=str)}"] if mac_map else [])
         + ([f"INTERVENTION PATTERNS:\n{json.dumps(tables['patterns'], indent=1, default=str)}"] if tables.get("patterns") else [])
         + ([f"INFOSYS CAPABILITY PROFILE:\n{json.dumps(tables['capability'], indent=1, default=str)}"] if tables.get("capability") else [])
     )
