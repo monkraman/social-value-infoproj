@@ -52,13 +52,19 @@ def gemini_generate(
 
     errors: list[str] = []
     now = time.monotonic()
+    deadline = now + settings.GEMINI_TOTAL_TIMEOUT_SECONDS
     models = _gemini_models()
     ready = [m for m in models if _gemini_cooldown_until.get(m, 0) <= now]
     # If every model is cooling down, try them all anyway rather than failing outright.
     for model in ready or models:
+        # Falling back is only worth it while someone is still waiting for the answer.
+        remaining = deadline - time.monotonic()
+        if remaining < 10:
+            errors.append(f"{model}: skipped, {settings.GEMINI_TOTAL_TIMEOUT_SECONDS:.0f}s budget spent")
+            break
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
         try:
-            r = httpx.post(url, params={"key": settings.GEMINI_API_KEY}, json=payload, timeout=timeout)
+            r = httpx.post(url, params={"key": settings.GEMINI_API_KEY}, json=payload, timeout=min(timeout, remaining))
         except httpx.HTTPError as e:
             errors.append(f"{model}: {type(e).__name__}")
             print(f"[LLM] Gemini {model} failed: {type(e).__name__}; trying next model")

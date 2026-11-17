@@ -54,14 +54,13 @@ def measure_mac_rows(tables: dict, framework: str | None) -> list[dict]:
             continue
         if str(r.get("MAC") or "—") == "—":
             continue  # not scored under this framework; the AI only needs the links that exist
-        out.append({
-            "measure": r.get("Measure code"),
-            "framework": version,
-            "mac": r.get("MAC"),
-            "strength": r.get("Strength"),
-            "criterion": r.get("Criterion it serves"),
-            "why": r.get("Why"),
-        })
+        # "Why" is the reviewer's justification for the row, not something the AI needs to
+        # choose a criterion — and across three frameworks it is half the prompt.
+        row = {"measure": r.get("Measure code"), "mac": r.get("MAC"),
+               "strength": r.get("Strength"), "criterion": r.get("Criterion it serves")}
+        if not wanted:
+            row["framework"] = version
+        out.append(row)
     return out
 
 
@@ -90,7 +89,8 @@ def build_prompt(form: TenderForm, tables: dict) -> tuple[str, str]:
         tender["client_brief"] = form.brief
     # "id" and "what" are what make a citation checkable: without them the AI cannot say
     # which past initiative it means, or judge whether it served the same outcome.
-    track = [{k: i[k] for k in ("id", "name", "what", "pillar", "mac", "attribution", "measures")}
+    track = [{"id": i["id"], "name": i["name"], "what": str(i.get("what") or "")[:200],
+              "mac": i.get("mac"), "measures": i.get("measures")}
              for i in tables["initiative_library"]]
     mac_map = measure_mac_rows(tables, form.framework)
     user = "\n\n".join(

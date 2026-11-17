@@ -24,8 +24,12 @@ class Settings(BaseSettings):
     # Tried in order when GEMINI_MODEL is over quota, overloaded, retired or times out
     GEMINI_FALLBACK_MODELS: str = "gemini-3.5-flash,gemini-flash-lite-latest,gemini-3.5-flash-lite"
     GEMINI_EMBEDDING_MODEL: str = "gemini-embedding-001"
-    # Seconds to wait for Gemini before falling back (large JSON generations need time)
-    GEMINI_GENERATION_TIMEOUT_SECONDS: float = 150.0
+    # Seconds to wait for one model before falling back (large JSON generations need time)
+    GEMINI_GENERATION_TIMEOUT_SECONDS: float = 90.0
+    # Ceiling across every model tried for a single request. Without it the fallbacks stack:
+    # four models at the per-model timeout is ten minutes, by which time the caller has given up
+    # and the user sees a connection error rather than a useful one.
+    GEMINI_TOTAL_TIMEOUT_SECONDS: float = 200.0
     GEMINI_INTERPRET_TIMEOUT_SECONDS: float = 30.0
 
     # OpenAI Settings
