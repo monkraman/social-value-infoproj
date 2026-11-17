@@ -1,12 +1,13 @@
 {
   "source": "Monk_Spaces_SV_Knowledge_Base_NHS_FWS 2.xlsx",
   "edition": "Open Access TOM System Edition 2025",
-  "imported_at": "2026-11-10T08:15:47Z",
+  "imported_at": "2026-11-17T08:25:25Z",
   "settings": {
     "default_region": "North East",
     "default_industry": "Computer programming, consultancy and related services",
     "carbon_baseline_rate": 0.024,
-    "nt19_factor": 1.0073
+    "nt19_factor": 1.0073,
+    "contract": ""
   },
   "measures": [
     {
@@ -17,7 +18,9 @@
       "unit": "no. people FTE",
       "proxy_gbp": 37666.5,
       "localised": true,
-      "unit_guidance": "No. people (FTE) * length of contract (in years) where the maximum number of FTE per person per year is 1.0; "
+      "unit_guidance": "No. people (FTE) * length of contract (in years) where the maximum number of FTE per person per year is 1.0; ",
+      "definition": "This Measure covers the employment of local people.",
+      "target_guidance": "(1) Forecast number of relevant local people to be employed or retained."
     },
     {
       "code": "NT3",
@@ -27,7 +30,9 @@
       "unit": "no. people FTE",
       "proxy_gbp": 51561.0,
       "localised": false,
-      "unit_guidance": "No. people FTE (capped at 1 year per employee);"
+      "unit_guidance": "No. people FTE (capped at 1 year per employee);",
+      "definition": "This Measure covers the employment of a person who can be classified as 'Long-term unemployed'.",
+      "target_guidance": "(1) Forecast number of relevant future employees (Long-term unemployed)."
     },
     {
       "code": "NT4",
@@ -37,7 +42,9 @@
       "unit": "no. people FTE",
       "proxy_gbp": 53013.0,
       "localised": false,
-      "unit_guidance": "No. people FTE (capped at 1 year per employee);"
+      "unit_guidance": "No. people FTE (capped at 1 year per employee);",
+      "definition": "This Measure covers the employment of a person who can be classified as 'not in education employment or training' (NEET).",
+      "target_guidance": "(1) Forecast number of relevant future employees (Not in Employment, Education or Training)."
     },
     {
       "code": "NT76",
@@ -47,7 +54,9 @@
       "unit": "no. people FTE",
       "proxy_gbp": 50713.0,
       "localised": false,
-      "unit_guidance": "No. people FTE (capped at 1 year per employee);"
+      "unit_guidance": "No. people FTE (capped at 1 year per employee);",
+      "definition": "This Measure covers the employment of a person who can be classified as 'unemployed'.",
+      "target_guidance": "(1) Forecast number of relevant future employees (unemployed)."
     },
     {
       "code": "NT5",
@@ -57,7 +66,9 @@
       "unit": "no. people FTE",
       "proxy_gbp": 55922.0,
       "localised": false,
-      "unit_guidance": "No. people FTE (capped at 1 year per employee);"
+      "unit_guidance": "No. people FTE (capped at 1 year per employee);",
+      "definition": "This Measure covers the employment of a person who is an unemployed ex-offender.",
+      "target_guidance": "(1) Forecast number of relevant future employees (unemployed ex-offenders aged 18 and over)."
     },
     {
       "code": "NT6",
@@ -67,7 +78,9 @@
       "unit": "no. people FTE",
       "proxy_gbp": 51889.0,
       "localised": false,
-      "unit_guidance": "No. people FTE (capped at 1 year per employee);"
+      "unit_guidance": "No. people FTE (capped at 1 year per employee);",
+      "definition": "This Measure covers the employment of a person who is unemployed and who has a disability",
+      "target_guidance": "(1) Forecast number of relevant future employees (unemployed individuals with a disability)."
     },
     {
       "code": "NT9",
@@ -77,7 +90,9 @@
       "unit": "no. weeks",
       "proxy_gbp": 347.0,
       "localised": false,
-      "unit_guidance": "Training Weeks;"
+      "unit_guidance": "Training Weeks;",
+      "definition": "This Measure covers new employment with accredited vocational training.",
+      "target_guidance": "(1) Forecast number of people on relevant vocational training courses."
     },
     {
       "code": "NT10",
@@ -87,7 +102,9 @@
       "unit": "no. weeks",
       "proxy_gbp": 309.73,
       "localised": false,
-      "unit_guidance": "Employment Weeks;"
+      "unit_guidance": "Employment Weeks;",
+      "definition": "This Measure covers the employment of new apprentices at level 2 or higher.",
+      "target_guidance": "(1) Forecast number of relevant people (apprentices) to be employed."
     },
     {
       "code": "NT80",
@@ -97,7 +114,9 @@
       "unit": "no. weeks",
       "proxy_gbp": 13.02,
       "localised": false,
-      "unit_guidance": "Training Weeks;"
+      "unit_guidance": "Training Weeks;",
+      "definition": "This Measure covers the upskilling of existing employees through accredited vocational training.",
+      "target_guidance": "(1) Forecast number of existing employees being upskilled on vocational training courses."
     },
     {
       "code": "NT11",
@@ -107,7 +126,9 @@
       "unit": "no. hrs (total session duration)*no. attendees",
       "proxy_gbp": 110.99,
       "localised": false,
-      "unit_guidance": "Attendee Hours;"
+      "unit_guidance": "Attendee Hours;",
+      "definition": "This Measure covers the provision of expert-led personalised support to help unemployed people gain work (not including students).",
+      "target_guidance": "(1) Forecast number of sessions, number of people receiving training and session duration."
     },
     {
       "code": "NT12",
@@ -117,7 +138,9 @@
       "unit": "no. weeks",
       "proxy_gbp": 96.53,
       "localised": false,
-      "unit_guidance": "No. weeks on placement per person.Working days can be counted pro rata (total  working days divided by 5) but a week has to include at least 3 working days per week."
+      "unit_guidance": "No. weeks on placement per person.Working days can be counted pro rata (total  working days divided by 5) but a week has to include at least 3 working days per week.",
+      "definition": "This Measure covers the provision of unpaid, short-term placements or pre-employment courses that make a meaningful contribution to enabling young people not in employment education or training (NEET) to find gainful employment.",
+      "target_guidance": "(1) Forecast number of participants and weeks of work placements or pre-employment courses per person."
     },
     {
       "code": "NT13",
@@ -127,7 +150,9 @@
       "unit": "no. weeks",
       "proxy_gbp": 412.38,
       "localised": false,
-      "unit_guidance": "No. weeks on placement per person.Working days can be counted pro rata (total  working days divided by 5) but a week has to include at least 3 working days per week."
+      "unit_guidance": "No. weeks on placement per person.Working days can be counted pro rata (total  working days divided by 5) but a week has to include at least 3 working days per week.",
+      "definition": "This Measure covers the provision of paid work placements that make a meaningful contribution to enabling young people to find gainful employment.",
+      "target_guidance": "(1) Forecast number of participants and weeks of paid work placements per person."
     },
     {
       "code": "NT8",
@@ -137,7 +162,9 @@
       "unit": "no. staff volunteering hours",
       "proxy_gbp": 17.48,
       "localised": false,
-      "unit_guidance": "Volunteering Hours;"
+      "unit_guidance": "Volunteering Hours;",
+      "definition": "This Measure covers staff volunteering with pupils and students of local educational institutions.",
+      "target_guidance": "(1) Forecast number of staff hours."
     },
     {
       "code": "NT99",
@@ -147,7 +174,9 @@
       "unit": "no. staff volunteering hours",
       "proxy_gbp": 17.48,
       "localised": false,
-      "unit_guidance": "Volunteering Hours;"
+      "unit_guidance": "Volunteering Hours;",
+      "definition": "This Measure covers educational visits to project sites for local school children and residents.",
+      "target_guidance": "(1) Forecast number of staff hours."
     },
     {
       "code": "NT14",
@@ -157,7 +186,9 @@
       "unit": "£",
       "proxy_gbp": 0.12,
       "localised": false,
-      "unit_guidance": "Total amount of £ spent with VCSEs in the supply chain."
+      "unit_guidance": "Total amount of £ spent with VCSEs in the supply chain.",
+      "definition": "This Measure covers spend with Voluntary, Community and Social Enterprises (VCSE) suppliers. ",
+      "target_guidance": "(1) Forecast £ to be spent (not donations) with VCSEs in supply chain."
     },
     {
       "code": "NT18",
@@ -167,7 +198,9 @@
       "unit": "£",
       "proxy_gbp": 0.990909603164808,
       "localised": true,
-      "unit_guidance": "Total amount of £ spent with the supply chain within the defined local area."
+      "unit_guidance": "Total amount of £ spent with the supply chain within the defined local area.",
+      "definition": "This Measure covers spend with local suppliers and reflects the economic and social benefits to the local community.",
+      "target_guidance": "(1) Forecast £ to be spent with suppliers in the defined local area."
     },
     {
       "code": "NT19",
@@ -177,7 +210,9 @@
       "unit": "£",
       "proxy_gbp": 0.998143243267912,
       "localised": true,
-      "unit_guidance": "Total amount of £ spent with SMEs in the supply chain within the defined local area."
+      "unit_guidance": "Total amount of £ spent with SMEs in the supply chain within the defined local area.",
+      "definition": "This Measure covers spend with local suppliers which are Small and Medium Enterprises (SMEs) and reflects the economic and social benefits to the local community.",
+      "target_guidance": "(1) Forecast £ to be spent with small or medium sized suppliers in the defined local area."
     },
     {
       "code": "NT15",
@@ -187,7 +222,9 @@
       "unit": "no. staff expert hours",
       "proxy_gbp": 106.34,
       "localised": false,
-      "unit_guidance": "Expert Hours;"
+      "unit_guidance": "Expert Hours;",
+      "definition": "This Measure covers employees providing their expertise to Voluntary, Community and Social Enterprises (VCSEs) or Small and Medium Enterprises (SMEs).",
+      "target_guidance": "(1) Forecast number of employee hours and their relevant qualification/role."
     },
     {
       "code": "NT16",
@@ -197,7 +234,9 @@
       "unit": "£ invested",
       "proxy_gbp": 1.0,
       "localised": false,
-      "unit_guidance": "Total £ invested;"
+      "unit_guidance": "Total £ invested;",
+      "definition": "This Measure covers financial and in-kind contributions to Voluntary, Community and Social Enterprises (VCSEs). ",
+      "target_guidance": "(1) Proposed resources to be donated (e.g., £ donations and/or £ equivalent in-kind contributions)."
     },
     {
       "code": "NT17",
@@ -207,7 +246,9 @@
       "unit": "no. staff volunteering hours",
       "proxy_gbp": 17.48,
       "localised": false,
-      "unit_guidance": "Volunteering Hours;"
+      "unit_guidance": "Volunteering Hours;",
+      "definition": "This Measure covers staff volunteering with Voluntary, Community and Social Enterprises (VCSEs). ",
+      "target_guidance": "(1) Forecast number of staff hours."
     },
     {
       "code": "NT28",
@@ -217,7 +258,9 @@
       "unit": "£ invested",
       "proxy_gbp": 1.0,
       "localised": false,
-      "unit_guidance": "Total £ invested;"
+      "unit_guidance": "Total £ invested;",
+      "definition": "This Measure covers financial and in-kind contributions to a range of initiatives aimed at improving the welfare and wellbeing of a community. ",
+      "target_guidance": "(1) Forecast resources to be invested."
     },
     {
       "code": "NT29",
@@ -227,7 +270,9 @@
       "unit": "no. staff volunteering hours",
       "proxy_gbp": 17.48,
       "localised": false,
-      "unit_guidance": "Volunteering Hours;"
+      "unit_guidance": "Volunteering Hours;",
+      "definition": "This Measure covers staff volunteering on local community projects.",
+      "target_guidance": "(1) Forecast number of staff hours."
     },
     {
       "code": "NT26",
@@ -237,7 +282,9 @@
       "unit": "£ invested inc. time, materials, equipment etc",
       "proxy_gbp": 1.0,
       "localised": false,
-      "unit_guidance": "Total resources invested;"
+      "unit_guidance": "Total resources invested;",
+      "definition": "This Measure covers support for a range of initiatives aimed at promoting and increasing health and wellbeing in a community such as fitness programmes, nutrition support and smoking, alcohol, and drug abuse reduction initiatives, etc.",
+      "target_guidance": "(1) Forecast resources to be invested."
     },
     {
       "code": "NT27",
@@ -247,7 +294,9 @@
       "unit": "£ invested inc. time, materials, equipment etc",
       "proxy_gbp": 1.0,
       "localised": false,
-      "unit_guidance": "Total resources invested;"
+      "unit_guidance": "Total resources invested;",
+      "definition": "This Measure covers support for a range of initiatives aimed at the most vulnerable in society.",
+      "target_guidance": "(1) Forecast resources to be invested."
     },
     {
       "code": "NT31",
@@ -257,7 +306,9 @@
       "unit": "tCO2e",
       "proxy_gbp": 252.11,
       "localised": false,
-      "unit_guidance": "Recorded tonnes of carbon dioxide equivalent (CO2e) reduced;"
+      "unit_guidance": "Recorded tonnes of carbon dioxide equivalent (CO2e) reduced;",
+      "definition": "This Measure covers the reductions in scope 1 and scope 2 emissions (see Greenhouse Gas Protocol) from decarbonisation initiatives.",
+      "target_guidance": "(1) Description of the specific decarbonisation initiatives to be undertaken to achieve emission reductions."
     },
     {
       "code": "NT31a",
@@ -267,7 +318,9 @@
       "unit": "tCO2e",
       "proxy_gbp": 252.11,
       "localised": false,
-      "unit_guidance": "Recorded tonnes of carbon dioxide equivalent (CO2e) reduced;"
+      "unit_guidance": "Recorded tonnes of carbon dioxide equivalent (CO2e) reduced;",
+      "definition": "This Measure covers the reductions in scope 3 emissions (see Greenhouse Gas Protocol) from decarbonisation initiatives.",
+      "target_guidance": "(1) Specific categories to be measured against (see GHG Protocol)."
     },
     {
       "code": "NT32",
@@ -277,7 +330,9 @@
       "unit": "miles saved",
       "proxy_gbp": 0.0708,
       "localised": false,
-      "unit_guidance": "Recorded miles reduced;"
+      "unit_guidance": "Recorded miles reduced;",
+      "definition": "This Measure covers the reductions in car miles driven as a result of a green transport programme.",
+      "target_guidance": "(1) Description of organisation's green transport programmes to reduce car miles."
     },
     {
       "code": "NT116",
@@ -287,7 +342,9 @@
       "unit": "£ invested inc. time, materials, equipment etc",
       "proxy_gbp": 1.0,
       "localised": false,
-      "unit_guidance": "Total resources invested;"
+      "unit_guidance": "Total resources invested;",
+      "definition": "This Measure covers the costs associated with the provision of expert-led climate change and carbon reduction training for sub contractors which are Small and Medium Enterprises (SMEs).",
+      "target_guidance": "(1) Forecast resources to be invested."
     },
     {
       "code": "NT119",
@@ -297,7 +354,9 @@
       "unit": "£ invested inc. time, materials, equipment etc",
       "proxy_gbp": 1.0,
       "localised": false,
-      "unit_guidance": "Total resources invested;"
+      "unit_guidance": "Total resources invested;",
+      "definition": "This Measure covers support for a range of greenspace creation and development schemes which preserve or enhance natural land or vegetation.",
+      "target_guidance": "(1) Forecast resources to be invested."
     },
     {
       "code": "NT87",
@@ -307,7 +366,9 @@
       "unit": "kg",
       "proxy_gbp": 116.52,
       "localised": false,
-      "unit_guidance": "Plastic reduction;"
+      "unit_guidance": "Plastic reduction;",
+      "definition": "This Measure covers reductions in plastic use through reduction initiatives such as designing out waste from plastic packaging or materials.",
+      "target_guidance": "(1) Description of the initiative to avoid plastic use."
     }
   ],
   "regions": [
@@ -797,6 +858,7 @@
       "mac": "MAC 4.1",
       "name": "Sustainable IT Framework (Phases 1–3)",
       "what": "RGESN maturity assessment, Sopht GreenOps platform, baseline dashboards, targeted trainings, scenario analysis, action plan, GDSA case study, monitoring, advisory and communications (deliverables D1–D10).",
+      "volume": "10 deliverables (D1–D10)",
       "delivered_by": "Infosys / Sopht",
       "attribution": "Direct",
       "measures": [
@@ -809,6 +871,7 @@
       "mac": "MAC 4.1",
       "name": "Carbon emissions baselining & supplier-attributed monitoring",
       "what": "Scope 1/2/3 baseline at contract start, refreshed each FY; spend-allocated supplier emissions; annual NHS-specific emissions dashboard; independent verification.",
+      "volume": "Annual baseline + dashboard",
       "delivered_by": "Monk Spaces / Infosys",
       "attribution": "Direct",
       "measures": [
@@ -821,6 +884,7 @@
       "mac": "MAC 4.1",
       "name": "Net Zero Leadership training",
       "what": "Interactive workshops with the Centre for Sustainable Healthcare for board-level NHS leaders.",
+      "volume": "280 participants",
       "delivered_by": "CSH / Oracle",
       "attribution": "Partner-led (indirect)",
       "measures": [
@@ -833,6 +897,7 @@
       "mac": "MAC 4.1",
       "name": "Health & Nature online module",
       "what": "30-minute online module on nature and health for NHS staff.",
+      "volume": "50,000 participants",
       "delivered_by": "Oracle / CSH",
       "attribution": "Partner-led (indirect)",
       "measures": [
@@ -845,6 +910,7 @@
       "mac": "MAC 4.1",
       "name": "Mandatory Sustainability & Green IT training (Infosys workforce)",
       "what": "Mandatory 4-hour training on Infosys Lex for the full contract workforce.",
+      "volume": "100% of contract workforce × 4 hrs",
       "delivered_by": "Infosys",
       "attribution": "Direct",
       "measures": [
@@ -857,6 +923,7 @@
       "mac": "MAC 4.1",
       "name": "CSH Green Space & Health training course",
       "what": "Oracle funds NHS staff on Green Health Routes to attend a 6-hour CSH course plus workshops.",
+      "volume": "280 NHS staff",
       "delivered_by": "Oracle (funds) / CSH",
       "attribution": "Partner-led (indirect)",
       "measures": [
@@ -869,6 +936,7 @@
       "mac": "MAC 4.1",
       "name": "Data centre efficiency programme",
       "what": "PUE 1.3 by Jan 2030; ISO 50001/14001; Climate Neutral Data Centre Pact; 100% renewable data centres.",
+      "volume": "Compliance throughout",
       "delivered_by": "Oracle / Infosys",
       "attribution": "Partner-led (indirect)",
       "measures": [
@@ -881,6 +949,7 @@
       "mac": "MAC 4.1",
       "name": "Energy-efficient (green) coding across FWS",
       "what": "Developer training on sustainable coding and Green IT awareness for all Infosys developers on the contract.",
+      "volume": "All Infosys developers",
       "delivered_by": "Infosys / Sopht",
       "attribution": "Direct",
       "measures": [
@@ -893,6 +962,7 @@
       "mac": "MAC 4.1",
       "name": "Nudge Programme — Workforce Sustainable Behaviour app",
       "what": "Voluntary app nudging NHS staff to cut commuting, travel and paper footprint.",
+      "volume": "200,000 active users; >40% of eligible users",
       "delivered_by": "Infosys DX",
       "attribution": "Direct",
       "measures": [
@@ -905,6 +975,7 @@
       "mac": "MAC 4.1",
       "name": "Commitment to renewables",
       "what": "Partners prioritise renewable electricity; avoid ~150 tCO2e scope 2 per year across 15 years.",
+      "volume": "150 tCO2e/yr × 15 yrs",
       "delivered_by": "Oracle / Infosys",
       "attribution": "Partner-led (indirect)",
       "measures": [
@@ -917,6 +988,7 @@
       "mac": "MAC 4.1",
       "name": "Supplier emissions transparency",
       "what": "Supplier screening and ESG assessments; target 50% cut in scope 2 & 3 supply-chain emissions.",
+      "volume": "50% reduction",
       "delivered_by": "Infosys",
       "attribution": "Direct",
       "measures": [
@@ -929,6 +1001,7 @@
       "mac": "MAC 4.1",
       "name": "IT equipment recovery (Design for Environment)",
       "what": "Oracle recovers 100% of data-centre IT equipment, <0.1% to landfill.",
+      "volume": "100% recovery",
       "delivered_by": "Oracle",
       "attribution": "Partner-led (indirect)",
       "measures": [
@@ -941,6 +1014,7 @@
       "mac": "MAC 4.1",
       "name": "Social Value Scorecard & Oracle Carbon Calculator",
       "what": "Periodic scorecard; OCI carbon calculator tracking 50% of emissions within 5 years.",
+      "volume": "Scorecard live Y1; calculator from Y3",
       "delivered_by": "Infosys / Oracle / Monk Spaces",
       "attribution": "Direct",
       "measures": [
@@ -953,6 +1027,7 @@
       "mac": "MAC 4.1",
       "name": "Green Health Routes (5) and Oracle donation",
       "what": "Oracle funds and resources five community biodiverse green spaces / NHS green health routes in deprived areas; £85,000 donation.",
+      "volume": "5 routes; £85,000",
       "delivered_by": "Oracle / CSH (NHS Forest)",
       "attribution": "Partner-led (indirect)",
       "measures": [
@@ -965,6 +1040,7 @@
       "mac": "MAC 4.1",
       "name": "Community Innovation Fund",
       "what": "£25,000 every other year across five regions for workforce, wellbeing and sustainability projects.",
+      "volume": "£125,000 (5 × £25,000)",
       "delivered_by": "Infosys (NHSBSA on steering group)",
       "attribution": "Direct",
       "measures": [
@@ -977,6 +1053,7 @@
       "mac": "MAC 4.1",
       "name": "Reforestation donation",
       "what": "One-off separately funded reforestation donation.",
+      "volume": "£25,000",
       "delivered_by": "Infosys",
       "attribution": "Direct",
       "measures": [
@@ -989,6 +1066,7 @@
       "mac": "MAC 2.2",
       "name": "FWS Ambassador Programme (apprenticeships)",
       "what": "80 Level 3/4 apprentices from under-represented / deprived groups providing on-site FWS support; ~10% progress to Level 4.",
+      "volume": "80 people; 1,920 months",
       "delivered_by": "Infosys (employer) / QA Consulting (training)",
       "attribution": "Direct",
       "measures": [
@@ -1002,6 +1080,7 @@
       "mac": "MAC 2.2",
       "name": "E-Waste Pipeline for prison leavers",
       "what": "11 prison leavers / ex-offenders trained and employed refurbishing devices for the device prescribing programme.",
+      "volume": "11 people; 264 months",
       "delivered_by": "Good Things Foundation (Infosys contractually responsible)",
       "attribution": "Supply chain (Infosys accountable)",
       "measures": [
@@ -1015,6 +1094,7 @@
       "mac": "MAC 2.2",
       "name": "Device Prescribing Pilot Programme",
       "what": "Primary-care referrals to volunteer digital consultants who prescribe refurbished devices, connectivity and access to the National Digital Inclusion Network.",
+      "volume": "500 consultations; 500 devices; 500 connectivity packages; 29,850 hrs digital basics",
       "delivered_by": "Infosys / Good Things Foundation",
       "attribution": "Direct",
       "measures": [
@@ -1027,6 +1107,7 @@
       "mac": "MAC 2.2",
       "name": "Springboard (NHS-Tech online learning)",
       "what": "Certified tech training and learning hours on Infosys Springboard for high-barrier resident / patient groups.",
+      "volume": "10,000 hrs p.a.; ~2,500 learners",
       "delivered_by": "Infosys",
       "attribution": "Direct",
       "measures": [
@@ -1039,6 +1120,7 @@
       "mac": "MAC 2.2",
       "name": "Work-Ready Clubs & Maker Zones",
       "what": "Weekly after-school clubs for 16–18 year-olds; two Maker Zones in the North West.",
+      "volume": "18,000 hrs/yr; 200 candidates (2.8) vs ~1,000–1,200 participants (2.72)",
       "delivered_by": "Oracle / Onside Youth",
       "attribution": "Partner-led (indirect)",
       "measures": [
@@ -1051,6 +1133,7 @@
       "mac": "MAC 2.2",
       "name": "Springpod virtual work experience",
       "what": "Live and pre-recorded virtual work experience for NHS / NHS-tech settings.",
+      "volume": "5,000 hrs/yr; 50 NHS candidates",
       "delivered_by": "Springpod / QA Consulting (Infosys-funded)",
       "attribution": "Direct",
       "measures": [
@@ -1063,6 +1146,7 @@
       "mac": "MAC 2.2",
       "name": "Tech Returners programme",
       "what": "12-week online reskilling, mentoring and job-placement support for experienced professionals returning after a career break.",
+      "volume": "Rolling cohorts (no volume stated)",
       "delivered_by": "Infosys / Oracle",
       "attribution": "Direct",
       "measures": [
@@ -1075,6 +1159,7 @@
       "mac": "MAC 2.2",
       "name": "Young learners in further education (Sutton Trust + MAT)",
       "what": "Cash donations and health-tech learning content via Sutton Trust Online and a Multi-Academy Trust; summer schools.",
+      "volume": "~225 students/yr; 1,350 hrs/yr; MAT 200 learners",
       "delivered_by": "Infosys / Oracle / Sutton Trust / MAT",
       "attribution": "Direct",
       "measures": [
@@ -1087,6 +1172,7 @@
       "mac": "MAC 2.2",
       "name": "Accessibility review",
       "what": "Quarterly accessibility review.",
+      "volume": "Per quarter",
       "delivered_by": "Infosys",
       "attribution": "Direct",
       "measures": [
@@ -1099,6 +1185,7 @@
       "mac": "MAC 6.3",
       "name": "FWS free of modern slavery (MSAT ≥80%)",
       "what": "Bi-annual Home Office MSAT ≥80% (Green RAG); top-3 suppliers complete MSAT; policies, audits, training.",
+      "volume": "MSAT ≥80%, twice a year",
       "delivered_by": "Infosys",
       "attribution": "Direct",
       "measures": [
@@ -1111,6 +1198,7 @@
       "mac": "MAC 6.3",
       "name": "Unseen NHS Clinical Modern Slavery Detection training & Learning Academy",
       "what": "Infosys funds Unseen (Hope for Justice) to deliver clinical detection training and an awareness academy for NHS staff.",
+      "volume": "≥2,400 trained",
       "delivered_by": "Infosys (funds) / Unseen",
       "attribution": "Direct",
       "measures": [
@@ -1123,6 +1211,7 @@
       "mac": "MAC 6.3",
       "name": "Oracle × Unseen e-learning for NHS procurement staff",
       "what": "Two additional modules for NHS procurement staff.",
+      "volume": "≥600 NHS staff",
       "delivered_by": "Oracle / Unseen",
       "attribution": "Partner-led (indirect)",
       "measures": [
@@ -1135,6 +1224,7 @@
       "mac": "MAC 6.3",
       "name": "Community support grant to Unseen",
       "what": "Grant supporting Unseen technology initiatives and Infosys–Unseen partnership programmes.",
+      "volume": "£50,000",
       "delivered_by": "Infosys",
       "attribution": "Direct",
       "measures": [
@@ -1147,6 +1237,7 @@
       "mac": "MAC 6.3",
       "name": "Innovation research grant / bursary",
       "what": "Research grant / bursary via NHSBSA Student Services.",
+      "volume": "£30,000",
       "delivered_by": "Infosys / NHSBSA",
       "attribution": "Direct",
       "measures": [
@@ -1159,6 +1250,7 @@
       "mac": "MAC 6.3",
       "name": "Five modern slavery PhDs",
       "what": "Fund five PhDs with a university selected by Infosys; competitive call via the Governance Committee.",
+      "volume": "5 PhDs within 5 years",
       "delivered_by": "Infosys / partner university",
       "attribution": "Direct",
       "measures": [
@@ -1171,6 +1263,7 @@
       "mac": "MAC 6.3",
       "name": "PhD implementation fund",
       "what": "Fund to implement, test and verify the PhD recommendations.",
+      "volume": "£45,000",
       "delivered_by": "Infosys",
       "attribution": "Direct",
       "measures": [
@@ -1183,6 +1276,7 @@
       "mac": "MAC 6.3",
       "name": "Modern Slavery Awareness Champion",
       "what": "Awareness champion and social-scientist support.",
+      "volume": "Continuous",
       "delivered_by": "Infosys",
       "attribution": "Direct",
       "measures": [
@@ -1195,6 +1289,7 @@
       "mac": "—",
       "name": "Programme governance (SV Director, committee, reporting, travel, comms)",
       "what": "Social Value Director, quarterly Governance Committee, dashboards, travel and communication artefacts.",
+      "volume": "Ongoing",
       "delivered_by": "Infosys",
       "attribution": "Overhead",
       "measures": [
@@ -1207,6 +1302,7 @@
       "mac": "—",
       "name": "SV2 subject-matter expert (programme support)",
       "what": "UK-based Senior Consultant supporting SV2 delivery.",
+      "volume": "180 person-months",
       "delivered_by": "Infosys",
       "attribution": "Overhead",
       "measures": [
@@ -1219,6 +1315,7 @@
       "mac": "—",
       "name": "SV3 subject-matter expert (programme support)",
       "what": "Consultant supporting SV3 delivery.",
+      "volume": "180 person-months",
       "delivered_by": "Infosys",
       "attribution": "Overhead",
       "measures": [
@@ -1231,6 +1328,7 @@
       "mac": "—",
       "name": "Gender sensitivity training (cost line, no commitment)",
       "what": "£150,000 in the bid cost tracker; no matching commitment in Schedule 8 or the scorecard.",
+      "volume": "—",
       "delivered_by": "TBC",
       "attribution": "Orphan cost",
       "measures": [
@@ -1239,7 +1337,1458 @@
     }
   ],
   "patterns": [],
-  "measure_mac": [],
+  "measure_mac": [
+    {
+      "Measure code": "NT1",
+      "Measure": "Local people employed or retained",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.2",
+      "Strength": "Direct",
+      "Criterion it serves": "Employment",
+      "Why": "Local employment created under the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT1",
+      "Measure": "Local people employed or retained",
+      "Framework version": "SV Model 06/20",
+      "MAC": "1.1",
+      "Strength": "Supporting",
+      "Criterion it serves": "Employment, re-training, return to work",
+      "Why": "Counts where the roles bring people back into work after unemployment.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT1",
+      "Measure": "Local people employed or retained",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "1a",
+      "Strength": "Direct",
+      "Criterion it serves": "Create and retain high quality jobs",
+      "Why": "Jobs created and retained, reported by UK region.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT1",
+      "Measure": "Local people employed or retained",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "1a",
+      "Strength": "Direct",
+      "Criterion it serves": "Create good jobs or apprenticeships",
+      "Why": "New local jobs created under the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT3",
+      "Measure": "Long-term unemployed people recruited",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.2",
+      "Strength": "Direct",
+      "Criterion it serves": "Employment",
+      "Why": "Employment for people who face barriers to work.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT3",
+      "Measure": "Long-term unemployed people recruited",
+      "Framework version": "SV Model 06/20",
+      "MAC": "6.1",
+      "Strength": "Supporting",
+      "Criterion it serves": "Tackling inequality in the contract workforce",
+      "Why": "Tackles inequality in employment in the contract workforce.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT3",
+      "Measure": "Long-term unemployed people recruited",
+      "Framework version": "SV Model 06/20",
+      "MAC": "1.1",
+      "Strength": "Supporting",
+      "Criterion it serves": "Employment, re-training, return to work",
+      "Why": "Return-to-work opportunity for the long-term unemployed.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT3",
+      "Measure": "Long-term unemployed people recruited",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "6a",
+      "Strength": "Direct",
+      "Criterion it serves": "Opportunities for those who face barriers",
+      "Why": "Employment for those who face barriers to employment.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT3",
+      "Measure": "Long-term unemployed people recruited",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "1a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Create and retain high quality jobs",
+      "Why": "Adds to jobs created under the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT3",
+      "Measure": "Long-term unemployed people recruited",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "6c",
+      "Strength": "Supporting",
+      "Criterion it serves": "Tackle inequality in employment, skills and pay",
+      "Why": "Tackles inequality in employment.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT3",
+      "Measure": "Long-term unemployed people recruited",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "1a",
+      "Strength": "Direct",
+      "Criterion it serves": "Create good jobs or apprenticeships",
+      "Why": "Good jobs for a target cohort.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT3",
+      "Measure": "Long-term unemployed people recruited",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2c",
+      "Strength": "Supporting",
+      "Criterion it serves": "Talent pipeline",
+      "Why": "Builds the workforce from target cohorts.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT4",
+      "Measure": "Employees recruited who are Not in Education Employment or Training (16-24 y.o.)",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.2",
+      "Strength": "Direct",
+      "Criterion it serves": "Employment",
+      "Why": "Employment for young people not in education, employment or training.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT4",
+      "Measure": "Employees recruited who are Not in Education Employment or Training (16-24 y.o.)",
+      "Framework version": "SV Model 06/20",
+      "MAC": "6.1",
+      "Strength": "Supporting",
+      "Criterion it serves": "Tackling inequality in the contract workforce",
+      "Why": "Tackles inequality in employment in the contract workforce.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT4",
+      "Measure": "Employees recruited who are Not in Education Employment or Training (16-24 y.o.)",
+      "Framework version": "SV Model 06/20",
+      "MAC": "1.1",
+      "Strength": "Supporting",
+      "Criterion it serves": "Employment, re-training, return to work",
+      "Why": "Return-to-work opportunity for young people.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT4",
+      "Measure": "Employees recruited who are Not in Education Employment or Training (16-24 y.o.)",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "6a",
+      "Strength": "Direct",
+      "Criterion it serves": "Opportunities for those who face barriers",
+      "Why": "Employment for those who face barriers to employment.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT4",
+      "Measure": "Employees recruited who are Not in Education Employment or Training (16-24 y.o.)",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "7a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Remove barriers to entry",
+      "Why": "Removes barriers to entry for young people.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT4",
+      "Measure": "Employees recruited who are Not in Education Employment or Training (16-24 y.o.)",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "1a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Create and retain high quality jobs",
+      "Why": "Adds to jobs created under the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT4",
+      "Measure": "Employees recruited who are Not in Education Employment or Training (16-24 y.o.)",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "1a",
+      "Strength": "Direct",
+      "Criterion it serves": "Create good jobs or apprenticeships",
+      "Why": "Good jobs for 16-24 year olds not in education, employment or training (cohort 1).",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT4",
+      "Measure": "Employees recruited who are Not in Education Employment or Training (16-24 y.o.)",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2c",
+      "Strength": "Supporting",
+      "Criterion it serves": "Talent pipeline",
+      "Why": "Builds the workforce from target cohorts.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT76",
+      "Measure": "Unemployed people recruited",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.2",
+      "Strength": "Direct",
+      "Criterion it serves": "Employment",
+      "Why": "Employment for people who are unemployed.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT76",
+      "Measure": "Unemployed people recruited",
+      "Framework version": "SV Model 06/20",
+      "MAC": "6.1",
+      "Strength": "Supporting",
+      "Criterion it serves": "Tackling inequality in the contract workforce",
+      "Why": "Tackles inequality in employment in the contract workforce.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT76",
+      "Measure": "Unemployed people recruited",
+      "Framework version": "SV Model 06/20",
+      "MAC": "1.1",
+      "Strength": "Supporting",
+      "Criterion it serves": "Employment, re-training, return to work",
+      "Why": "Return-to-work opportunity.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT76",
+      "Measure": "Unemployed people recruited",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "6a",
+      "Strength": "Direct",
+      "Criterion it serves": "Opportunities for those who face barriers",
+      "Why": "Employment for those who face barriers to employment.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT76",
+      "Measure": "Unemployed people recruited",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "1a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Create and retain high quality jobs",
+      "Why": "Adds to jobs created under the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT76",
+      "Measure": "Unemployed people recruited",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "1a",
+      "Strength": "Direct",
+      "Criterion it serves": "Create good jobs or apprenticeships",
+      "Why": "Good jobs for a target cohort.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT76",
+      "Measure": "Unemployed people recruited",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2c",
+      "Strength": "Supporting",
+      "Criterion it serves": "Talent pipeline",
+      "Why": "Builds the workforce from target cohorts.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT5",
+      "Measure": "Unemployed ex-offenders aged 18 and over recruited",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.2",
+      "Strength": "Direct",
+      "Criterion it serves": "Employment",
+      "Why": "Employment for ex-offenders, who face significant barriers to work.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT5",
+      "Measure": "Unemployed ex-offenders aged 18 and over recruited",
+      "Framework version": "SV Model 06/20",
+      "MAC": "6.1",
+      "Strength": "Supporting",
+      "Criterion it serves": "Tackling inequality in the contract workforce",
+      "Why": "Tackles inequality in employment in the contract workforce.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT5",
+      "Measure": "Unemployed ex-offenders aged 18 and over recruited",
+      "Framework version": "SV Model 06/20",
+      "MAC": "1.1",
+      "Strength": "Supporting",
+      "Criterion it serves": "Employment, re-training, return to work",
+      "Why": "Return-to-work opportunity.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT5",
+      "Measure": "Unemployed ex-offenders aged 18 and over recruited",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "6a",
+      "Strength": "Direct",
+      "Criterion it serves": "Opportunities for those who face barriers",
+      "Why": "Employment for those who face barriers to employment.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT5",
+      "Measure": "Unemployed ex-offenders aged 18 and over recruited",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "1a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Create and retain high quality jobs",
+      "Why": "Adds to jobs created under the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT5",
+      "Measure": "Unemployed ex-offenders aged 18 and over recruited",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "6c",
+      "Strength": "Supporting",
+      "Criterion it serves": "Tackle inequality in employment, skills and pay",
+      "Why": "Tackles inequality in employment.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT5",
+      "Measure": "Unemployed ex-offenders aged 18 and over recruited",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "1a",
+      "Strength": "Direct",
+      "Criterion it serves": "Create good jobs or apprenticeships",
+      "Why": "Good jobs for people on probation and prison leavers (cohort 6).",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT5",
+      "Measure": "Unemployed ex-offenders aged 18 and over recruited",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2c",
+      "Strength": "Supporting",
+      "Criterion it serves": "Talent pipeline",
+      "Why": "Builds the workforce from target cohorts.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT6",
+      "Measure": "Unemployed individuals with disabilities recruited",
+      "Framework version": "SV Model 06/20",
+      "MAC": "5.1",
+      "Strength": "Direct",
+      "Criterion it serves": "Increase representation of disabled people",
+      "Why": "Disabled people recruited into the contract workforce.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT6",
+      "Measure": "Unemployed individuals with disabilities recruited",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.2",
+      "Strength": "Supporting",
+      "Criterion it serves": "Employment",
+      "Why": "Employment for people who face barriers to work.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT6",
+      "Measure": "Unemployed individuals with disabilities recruited",
+      "Framework version": "SV Model 06/20",
+      "MAC": "6.1",
+      "Strength": "Supporting",
+      "Criterion it serves": "Tackling inequality in the contract workforce",
+      "Why": "Tackles inequality in employment in the contract workforce.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT6",
+      "Measure": "Unemployed individuals with disabilities recruited",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "6b",
+      "Strength": "Direct",
+      "Criterion it serves": "Representation of disabled people",
+      "Why": "Increases the representation of disabled people in the contract workforce.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT6",
+      "Measure": "Unemployed individuals with disabilities recruited",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "6a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Opportunities for those who face barriers",
+      "Why": "Employment for those who face barriers to employment.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT6",
+      "Measure": "Unemployed individuals with disabilities recruited",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "1a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Create and retain high quality jobs",
+      "Why": "Adds to jobs created under the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT6",
+      "Measure": "Unemployed individuals with disabilities recruited",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "1a",
+      "Strength": "Direct",
+      "Criterion it serves": "Create good jobs or apprenticeships",
+      "Why": "Good jobs for people with a long-term health condition or disability (cohort 3).",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT6",
+      "Measure": "Unemployed individuals with disabilities recruited",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2c",
+      "Strength": "Supporting",
+      "Criterion it serves": "Talent pipeline",
+      "Why": "Builds the workforce from target cohorts.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT9",
+      "Measure": "Accredited training for new employees",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.3",
+      "Strength": "Direct",
+      "Criterion it serves": "Education and training",
+      "Why": "Training for new recruits that results in a recognised qualification.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT9",
+      "Measure": "Accredited training for new employees",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.2",
+      "Strength": "Supporting",
+      "Criterion it serves": "Employment",
+      "Why": "Training opportunities attached to new employment.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT9",
+      "Measure": "Accredited training for new employees",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "2a",
+      "Strength": "Direct",
+      "Criterion it serves": "Learning and skills development",
+      "Why": "Learning and skills development relevant to the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT9",
+      "Measure": "Accredited training for new employees",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "1a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Create and retain high quality jobs",
+      "Why": "Attached to jobs created under the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT9",
+      "Measure": "Accredited training for new employees",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2a",
+      "Strength": "Direct",
+      "Criterion it serves": "Training and retraining",
+      "Why": "Training that closes an identified skills gap.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT10",
+      "Measure": "Employment of new apprentices",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.2",
+      "Strength": "Direct",
+      "Criterion it serves": "Employment",
+      "Why": "Apprenticeships delivered in relation to the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT10",
+      "Measure": "Employment of new apprentices",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.3",
+      "Strength": "Direct",
+      "Criterion it serves": "Education and training",
+      "Why": "Apprenticeships lead to a recognised qualification.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT10",
+      "Measure": "Employment of new apprentices",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "1a",
+      "Strength": "Direct",
+      "Criterion it serves": "Create and retain high quality jobs",
+      "Why": "Apprenticeship opportunities, reported by level and UK region.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT10",
+      "Measure": "Employment of new apprentices",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "2a",
+      "Strength": "Direct",
+      "Criterion it serves": "Learning and skills development",
+      "Why": "Structured training towards a recognised qualification.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT10",
+      "Measure": "Employment of new apprentices",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "6a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Opportunities for those who face barriers",
+      "Why": "Counts further where apprentices are recruited from under-represented groups.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT10",
+      "Measure": "Employment of new apprentices",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "1a",
+      "Strength": "Direct",
+      "Criterion it serves": "Create good jobs or apprenticeships",
+      "Why": "Good jobs or apprenticeships, named directly in the criterion.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT10",
+      "Measure": "Employment of new apprentices",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Training and retraining",
+      "Why": "Training and retraining alongside the role.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT80",
+      "Measure": "Upskilling of existing employees through accredited training",
+      "Framework version": "SV Model 06/20",
+      "MAC": "6.2",
+      "Strength": "Direct",
+      "Criterion it serves": "In-work progression",
+      "Why": "In-work progression through new, accredited skills.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT80",
+      "Measure": "Upskilling of existing employees through accredited training",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.3",
+      "Strength": "Supporting",
+      "Criterion it serves": "Education and training",
+      "Why": "Training that results in a recognised qualification.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT80",
+      "Measure": "Upskilling of existing employees through accredited training",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "1d",
+      "Strength": "Direct",
+      "Criterion it serves": "In-work progression",
+      "Why": "In-work progression by developing new skills.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT80",
+      "Measure": "Upskilling of existing employees through accredited training",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "2a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Learning and skills development",
+      "Why": "Learning and skills development relevant to the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT80",
+      "Measure": "Upskilling of existing employees through accredited training",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2b",
+      "Strength": "Direct",
+      "Criterion it serves": "In-work progression",
+      "Why": "Upskilling towards recognised qualifications.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT11",
+      "Measure": "Personalised support to help unemployed people into work",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.2",
+      "Strength": "Direct",
+      "Criterion it serves": "Employment",
+      "Why": "Careers advice, mentoring, mock interviews and CV support into work.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT11",
+      "Measure": "Personalised support to help unemployed people into work",
+      "Framework version": "SV Model 06/20",
+      "MAC": "1.1",
+      "Strength": "Supporting",
+      "Criterion it serves": "Employment, re-training, return to work",
+      "Why": "Return-to-work support.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT11",
+      "Measure": "Personalised support to help unemployed people into work",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "6a",
+      "Strength": "Direct",
+      "Criterion it serves": "Opportunities for those who face barriers",
+      "Why": "Support into work for those who face barriers to employment.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT11",
+      "Measure": "Personalised support to help unemployed people into work",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "7a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Remove barriers to entry",
+      "Why": "Removes barriers to entry.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT11",
+      "Measure": "Personalised support to help unemployed people into work",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2c",
+      "Strength": "Direct",
+      "Criterion it serves": "Talent pipeline",
+      "Why": "Builds a talent pipeline from target cohorts.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT11",
+      "Measure": "Personalised support to help unemployed people into work",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2b",
+      "Strength": "Supporting",
+      "Criterion it serves": "In-work progression",
+      "Why": "Career advice and mentoring, named in the criterion.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT12",
+      "Measure": "Meaningful unpaid work placements while Not in Employment Education or Training",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.2",
+      "Strength": "Direct",
+      "Criterion it serves": "Employment",
+      "Why": "Work placements for young people not in education, employment or training.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT12",
+      "Measure": "Meaningful unpaid work placements while Not in Employment Education or Training",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.3",
+      "Strength": "Supporting",
+      "Criterion it serves": "Education and training",
+      "Why": "Skills gained on placement.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT12",
+      "Measure": "Meaningful unpaid work placements while Not in Employment Education or Training",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "7a",
+      "Strength": "Direct",
+      "Criterion it serves": "Remove barriers to entry",
+      "Why": "Removes barriers to entry for young people.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT12",
+      "Measure": "Meaningful unpaid work placements while Not in Employment Education or Training",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "6a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Opportunities for those who face barriers",
+      "Why": "Opportunity for those who face barriers to employment.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT12",
+      "Measure": "Meaningful unpaid work placements while Not in Employment Education or Training",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2c",
+      "Strength": "Direct",
+      "Criterion it serves": "Talent pipeline",
+      "Why": "Talent pipeline from target cohorts.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT12",
+      "Measure": "Meaningful unpaid work placements while Not in Employment Education or Training",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Training and retraining",
+      "Why": "Supported internships, named in the criterion.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT13",
+      "Measure": "Meaningful paid work placements",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.2",
+      "Strength": "Direct",
+      "Criterion it serves": "Employment",
+      "Why": "Paid placements and internships attached to the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT13",
+      "Measure": "Meaningful paid work placements",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.3",
+      "Strength": "Supporting",
+      "Criterion it serves": "Education and training",
+      "Why": "Skills gained on placement.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT13",
+      "Measure": "Meaningful paid work placements",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "7a",
+      "Strength": "Direct",
+      "Criterion it serves": "Remove barriers to entry",
+      "Why": "Removes barriers to entry for young people and under-represented groups.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT13",
+      "Measure": "Meaningful paid work placements",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "2a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Learning and skills development",
+      "Why": "Skills development relevant to the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT13",
+      "Measure": "Meaningful paid work placements",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2c",
+      "Strength": "Direct",
+      "Criterion it serves": "Talent pipeline",
+      "Why": "Talent pipeline from target cohorts.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT13",
+      "Measure": "Meaningful paid work placements",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Training and retraining",
+      "Why": "Supported internships, named in the criterion.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT8",
+      "Measure": "Support for students at local educational institutions",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.3",
+      "Strength": "Direct",
+      "Criterion it serves": "Education and training",
+      "Why": "Careers talks, mentoring and curriculum support for local students.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT8",
+      "Measure": "Support for students at local educational institutions",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "7b",
+      "Strength": "Direct",
+      "Criterion it serves": "Pipeline for the future contract workforce",
+      "Why": "Outreach that builds a pipeline for the future contract workforce.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT8",
+      "Measure": "Support for students at local educational institutions",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "2a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Learning and skills development",
+      "Why": "Skills content relevant to the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT8",
+      "Measure": "Support for students at local educational institutions",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2c",
+      "Strength": "Direct",
+      "Criterion it serves": "Talent pipeline",
+      "Why": "Early pipeline and essential skills in deprived areas.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT99",
+      "Measure": "Support for enabling visits of school children or local residents",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.3",
+      "Strength": "Supporting",
+      "Criterion it serves": "Education and training",
+      "Why": "Visits that support educational attainment.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT99",
+      "Measure": "Support for enabling visits of school children or local residents",
+      "Framework version": "SV Model 06/20",
+      "MAC": "8.2",
+      "Strength": "Supporting",
+      "Criterion it serves": "Influence to support strong, integrated communities",
+      "Why": "Opens the workplace to the local community.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT99",
+      "Measure": "Support for enabling visits of school children or local residents",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "7b",
+      "Strength": "Direct",
+      "Criterion it serves": "Pipeline for the future contract workforce",
+      "Why": "Outreach activity for the future contract workforce.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT99",
+      "Measure": "Support for enabling visits of school children or local residents",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2c",
+      "Strength": "Supporting",
+      "Criterion it serves": "Talent pipeline",
+      "Why": "Early-stage pipeline activity; lighter than structured outreach.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT14",
+      "Measure": "Spend with VCSEs in the supply chain",
+      "Framework version": "SV Model 06/20",
+      "MAC": "3.1",
+      "Strength": "Direct",
+      "Criterion it serves": "Diverse supply chains",
+      "Why": "VCSEs are named in the criterion as part of a diverse supply chain.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT14",
+      "Measure": "Spend with VCSEs in the supply chain",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "3a",
+      "Strength": "Direct",
+      "Criterion it serves": "Diverse supply chain",
+      "Why": "Direct spend with VCSEs in the supply chain.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT14",
+      "Measure": "Spend with VCSEs in the supply chain",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "1a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Create good jobs or apprenticeships",
+      "Why": "VCSE participation is named in the criterion, but supply-chain spend is not a scored outcome under ppn 026.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT18",
+      "Measure": "Spend with local companies in the supply chain",
+      "Framework version": "SV Model 06/20",
+      "MAC": "3.1",
+      "Strength": "Supporting",
+      "Criterion it serves": "Diverse supply chains",
+      "Why": "Local companies add to supply-chain diversity, but the criterion names start-ups, SMEs, VCSEs and mutuals rather than locality.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT18",
+      "Measure": "Spend with local companies in the supply chain",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "3a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Diverse supply chain",
+      "Why": "Local suppliers support a diverse supply chain without meeting the named categories on their own.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT18",
+      "Measure": "Spend with local companies in the supply chain",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "—",
+      "Strength": "—",
+      "Criterion it serves": "Not scored under this framework",
+      "Why": "Supply-chain spend is not a scored outcome under PPN 026.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT19",
+      "Measure": "Spend with local SMEs in the supply chain",
+      "Framework version": "SV Model 06/20",
+      "MAC": "3.1",
+      "Strength": "Direct",
+      "Criterion it serves": "Diverse supply chains",
+      "Why": "SMEs are named in the criterion as part of a diverse supply chain.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT19",
+      "Measure": "Spend with local SMEs in the supply chain",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "3a",
+      "Strength": "Direct",
+      "Criterion it serves": "Diverse supply chain",
+      "Why": "Direct spend with SMEs in the supply chain.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT19",
+      "Measure": "Spend with local SMEs in the supply chain",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "1a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Create good jobs or apprenticeships",
+      "Why": "SME participation is named in the criterion, but supply-chain spend is not a scored outcome under ppn 026.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT15",
+      "Measure": "Expert support to VCSEs and SMEs",
+      "Framework version": "SV Model 06/20",
+      "MAC": "2.1",
+      "Strength": "Direct",
+      "Criterion it serves": "Entrepreneurship, growth and business creation",
+      "Why": "Helps new and small organisations to grow.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT15",
+      "Measure": "Expert support to VCSEs and SMEs",
+      "Framework version": "SV Model 06/20",
+      "MAC": "3.1",
+      "Strength": "Supporting",
+      "Criterion it serves": "Diverse supply chains",
+      "Why": "Builds the capability of diverse suppliers.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT15",
+      "Measure": "Expert support to VCSEs and SMEs",
+      "Framework version": "SV Model 06/20",
+      "MAC": "3.4",
+      "Strength": "Supporting",
+      "Criterion it serves": "Collaboration throughout the supply chain",
+      "Why": "A fair and responsible approach to supply-chain partners.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT15",
+      "Measure": "Expert support to VCSEs and SMEs",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "3a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Diverse supply chain",
+      "Why": "Builds SME and VCSE capability to compete.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT15",
+      "Measure": "Expert support to VCSEs and SMEs",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "3b",
+      "Strength": "Supporting",
+      "Criterion it serves": "Co-design with communities and anchor partners",
+      "Why": "Collaboration with community and anchor partners.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT15",
+      "Measure": "Expert support to VCSEs and SMEs",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "—",
+      "Strength": "—",
+      "Criterion it serves": "Not scored under this framework",
+      "Why": "Supply-chain and business-support outcomes are not scored under PPN 026, which covers only Good Jobs and Skills.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT16",
+      "Measure": "Support for VCSEs through donations",
+      "Framework version": "SV Model 06/20",
+      "MAC": "8.2",
+      "Strength": "Supporting",
+      "Criterion it serves": "Influence to support strong, integrated communities",
+      "Why": "Support for community organisations; donations evidence commitment rather than delivery.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT16",
+      "Measure": "Support for VCSEs through donations",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "3b",
+      "Strength": "Supporting",
+      "Criterion it serves": "Co-design with communities and anchor partners",
+      "Why": "Support for community and anchor partners.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT16",
+      "Measure": "Support for VCSEs through donations",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "—",
+      "Strength": "—",
+      "Criterion it serves": "Not scored under this framework",
+      "Why": "Financial donations do not count as social value under PPN 026.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT17",
+      "Measure": "Support for VCSEs through volunteering",
+      "Framework version": "SV Model 06/20",
+      "MAC": "8.2",
+      "Strength": "Direct",
+      "Criterion it serves": "Influence to support strong, integrated communities",
+      "Why": "Employee volunteering with community organisations.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT17",
+      "Measure": "Support for VCSEs through volunteering",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "3b",
+      "Strength": "Supporting",
+      "Criterion it serves": "Co-design with communities and anchor partners",
+      "Why": "Engagement with communities and anchor partners.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT17",
+      "Measure": "Support for VCSEs through volunteering",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2b",
+      "Strength": "Supporting",
+      "Criterion it serves": "In-work progression",
+      "Why": "Only where the volunteering is skills-based development for the contract workforce.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT28",
+      "Measure": "Support for local community projects through donations",
+      "Framework version": "SV Model 06/20",
+      "MAC": "8.2",
+      "Strength": "Supporting",
+      "Criterion it serves": "Influence to support strong, integrated communities",
+      "Why": "Support for local community projects; donations evidence commitment rather than delivery.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT28",
+      "Measure": "Support for local community projects through donations",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "3b",
+      "Strength": "Supporting",
+      "Criterion it serves": "Co-design with communities and anchor partners",
+      "Why": "Support for community projects.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT28",
+      "Measure": "Support for local community projects through donations",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "—",
+      "Strength": "—",
+      "Criterion it serves": "Not scored under this framework",
+      "Why": "Financial donations do not count as social value under PPN 026.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT29",
+      "Measure": "Support for local community projects through volunteering",
+      "Framework version": "SV Model 06/20",
+      "MAC": "8.2",
+      "Strength": "Direct",
+      "Criterion it serves": "Influence to support strong, integrated communities",
+      "Why": "Employee volunteering in the local community.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT29",
+      "Measure": "Support for local community projects through volunteering",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "3b",
+      "Strength": "Supporting",
+      "Criterion it serves": "Co-design with communities and anchor partners",
+      "Why": "Engagement with communities and anchor partners.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT29",
+      "Measure": "Support for local community projects through volunteering",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "2b",
+      "Strength": "Supporting",
+      "Criterion it serves": "In-work progression",
+      "Why": "Only where the volunteering is skills-based development for the contract workforce.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT26",
+      "Measure": "Support for community health or wellbeing interventions",
+      "Framework version": "SV Model 06/20",
+      "MAC": "7.2",
+      "Strength": "Direct",
+      "Criterion it serves": "Influence to support health and wellbeing",
+      "Why": "Influences communities to support health and wellbeing.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT26",
+      "Measure": "Support for community health or wellbeing interventions",
+      "Framework version": "SV Model 06/20",
+      "MAC": "1.4",
+      "Strength": "Supporting",
+      "Criterion it serves": "Health and reduced demand on public services",
+      "Why": "Supports health and reduces demand on public services.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT26",
+      "Measure": "Support for community health or wellbeing interventions",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "8a",
+      "Strength": "Supporting",
+      "Criterion it serves": "Health and wellbeing in the contract workforce",
+      "Why": "MAC 8a covers the contract workforce; community-only health work sits outside it unless the intervention also reaches contract staff.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT26",
+      "Measure": "Support for community health or wellbeing interventions",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "—",
+      "Strength": "—",
+      "Criterion it serves": "Not scored under this framework",
+      "Why": "Community and health outcomes are not scored under PPN 026, which covers only Good Jobs and Skills.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT27",
+      "Measure": "Support for initiatives focused on strengthening community networks",
+      "Framework version": "SV Model 06/20",
+      "MAC": "8.2",
+      "Strength": "Direct",
+      "Criterion it serves": "Influence to support strong, integrated communities",
+      "Why": "Strengthens community networks.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT27",
+      "Measure": "Support for initiatives focused on strengthening community networks",
+      "Framework version": "SV Model 06/20",
+      "MAC": "8.1",
+      "Strength": "Supporting",
+      "Criterion it serves": "Co-design and delivery with communities",
+      "Why": "Supports co-design and delivery with communities.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT27",
+      "Measure": "Support for initiatives focused on strengthening community networks",
+      "Framework version": "SV Model 06/20",
+      "MAC": "1.2",
+      "Strength": "Supporting",
+      "Criterion it serves": "Supporting people and community recovery",
+      "Why": "Helps communities recover and connect.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT27",
+      "Measure": "Support for initiatives focused on strengthening community networks",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "3b",
+      "Strength": "Supporting",
+      "Criterion it serves": "Co-design with communities and anchor partners",
+      "Why": "Collaboration with communities and anchor partners.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT27",
+      "Measure": "Support for initiatives focused on strengthening community networks",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "—",
+      "Strength": "—",
+      "Criterion it serves": "Not scored under this framework",
+      "Why": "Community and health outcomes are not scored under PPN 026, which covers only Good Jobs and Skills.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT31",
+      "Measure": "Reductions in scope 1 & 2 CO2e emissions through decarbonisation",
+      "Framework version": "SV Model 06/20",
+      "MAC": "4.1",
+      "Strength": "Direct",
+      "Criterion it serves": "Additional environmental benefits",
+      "Why": "Carbon reduction in the performance of the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT31",
+      "Measure": "Reductions in scope 1 & 2 CO2e emissions through decarbonisation",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "4a",
+      "Strength": "Direct",
+      "Criterion it serves": "Additional environmental benefits",
+      "Why": "Carbon is named in the criterion.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT31",
+      "Measure": "Reductions in scope 1 & 2 CO2e emissions through decarbonisation",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "—",
+      "Strength": "—",
+      "Criterion it serves": "Not scored under this framework",
+      "Why": "Environmental outcomes are not scored under PPN 026. The commitment may still be required by the specification.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT31a",
+      "Measure": "Reductions in scope 3 CO2e emissions through decarbonisation",
+      "Framework version": "SV Model 06/20",
+      "MAC": "4.1",
+      "Strength": "Direct",
+      "Criterion it serves": "Additional environmental benefits",
+      "Why": "Carbon reduction in the performance of the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT31a",
+      "Measure": "Reductions in scope 3 CO2e emissions through decarbonisation",
+      "Framework version": "SV Model 06/20",
+      "MAC": "4.2",
+      "Strength": "Supporting",
+      "Criterion it serves": "Influence environmental protection and improvement",
+      "Why": "Scope 3 savings come from influencing suppliers.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT31a",
+      "Measure": "Reductions in scope 3 CO2e emissions through decarbonisation",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "4a",
+      "Strength": "Direct",
+      "Criterion it serves": "Additional environmental benefits",
+      "Why": "Carbon is named in the criterion.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT31a",
+      "Measure": "Reductions in scope 3 CO2e emissions through decarbonisation",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "4b",
+      "Strength": "Supporting",
+      "Criterion it serves": "Influence on climate and nature",
+      "Why": "Scope 3 savings come from influencing suppliers.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT31a",
+      "Measure": "Reductions in scope 3 CO2e emissions through decarbonisation",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "—",
+      "Strength": "—",
+      "Criterion it serves": "Not scored under this framework",
+      "Why": "Environmental outcomes are not scored under PPN 026. The commitment may still be required by the specification.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT32",
+      "Measure": "Reductions in car miles from a green transport programme",
+      "Framework version": "SV Model 06/20",
+      "MAC": "4.1",
+      "Strength": "Direct",
+      "Criterion it serves": "Additional environmental benefits",
+      "Why": "Lower travel emissions in the performance of the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT32",
+      "Measure": "Reductions in car miles from a green transport programme",
+      "Framework version": "SV Model 06/20",
+      "MAC": "4.2",
+      "Strength": "Supporting",
+      "Criterion it serves": "Influence environmental protection and improvement",
+      "Why": "Influences staff travel behaviour.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT32",
+      "Measure": "Reductions in car miles from a green transport programme",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "4a",
+      "Strength": "Direct",
+      "Criterion it serves": "Additional environmental benefits",
+      "Why": "Additional environmental benefit from reduced travel.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT32",
+      "Measure": "Reductions in car miles from a green transport programme",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "—",
+      "Strength": "—",
+      "Criterion it serves": "Not scored under this framework",
+      "Why": "Environmental outcomes are not scored under PPN 026. The commitment may still be required by the specification.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT116",
+      "Measure": "Expert support on carbon reduction to SMEs in the supply chain",
+      "Framework version": "SV Model 06/20",
+      "MAC": "4.2",
+      "Strength": "Direct",
+      "Criterion it serves": "Influence environmental protection and improvement",
+      "Why": "Influences suppliers to support environmental improvement.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT116",
+      "Measure": "Expert support on carbon reduction to SMEs in the supply chain",
+      "Framework version": "SV Model 06/20",
+      "MAC": "3.4",
+      "Strength": "Supporting",
+      "Criterion it serves": "Collaboration throughout the supply chain",
+      "Why": "Collaboration with supply-chain partners.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT116",
+      "Measure": "Expert support on carbon reduction to SMEs in the supply chain",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "4b",
+      "Strength": "Direct",
+      "Criterion it serves": "Influence on climate and nature",
+      "Why": "Influences suppliers on climate and nature protection.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT116",
+      "Measure": "Expert support on carbon reduction to SMEs in the supply chain",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "—",
+      "Strength": "—",
+      "Criterion it serves": "Not scored under this framework",
+      "Why": "Environmental outcomes are not scored under PPN 026. The commitment may still be required by the specification.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT119",
+      "Measure": "Support for green spaces, biodiversity or ecosystems",
+      "Framework version": "SV Model 06/20",
+      "MAC": "4.1",
+      "Strength": "Direct",
+      "Criterion it serves": "Additional environmental benefits",
+      "Why": "Additional environmental benefit in the performance of the contract.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT119",
+      "Measure": "Support for green spaces, biodiversity or ecosystems",
+      "Framework version": "SV Model 06/20",
+      "MAC": "4.2",
+      "Strength": "Supporting",
+      "Criterion it serves": "Influence environmental protection and improvement",
+      "Why": "Involves staff and communities in nature protection.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT119",
+      "Measure": "Support for green spaces, biodiversity or ecosystems",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "4a",
+      "Strength": "Direct",
+      "Criterion it serves": "Additional environmental benefits",
+      "Why": "Green space is named in the criterion.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT119",
+      "Measure": "Support for green spaces, biodiversity or ecosystems",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "—",
+      "Strength": "—",
+      "Criterion it serves": "Not scored under this framework",
+      "Why": "Environmental outcomes are not scored under PPN 026. The commitment may still be required by the specification.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT87",
+      "Measure": "Reductions in plastics used",
+      "Framework version": "SV Model 06/20",
+      "MAC": "4.1",
+      "Strength": "Direct",
+      "Criterion it serves": "Additional environmental benefits",
+      "Why": "Waste reduction as an additional environmental benefit.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT87",
+      "Measure": "Reductions in plastics used",
+      "Framework version": "SV Model 2025 (PPN 002)",
+      "MAC": "4a",
+      "Strength": "Direct",
+      "Criterion it serves": "Additional environmental benefits",
+      "Why": "Waste is named in the criterion.",
+      "Status": "Draft"
+    },
+    {
+      "Measure code": "NT87",
+      "Measure": "Reductions in plastics used",
+      "Framework version": "SV Model 2027 (PPN 026)",
+      "MAC": "—",
+      "Strength": "—",
+      "Criterion it serves": "Not scored under this framework",
+      "Why": "Environmental outcomes are not scored under PPN 026. The commitment may still be required by the specification.",
+      "Status": "Draft"
+    }
+  ],
   "capability": [],
   "wording": []
 }
