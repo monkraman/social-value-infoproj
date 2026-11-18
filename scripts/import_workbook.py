@@ -15,7 +15,7 @@ review the diff of app/knowledge/tables.json, and commit it.
 The optional sheets may live in their own file instead, so the master workbook never
 has to be edited (editing it through openpyxl would drop its cached formula results):
 
-    python scripts/import_workbook.py "<workbook>.xlsx" --extra "<measure-mac>.xlsx"
+    python scripts/import_workbook.py "<workbook>.xlsx" --extra "<measure-mac>.xlsx" --extra "<capability>.xlsx"
 """
 import json
 import sys
@@ -81,7 +81,7 @@ def _optional_sheets(books: list, tables: dict) -> None:
                 break
 
 
-def import_workbook(path: Path, extra: Path | None = None) -> dict:
+def import_workbook(path: Path, extra: "list[Path] | Path | None" = None) -> dict:
     warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
     wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
 
@@ -153,19 +153,20 @@ def import_workbook(path: Path, extra: Path | None = None) -> dict:
         "industries": industries,
         "initiative_library": library,
     }
-    books = [wb] + ([openpyxl.load_workbook(extra, read_only=True, data_only=True)] if extra else [])
+    others = [extra] if isinstance(extra, Path) else list(extra or [])
+    books = [wb] + [openpyxl.load_workbook(p, read_only=True, data_only=True) for p in others]
     _optional_sheets(books, tables)
     return tables
 
 
 def main():
     args = sys.argv[1:]
-    extra = None
-    if "--extra" in args:
+    extra: list[Path] = []
+    while "--extra" in args:
         i = args.index("--extra")
         if i + 1 >= len(args):
             sys.exit(__doc__)
-        extra = Path(args[i + 1])
+        extra.append(Path(args[i + 1]))
         args = args[:i] + args[i + 2:]
     if len(args) != 1:
         sys.exit(__doc__)

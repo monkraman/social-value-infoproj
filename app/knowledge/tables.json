@@ -1,7 +1,7 @@
 {
   "source": "Monk_Spaces_SV_Knowledge_Base_NHS_FWS 2.xlsx",
   "edition": "Open Access TOM System Edition 2025",
-  "imported_at": "2026-11-17T08:25:25Z",
+  "imported_at": "2026-11-18T04:50:35Z",
   "settings": {
     "default_region": "North East",
     "default_industry": "Computer programming, consultancy and related services",
@@ -2789,6 +2789,287 @@
       "Status": "Draft"
     }
   ],
-  "capability": [],
+  "capability": [
+    {
+      "Capability": "Online digital, data and AI courses for a named cohort",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "Infosys Springboard",
+      "TOM measures": "NT9, NT80",
+      "Evidence": "INI-20",
+      "Notes": "Free platform, no partner and no per-learner cost. Certificated pathways."
+    },
+    {
+      "Capability": "Mandatory training for the contract workforce",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "Infosys Lex",
+      "TOM measures": "NT80",
+      "Evidence": "INI-05",
+      "Notes": "Used on FWS for sustainability and green IT. Internal workforce only."
+    },
+    {
+      "Capability": "Digital skills workshops delivered by Infosys experts",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "Delivery teams",
+      "TOM measures": "NT8, NT11",
+      "Evidence": "NHSBT response",
+      "Notes": "CRM, cloud, data integration, automation, cyber, accessibility."
+    },
+    {
+      "Capability": "Accredited training attached to new contract roles",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "L&D plus training provider",
+      "TOM measures": "NT9",
+      "Evidence": "INI-17",
+      "Notes": "QA Consulting delivered the accredited element on FWS."
+    },
+    {
+      "Capability": "Upskilling existing staff to a recognised qualification",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "Infosys Lex, L&D",
+      "TOM measures": "NT80",
+      "Evidence": null,
+      "Notes": "Counts only where it is additional to business as usual."
+    },
+    {
+      "Capability": "Apprenticeships, with Infosys as the employer",
+      "Delivered by": "Infosys with partner",
+      "Partner": "QA Consulting (training)",
+      "Available": "Any contract",
+      "Infosys asset": "Infosys apprenticeship scheme",
+      "TOM measures": "NT10, NT4",
+      "Evidence": "INI-17",
+      "Notes": "80 apprentices over 24 months on FWS. Infosys employs; the provider trains."
+    },
+    {
+      "Capability": "Recruiting people who face barriers into contract roles",
+      "Delivered by": "Infosys with partner",
+      "Partner": "Good Things Foundation",
+      "Available": "Any contract",
+      "Infosys asset": "Resourcing team",
+      "TOM measures": "NT1, NT3, NT4, NT5, NT6, NT76",
+      "Evidence": "INI-18",
+      "Notes": "Prison leavers on FWS through Good Things Foundation, with Infosys contractually accountable."
+    },
+    {
+      "Capability": "Reskilling and placing people returning after a career break",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "Tech Returners programme",
+      "TOM measures": "NT11, NT1",
+      "Evidence": "INI-23",
+      "Notes": "12-week online reskilling with mentoring and placement support."
+    },
+    {
+      "Capability": "Work experience placements in Infosys delivery teams",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "Infosys offices",
+      "TOM measures": "NT12, NT13",
+      "Evidence": "NHSBT response",
+      "Notes": "Hands-on exposure to architecture, engineering, testing, service delivery."
+    },
+    {
+      "Capability": "Virtual work experience at scale",
+      "Delivered by": "Partner-led",
+      "Partner": "Springpod",
+      "Available": "Any contract",
+      "Infosys asset": "Infosys funds and hosts content",
+      "TOM measures": "NT12",
+      "Evidence": "INI-22",
+      "Notes": "Live and recorded sessions. Reaches cohorts that cannot travel."
+    },
+    {
+      "Capability": "Careers talks, mentoring and curriculum support in schools and colleges",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "Staff volunteering",
+      "TOM measures": "NT8",
+      "Evidence": "NHSBT response",
+      "Notes": "Staff volunteer hours. No partner needed."
+    },
+    {
+      "Capability": "After-school and maker-space provision for 16-18 year olds",
+      "Delivered by": "Partner-led",
+      "Partner": "Onside Youth",
+      "Available": "Any contract",
+      "Infosys asset": "Infosys funds",
+      "TOM measures": "NT27",
+      "Evidence": "INI-21",
+      "Notes": "Delivered through Oracle on FWS; Infosys can fund directly elsewhere."
+    },
+    {
+      "Capability": "Education outreach with a national charity",
+      "Delivered by": "Partner-led",
+      "Partner": "Sutton Trust",
+      "Available": "Any contract",
+      "Infosys asset": "Infosys funds and supplies content",
+      "TOM measures": "NT16, NT8",
+      "Evidence": "INI-24",
+      "Notes": "Summer schools and online learning for students from deprived areas."
+    },
+    {
+      "Capability": "Engaging groups under-represented in technology",
+      "Delivered by": "Infosys with partner",
+      "Partner": "Coding Black Females",
+      "Available": "Any contract",
+      "Infosys asset": "Resourcing and staff mentors",
+      "TOM measures": "NT11, NT8",
+      "Evidence": "YPO response",
+      "Notes": "Named in past responses as a standing partnership."
+    },
+    {
+      "Capability": "Device prescribing and connectivity for digitally excluded people",
+      "Delivered by": "Infosys with partner",
+      "Partner": "Good Things Foundation",
+      "Available": "Any contract",
+      "Infosys asset": "Refurbished devices, volunteer consultants",
+      "TOM measures": "NT27",
+      "Evidence": "INI-19",
+      "Notes": "500 consultations, devices and connectivity packages on FWS."
+    },
+    {
+      "Capability": "Refurbishing and redeploying IT equipment",
+      "Delivered by": "Infosys with partner",
+      "Partner": "Good Things Foundation",
+      "Available": "Any contract",
+      "Infosys asset": "Asset recovery",
+      "TOM measures": "NT27, NT87",
+      "Evidence": "INI-18, INI-12",
+      "Notes": "Doubles as employment for people facing barriers."
+    },
+    {
+      "Capability": "Behaviour-change app for a client workforce",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "Infosys DX",
+      "TOM measures": "NT31a, NT32",
+      "Evidence": "INI-09",
+      "Notes": "Built in-house. 200,000 target users on FWS."
+    },
+    {
+      "Capability": "Modern slavery assurance across the contract supply chain",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "Procurement, MSAT",
+      "TOM measures": null,
+      "Evidence": "INI-26",
+      "Notes": "Home Office MSAT twice a year. No TOM measure values this; it scores on method."
+    },
+    {
+      "Capability": "Modern slavery detection training for client staff",
+      "Delivered by": "Partner-led",
+      "Partner": "Unseen",
+      "Available": "Any contract",
+      "Infosys asset": "Infosys funds",
+      "TOM measures": "NT16",
+      "Evidence": "INI-27, INI-29",
+      "Notes": "2,400+ trained on FWS. Unseen is a standing Infosys partner."
+    },
+    {
+      "Capability": "Social Value Director, governance and reporting",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "Social Value team",
+      "TOM measures": null,
+      "Evidence": "INI-34",
+      "Notes": "Overhead, not a scored commitment. Underpins every KPI."
+    },
+    {
+      "Capability": "Accessibility review and accessibility-by-design",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "Accessibility practice",
+      "TOM measures": null,
+      "Evidence": "INI-25",
+      "Notes": "Quarterly on FWS. Evidences inclusive delivery rather than a TOM."
+    },
+    {
+      "Capability": "Supplier ESG screening and emissions transparency",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "Procurement",
+      "TOM measures": "NT31a, NT116",
+      "Evidence": "INI-11",
+      "Notes": "Scope 3 reduction through supplier engagement."
+    },
+    {
+      "Capability": "Sustainable IT assessment and green coding",
+      "Delivered by": "Infosys with partner",
+      "Partner": "Sopht",
+      "Available": "Any contract",
+      "Infosys asset": "Sustainable IT practice",
+      "TOM measures": "NT31, NT31a",
+      "Evidence": "INI-01, INI-08",
+      "Notes": "RGESN maturity assessment and a GreenOps platform."
+    },
+    {
+      "Capability": "Spend directed to local firms, SMEs and VCSEs",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "Procurement",
+      "TOM measures": "NT18, NT19, NT14",
+      "Evidence": null,
+      "Notes": "A procurement commitment, not a delivery capability. Needs category-manager sign-off."
+    },
+    {
+      "Capability": "Community grant funds",
+      "Delivered by": "Infosys",
+      "Partner": null,
+      "Available": "Any contract",
+      "Infosys asset": "Social Value budget",
+      "TOM measures": "NT28, NT16",
+      "Evidence": "INI-15, INI-16",
+      "Notes": "£25,000 every other year across five regions on FWS. Donations score weakly and not at all under PPN 026."
+    },
+    {
+      "Capability": "Data-centre efficiency, renewables and equipment recovery",
+      "Delivered by": "Partner-led",
+      "Partner": "Oracle",
+      "Available": "This contract only",
+      "Infosys asset": null,
+      "TOM measures": "NT31, NT119",
+      "Evidence": "INI-07, INI-10, INI-12, INI-14",
+      "Notes": "Oracle is the FWS technology partner. Do not offer Oracle unless they are on the bid."
+    },
+    {
+      "Capability": "NHS-specific green space and clinical sustainability training",
+      "Delivered by": "Partner-led",
+      "Partner": "Centre for Sustainable Healthcare",
+      "Available": "This contract only",
+      "Infosys asset": null,
+      "TOM measures": "NT119",
+      "Evidence": "INI-03, INI-06, INI-14",
+      "Notes": "Reached through Oracle on FWS. NHS-facing; check availability before offering."
+    },
+    {
+      "Capability": "Social value measurement, scorecard and carbon baselining",
+      "Delivered by": "Partner-led",
+      "Partner": "Monk Spaces",
+      "Available": "This contract only",
+      "Infosys asset": null,
+      "TOM measures": null,
+      "Evidence": "INI-02, INI-13",
+      "Notes": "The advisory partner behind this tool, not a delivery capability to commit in a bid."
+    }
+  ],
   "wording": []
 }
