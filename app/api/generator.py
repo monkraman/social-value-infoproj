@@ -107,6 +107,15 @@ def generator_knowledge(db: Session = Depends(get_db)) -> Dict[str, Any]:
         "modified": d.created_at.isoformat() if d.created_at else "", "size": 0,
     } for d in db.query(Document).filter(Document.is_archived.is_(False)).order_by(Document.filename).all()]
 
+    # Who Infosys has actually worked with, so a suggested partner can be weighed against
+    # the ones already used rather than accepted on the AI's word.
+    partners = [{
+        "name": str(c.get("Partner") or ""), "capability": str(c.get("Capability") or ""),
+        "worked_with_before": str(c.get("Proven") or "").startswith("Delivered"),
+        "contract_specific": str(c.get("Available") or "").startswith("This contract"),
+        "note": str(c.get("Notes") or ""),
+    } for c in (t.get("capability") or []) if str(c.get("Partner") or "").strip()]
+
     warnings: List[str] = []
     if not measure_mac:
         warnings.append("Measure-MAC map not loaded: criteria shown come from the tool's draft mapping.")
@@ -124,6 +133,7 @@ def generator_knowledge(db: Session = Depends(get_db)) -> Dict[str, Any]:
         "patterns": t.get("patterns") or [],
         "measure_mac": measure_mac,
         "track_record": track_record,
+        "partners": partners,
         "documents": documents,
         "warnings": warnings,
     }
