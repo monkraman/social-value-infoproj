@@ -216,7 +216,8 @@ def format_code_block(doc, code_lines, language=""):
     doc.add_paragraph().paragraph_format.space_after = Pt(6)
 
 
-def convert_markdown_to_docx(md_path, docx_path, doc_title, doc_id):
+def convert_markdown_to_docx(md_path, docx_path, doc_title, doc_id,
+                             subtitle="Infosys Social Value Initiative Generator — Design Specification"):
     print(f"[Converter] Reading: {md_path}")
     with open(md_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
@@ -261,7 +262,7 @@ def convert_markdown_to_docx(md_path, docx_path, doc_title, doc_id):
     p_sub = doc.add_paragraph()
     p_sub.paragraph_format.space_before = Pt(0)
     p_sub.paragraph_format.space_after = Pt(12)
-    r_sub = p_sub.add_run("Infosys Social Value RFP Response Engine — Production Design Specification")
+    r_sub = p_sub.add_run(subtitle)
     r_sub.font.name = "Calibri"
     r_sub.font.size = Pt(12)
     r_sub.font.italic = True
@@ -412,34 +413,26 @@ def convert_markdown_to_docx(md_path, docx_path, doc_title, doc_id):
 
 
 if __name__ == "__main__":
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    docs_dir = os.path.join(base_dir, "docs")
-    proj_docs_dir = os.path.join(base_dir, "social-value-infoproj", "docs")
+    # The Markdown in this repository's docs/ folder is the source; the .docx files are written beside it.
+    docs_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs")
 
     hld_md = os.path.join(docs_dir, "HIGH_LEVEL_DESIGN_DOCUMENT_HLD.md")
     hld_docx = os.path.join(docs_dir, "HIGH_LEVEL_DESIGN_DOCUMENT_HLD.docx")
-    proj_hld_docx = os.path.join(proj_docs_dir, "HIGH_LEVEL_DESIGN_DOCUMENT_HLD.docx")
 
     lld_md = os.path.join(docs_dir, "LOW_LEVEL_DESIGN_DOCUMENT_LLD.md")
     lld_docx = os.path.join(docs_dir, "LOW_LEVEL_DESIGN_DOCUMENT_LLD.docx")
-    proj_lld_docx = os.path.join(proj_docs_dir, "LOW_LEVEL_DESIGN_DOCUMENT_LLD.docx")
 
     convert_markdown_to_docx(
         hld_md,
         hld_docx,
         "High-Level Design (HLD) Document",
-        "INFOSYS-SV-HLD-2026-V1"
+        "INFOSYS-SV-HLD-2026-V2"
     )
 
     convert_markdown_to_docx(
         lld_md,
         lld_docx,
         "Low-Level Design (LLD) Document",
-        "INFOSYS-SV-LLD-2026-V1"
+        "INFOSYS-SV-LLD-2026-V2"
     )
-
-    # Also mirror into project docs directory
-    import shutil
-    shutil.copyfile(hld_docx, proj_hld_docx)
-    shutil.copyfile(lld_docx, proj_lld_docx)
-    print(f"[Done] Copied to both {docs_dir} and {proj_docs_dir}")
+    print(f"[Done] Written to {docs_dir}")
