@@ -16,7 +16,21 @@ class Settings(BaseSettings):
     DEBUG: bool = True
 
     # Multi-Provider LLM & Embedding Settings
-    LLM_PROVIDER: str = "auto"  # 'auto', 'gemini', 'openai', 'offline'
+    LLM_PROVIDER: str = "auto"  # 'auto', 'azure', 'gemini', 'openai', 'offline'
+    # Providers tried next, in order, when the first is out of quota or down, e.g. "gemini,openai".
+    LLM_FALLBACK: str = ""
+    # Which provider makes document embeddings: 'auto' (Gemini if configured, else OpenAI).
+    # Independent of LLM_PROVIDER so switching chat model never invalidates the document index.
+    EMBEDDING_PROVIDER: str = "auto"
+
+    # Azure OpenAI (keys only in the backend environment: .env locally, App Service settings / Key Vault when deployed)
+    AZURE_OPENAI_API_KEY: Optional[str] = None
+    AZURE_OPENAI_ENDPOINT: Optional[str] = None  # e.g. https://<resource>.openai.azure.com/
+    AZURE_OPENAI_DEPLOYMENT: Optional[str] = None  # the deployment name chosen in Foundry, not the model name
+    AZURE_OPENAI_API_VERSION: str = "2024-10-21"
+    AZURE_OPENAI_TIMEOUT_SECONDS: float = 120.0
+    # Leave unset for reasoning models (gpt-5, o-series), which accept only their default temperature.
+    AZURE_OPENAI_TEMPERATURE: Optional[float] = None
 
     # Google Gemini Settings (Free Tier available at ai.google.dev)
     GEMINI_API_KEY: Optional[str] = None
@@ -71,6 +85,37 @@ class Settings(BaseSettings):
     )
 
     @property
+    def is_azure_configured(self) -> bool:
+        return bool(
+            (self.AZURE_OPENAI_API_KEY or "").strip()
+            and (self.AZURE_OPENAI_ENDPOINT or "").strip()
+            and (self.AZURE_OPENAI_DEPLOYMENT or "").strip()
+            and not self.AZURE_OPENAI_API_KEY.startswith("your_")
+        )
+
+    def _chat_configured(self, provider: str) -> bool:
+        return {"azure": self.is_azure_configured, "gemini": self.is_gemini_configured,
+                "openai": self.is_openai_configured}.get(provider, False)
+
+    @property
+    def provider_order(self) -> list:
+        """Chat providers to try, in order: the active one, then LLM_FALLBACK. Unconfigured ones are skipped."""
+        first = self.active_provider
+        wanted = [first] + [p.strip().lower() for p in self.LLM_FALLBACK.split(",")]
+        return [p for i, p in enumerate(wanted) if p and self._chat_configured(p) and p not in wanted[:i]]
+
+    @property
+    def embedding_provider(self) -> str:
+        """Embeddings stay on one provider whatever the chat provider is: vectors from different
+        providers cannot be compared, so switching it means re-indexing every document."""
+        prov = self.EMBEDDING_PROVIDER.lower().strip()
+        if prov in ("gemini", "openai"):
+            return prov if self._chat_configured(prov) else "none"
+        if self.is_gemini_configured:
+            return "gemini"
+        return "openai" if self.is_openai_configured else "none"
+
+    @property
     def active_provider(self) -> str:
         prov = self.LLM_PROVIDER.lower().strip()
         has_gemini = bool(
@@ -84,6 +129,8 @@ class Settings(BaseSettings):
             and not self.OPENAI_API_KEY.startswith("your_")
         )
 
+        if prov == "azure" and self.is_azure_configured:
+            return "azure"
         if prov == "gemini" and has_gemini:
             return "gemini"
         if prov == "openai" and has_openai:
@@ -100,7 +147,7 @@ class Settings(BaseSettings):
 
     @property
     def is_ai_configured(self) -> bool:
-        return self.active_provider in ["gemini", "openai"]
+        return self.active_provider in ["azure", "gemini", "openai"]
 
     @property
     def is_openai_configured(self) -> bool:

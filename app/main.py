@@ -21,7 +21,8 @@ from app.api import (
     auth_router,
     audit_router,
     generator_router,
-    generator_runs_router
+    generator_runs_router,
+    admin_ai_router
 )
 from app.api.auth import get_current_user
 
@@ -185,6 +186,7 @@ app.include_router(responses_router, dependencies=_require_user)
 app.include_router(calculations_router, dependencies=_require_user)
 app.include_router(generator_router, dependencies=_require_user)
 app.include_router(generator_runs_router, dependencies=_require_user)
+app.include_router(admin_ai_router, dependencies=_require_user)  # each endpoint also requires superadmin
 
 
 @app.get("/")

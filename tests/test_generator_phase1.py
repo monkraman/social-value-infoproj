@@ -42,14 +42,16 @@ def test_prompt_lists_types_as_labels_only():
 # ── L2: no placeholder vectors unless explicitly allowed ──────────────────────────────────
 
 def test_embedding_without_provider_raises(monkeypatch):
-    monkeypatch.setattr(settings, "LLM_PROVIDER", "offline")
+    monkeypatch.setattr(settings, "GEMINI_API_KEY", None)  # no embedding provider at all
+    monkeypatch.setattr(settings, "OPENAI_API_KEY", None)
     monkeypatch.setattr(settings, "EMBEDDING_ALLOW_SYNTHETIC", False)
     with pytest.raises(EmbeddingUnavailable):
         embedding_service.get_embedding("digital inclusion")
 
 
 def test_placeholder_vectors_only_when_allowed(monkeypatch):
-    monkeypatch.setattr(settings, "LLM_PROVIDER", "offline")
+    monkeypatch.setattr(settings, "GEMINI_API_KEY", None)  # no embedding provider at all
+    monkeypatch.setattr(settings, "OPENAI_API_KEY", None)
     monkeypatch.setattr(settings, "EMBEDDING_ALLOW_SYNTHETIC", True)
     vec = embedding_service.get_embedding("digital inclusion")
     assert len(vec) == settings.EMBEDDING_DIMENSION

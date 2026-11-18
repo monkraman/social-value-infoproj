@@ -6,6 +6,7 @@ from app.models.audit_log import SystemAuditLog
 from app.models.toms_metric import TomsMetric
 from app.models.partner import RegionalPartner
 from app.models.generator_run import GeneratorRun
+from app.models.app_setting import AppSetting
 
 __all__ = [
     "Document",
@@ -15,5 +16,6 @@ __all__ = [
     "SystemAuditLog",
     "TomsMetric",
     "RegionalPartner",
-    "GeneratorRun"
+    "GeneratorRun",
+    "AppSetting"
 ]

@@ -79,7 +79,7 @@ class EmbeddingService:
         if not texts:
             return []
         cleaned = [" ".join(t.split()) or "empty" for t in texts]
-        provider = settings.active_provider
+        provider = settings.embedding_provider  # independent of the chat provider
 
         if provider == "openai" and settings.is_openai_configured:
             try:

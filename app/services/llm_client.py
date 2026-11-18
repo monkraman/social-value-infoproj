@@ -1,13 +1,14 @@
 """One small call into the configured AI provider that returns parsed JSON.
 
-Switching provider (scope §10: "the approved AI provider") is a .env change only:
-LLM_PROVIDER=gemini|openai plus that provider's key and model.
+Switching provider (scope §10: "the approved AI provider") is a configuration change only:
+LLM_PROVIDER=azure|gemini|openai picks the first provider, LLM_FALLBACK lists the ones tried
+next when it is out of quota or down. Keys live only in the backend's environment.
 """
 import json
 import time
 
 import httpx
-from openai import OpenAI
+from openai import AzureOpenAI, OpenAI
 
 from app.core.config import settings
 
@@ -114,29 +115,74 @@ def _parse(text: str) -> dict:
         raise LLMUnavailable(f"AI returned invalid JSON: {e}") from e
 
 
-def complete_json(system: str, user: str) -> dict:
-    provider = settings.active_provider
-    timeout = settings.GEMINI_GENERATION_TIMEOUT_SECONDS
+def _openai_style(client, model: str, system: str, user: str, temperature) -> str:
+    kwargs = {}
+    if temperature is not None:
+        kwargs["temperature"] = temperature  # reasoning models (gpt-5, o-series) accept only the default
+    resp = client.chat.completions.create(
+        model=model,
+        response_format={"type": "json_object"},
+        messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+        **kwargs,
+    )
+    return resp.choices[0].message.content or ""
 
-    if provider == "gemini" and settings.is_gemini_configured:
+
+def _call(provider: str, system: str, user: str) -> tuple[dict, str]:
+    """One attempt with one provider. Returns (parsed JSON, "provider/model")."""
+    if provider == "azure":
+        client = AzureOpenAI(
+            api_key=settings.AZURE_OPENAI_API_KEY,
+            azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
+            api_version=settings.AZURE_OPENAI_API_VERSION,
+            timeout=settings.AZURE_OPENAI_TIMEOUT_SECONDS,
+            max_retries=1,
+        )
+        try:
+            text = _openai_style(client, settings.AZURE_OPENAI_DEPLOYMENT, system, user, settings.AZURE_OPENAI_TEMPERATURE)
+        except Exception as e:  # SDK raises several error types; the message names the cause (e.g. 429)
+            raise LLMUnavailable(f"Azure OpenAI request failed: {e}") from e
+        return _parse(text), f"azure/{settings.AZURE_OPENAI_DEPLOYMENT}"
+
+    if provider == "gemini":
         text = gemini_generate(
             user,
             system=system,
             generation_config={"temperature": 0.2, "responseMimeType": "application/json"},
-            timeout=timeout,
+            timeout=settings.GEMINI_GENERATION_TIMEOUT_SECONDS,
         )
-        return _parse(text)
+        return _parse(text), f"gemini/{settings.GEMINI_MODEL}"
 
-    if provider == "openai" and settings.is_openai_configured:
+    if provider == "openai":
+        client = OpenAI(api_key=settings.OPENAI_API_KEY, timeout=settings.GEMINI_GENERATION_TIMEOUT_SECONDS)
         try:
-            resp = OpenAI(api_key=settings.OPENAI_API_KEY, timeout=timeout).chat.completions.create(
-                model=settings.OPENAI_CHAT_MODEL,
-                response_format={"type": "json_object"},
-                temperature=0.2,
-                messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-            )
-        except Exception as e:  # SDK raises several error types
+            text = _openai_style(client, settings.OPENAI_CHAT_MODEL, system, user, 0.2)
+        except Exception as e:
             raise LLMUnavailable(f"OpenAI request failed: {e}") from e
-        return _parse(resp.choices[0].message.content or "")
+        return _parse(text), f"openai/{settings.OPENAI_CHAT_MODEL}"
 
-    raise LLMUnavailable("No AI provider is configured (set LLM_PROVIDER and its API key in .env).")
+    raise LLMUnavailable(f"Unknown AI provider '{provider}'.")
+
+
+def complete_json_with_source(system: str, user: str) -> tuple[dict, str]:
+    """Try each configured provider in order (LLM_PROVIDER, then LLM_FALLBACK).
+
+    Returns the parsed JSON and which provider/model produced it, so a result can say where it
+    came from. Raises LLMUnavailable with every provider's reason when all of them fail.
+    """
+    from app.services.ai_settings_service import effective_order  # avoids an import cycle with the models
+
+    order = effective_order()
+    if not order:
+        raise LLMUnavailable("No AI provider is configured (set LLM_PROVIDER and its API key in .env).")
+    errors = []
+    for provider in order:
+        try:
+            return _call(provider, system, user)
+        except LLMUnavailable as e:
+            errors.append(str(e))
+    raise LLMUnavailable(" | ".join(errors))
+
+
+def complete_json(system: str, user: str) -> dict:
+    return complete_json_with_source(system, user)[0]
