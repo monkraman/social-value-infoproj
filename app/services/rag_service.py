@@ -10,6 +10,7 @@ from app.schemas.response import (
     GovernanceCadence,
     AIReasoningStep
 )
+from app.services.embedding_service import EmbeddingUnavailable
 from app.services.retrieval_service import retrieval_service
 from app.services.calculation_service import calculation_service
 from app.services.openai_service import openai_service
@@ -229,6 +230,15 @@ def _volume_consistency_issue(initiative: Any, metric: Any) -> Optional[str]:
     return None
 
 
+
+def _search_or_none(db, query: str, top_k: int):
+    """Evidence for a draft, or none when search is down: no draft is built on placeholder vectors."""
+    try:
+        return retrieval_service.search_chunks(db=db, query=query, top_k=top_k)
+    except EmbeddingUnavailable as e:
+        print(f"[RAG] Evidence search unavailable: {e}")
+        return []
+
 class RAGService:
     def _resolve_partner(self, raw_init: Dict[str, Any], location: str, context_text: str) -> str:
         """Resolves partner from explicit evidence, proposed name, or regional ecosystem repository."""
@@ -364,11 +374,7 @@ class RAGService:
             retrieval_query = f"{retrieval_query}. Tender requirements: {req.raw_prompt.strip()[:1200]}"
 
         # Step 2: Vector Retrieval
-        retrieved_items = retrieval_service.search_chunks(
-            db=db,
-            query=retrieval_query,
-            top_k=req.top_k
-        )
+        retrieved_items = _search_or_none(db, retrieval_query, req.top_k)
 
         # Step 3: Context Formatting
         context_parts = []
@@ -538,9 +544,7 @@ class RAGService:
             retrieval_query = f"{retrieval_query}. Tender requirements: {req.raw_prompt.strip()[:1200]}"
 
         # Step 2: Vector retrieval
-        retrieved_items = retrieval_service.search_chunks(
-            db=db, query=retrieval_query, top_k=req.top_k
-        )
+        retrieved_items = _search_or_none(db, retrieval_query, req.top_k)
 
         # Step 3: Context formatting
         context_parts = []

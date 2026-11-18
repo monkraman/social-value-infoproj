@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     OPENAI_CHAT_MODEL: str = "gpt-4o-mini"
     OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
     EMBEDDING_DIMENSION: int = 1536
+    # Placeholder vectors carry no meaning, so search over them returns noise. Only for local
+    # development or tests without an AI key; never enable it on a deployed environment.
+    EMBEDDING_ALLOW_SYNTHETIC: bool = False
 
     # Security Settings
     # JWT signing key. Set a long random value in every deployed environment; if unset,

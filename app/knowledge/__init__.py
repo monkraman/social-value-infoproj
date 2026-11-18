@@ -12,3 +12,12 @@ TABLES_PATH = Path(__file__).with_name("tables.json")
 @lru_cache(maxsize=1)
 def load_tables() -> dict:
     return json.loads(TABLES_PATH.read_text(encoding="utf-8"))
+
+
+TYPES_PATH = Path(__file__).with_name("initiative_types.json")
+
+
+@lru_cache(maxsize=1)
+def load_initiative_types() -> dict:
+    """Curated Infosys-fit assessments by initiative type id (hand-maintained, unlike tables.json)."""
+    return {t["id"]: t for t in json.loads(TYPES_PATH.read_text(encoding="utf-8"))["types"]}

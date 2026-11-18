@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.models.document import Document
 from app.models.chunk import DocumentChunk
 from app.schemas.search import SearchResultItem
-from app.services.embedding_service import embedding_service
+from app.services.embedding_service import embedding_service  # may raise EmbeddingUnavailable
 
 
 class RetrievalService:
@@ -17,7 +17,18 @@ class RetrievalService:
         top_k: int = 5,
         document_id: Optional[str] = None
     ) -> List[SearchResultItem]:
-        """Search active document chunks with PostgreSQL pgvector cosine distance."""
+        """Search active document chunks with PostgreSQL pgvector cosine distance.
+
+        Returns [] when nothing is indexed (no embedding call is made). Raises EmbeddingUnavailable
+        when documents exist but the query cannot be embedded, so callers never show results
+        ranked against a meaningless vector.
+        """
+        has_chunks = db.execute(
+            select(DocumentChunk.id).join(Document, DocumentChunk.document_id == Document.id)
+            .where(Document.is_archived == False).limit(1)
+        ).first()
+        if has_chunks is None:
+            return []
         query_vector = embedding_service.get_embedding(query)
         distance_expr = DocumentChunk.embedding.cosine_distance(query_vector)
 

@@ -9,6 +9,7 @@ from app.models.document import Document
 from app.models.chunk import DocumentChunk
 from app.schemas.document import DocumentResponse, DocumentIngestResponse, DocumentChunkResponse
 from app.services.document_service import document_service
+from app.services.embedding_service import EmbeddingUnavailable
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -59,9 +60,19 @@ def ingest_document(
             chunks_created=chunks_count,
             message="Document successfully ingested and indexed with pgvector"
         )
+    except HTTPException:
+        raise
+    except EmbeddingUnavailable as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"The document was not saved: it could not be indexed for search ({e}). Try again later.",
+        ) from e
     except ValueError as ve:
+        db.rollback()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
     except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Ingestion failed: {str(e)}")
 
 

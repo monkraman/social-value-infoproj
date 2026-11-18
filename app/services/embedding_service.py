@@ -16,6 +16,10 @@ from openai import OpenAI
 from app.core.config import settings
 
 
+class EmbeddingUnavailable(RuntimeError):
+    """No real embedding could be produced (provider down, quota, or no key)."""
+
+
 class EmbeddingService:
     def __init__(self):
         self.dimension = settings.EMBEDDING_DIMENSION
@@ -55,68 +59,54 @@ class EmbeddingService:
             arr = arr / norm
         return arr.tolist()
 
+    def _fallback(self, texts: List[str], reason: str) -> List[List[float]]:
+        """No real embedding: placeholder vectors only when explicitly allowed, otherwise an error.
+
+        A placeholder vector is stored and searched exactly like a real one, so silently using it
+        would make every search result look valid while being meaningless.
+        """
+        if settings.EMBEDDING_ALLOW_SYNTHETIC:
+            print(f"[EmbeddingService] {reason} Using placeholder vectors (EMBEDDING_ALLOW_SYNTHETIC).")
+            return [self._generate_synthetic_vector(t) for t in texts]
+        raise EmbeddingUnavailable(reason)
+
     def get_embedding(self, text: str) -> List[float]:
-        """Generates embedding using the active provider (Gemini, OpenAI, or Fallback)."""
-        cleaned_text = text.replace("\n", " ").strip()
-        if not cleaned_text:
-            cleaned_text = "empty"
-
-        provider = settings.active_provider
-
-        # 1. Google Gemini Provider via Fast REST API
-        if provider == "gemini" and settings.is_gemini_configured:
-            try:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_EMBEDDING_MODEL}:embedContent?key={settings.GEMINI_API_KEY}"
-                payload = {
-                    "content": {"parts": [{"text": cleaned_text}]},
-                    "outputDimensionality": self.dimension
-                }
-                with httpx.Client(timeout=20.0) as client:
-                    r = client.post(url, json=payload)
-                    if r.status_code == 200:
-                        values = r.json().get("embedding", {}).get("values", [])
-                        return self._normalize_and_pad_vector(values)
-                    else:
-                        print(f"[EmbeddingService] Gemini HTTP {r.status_code}: {r.text[:200]}")
-            except Exception as e:
-                print(f"[EmbeddingService] Gemini embedding error: {e}. Falling back to deterministic vector.")
-
-        # 2. OpenAI Provider
-        if provider == "openai" and settings.is_openai_configured:
-            try:
-                response = self.openai_client.embeddings.create(
-                    input=[cleaned_text],
-                    model=settings.OPENAI_EMBEDDING_MODEL
-                )
-                return response.data[0].embedding
-            except Exception as e:
-                print(f"[EmbeddingService] OpenAI embedding error: {e}. Falling back to deterministic vector.")
-
-        # 3. Offline / Fallback
-        return self._generate_synthetic_vector(cleaned_text)
+        """Embedding from the active provider. Raises EmbeddingUnavailable when none can be made."""
+        return self.get_embeddings([text])[0]
 
     def get_embeddings(self, texts: List[str]) -> List[List[float]]:
-        """Generates embeddings for a batch of strings."""
+        """Embeddings for a batch of strings, from the active provider."""
         if not texts:
             return []
-
+        cleaned = [" ".join(t.split()) or "empty" for t in texts]
         provider = settings.active_provider
-        cleaned_texts = [t.replace("\n", " ").strip() or "empty" for t in texts]
 
-        # 1. OpenAI batch embedding
         if provider == "openai" and settings.is_openai_configured:
             try:
-                response = self.openai_client.embeddings.create(
-                    input=cleaned_texts,
-                    model=settings.OPENAI_EMBEDDING_MODEL
-                )
-                return [item.embedding for item in response.data]
+                response = self.openai_client.embeddings.create(input=cleaned, model=settings.OPENAI_EMBEDDING_MODEL)
+                return [self._normalize_and_pad_vector(item.embedding) for item in response.data]
             except Exception as e:
-                print(f"[EmbeddingService] OpenAI batch embedding error: {e}. Falling back.")
-                return [self._generate_synthetic_vector(t) for t in cleaned_texts]
+                return self._fallback(cleaned, f"OpenAI embedding failed: {e}")
 
-        # 2. Gemini or Fallback
-        return [self.get_embedding(t) for t in cleaned_texts]
+        if provider == "gemini" and settings.is_gemini_configured:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_EMBEDDING_MODEL}:embedContent"
+            out: List[List[float]] = []
+            try:
+                with httpx.Client(timeout=20.0) as client:
+                    for text in cleaned:
+                        r = client.post(url, params={"key": settings.GEMINI_API_KEY},
+                                        json={"content": {"parts": [{"text": text}]}, "outputDimensionality": self.dimension})
+                        if r.status_code != 200:
+                            return self._fallback(cleaned, f"Gemini embedding failed (HTTP {r.status_code}).")
+                        values = r.json().get("embedding", {}).get("values", [])
+                        if not values:
+                            return self._fallback(cleaned, "Gemini returned an empty embedding.")
+                        out.append(self._normalize_and_pad_vector(values))
+            except httpx.HTTPError as e:
+                return self._fallback(cleaned, f"Gemini embedding failed: {e.__class__.__name__}.")
+            return out
+
+        return self._fallback(cleaned, "No AI provider is configured for embeddings.")
 
 
 embedding_service = EmbeddingService()

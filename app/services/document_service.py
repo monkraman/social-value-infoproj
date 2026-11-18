@@ -161,6 +161,21 @@ class DocumentService:
 
         return chunks
 
+    def extract_full_text(self, file_bytes: bytes, filename: str) -> str:
+        """Plain text of a whole document, for reading only (nothing is stored or embedded)."""
+        ext = filename.lower().rsplit(".", 1)[-1]
+        if ext == "pdf":
+            parts = [p["text"] for p in self.extract_text_from_pdf(file_bytes)]
+        elif ext == "docx":
+            parts = [s["text"] for s in self.extract_text_from_docx(file_bytes)]
+        elif ext == "xlsx":
+            parts = [s["text"] for s in self.extract_text_from_xlsx(file_bytes)]
+        elif ext in ("txt", "md"):
+            parts = [file_bytes.decode("utf-8", errors="ignore")]
+        else:
+            raise ValueError(f"Unsupported format: .{ext}. Use PDF, Word (.docx), Excel (.xlsx), TXT or MD.")
+        return "\n\n".join(p.strip() for p in parts if p and p.strip())
+
     def process_and_chunk_document(self, file_bytes: bytes, filename: str) -> Tuple[str, List[Dict[str, Any]]]:
         """
         Detects file type, extracts sections, and splits into structured chunks with metadata.
@@ -224,6 +239,9 @@ class DocumentService:
         if not raw_chunks:
             raise ValueError(f"Could not extract any readable text from {filename}")
 
+        # Embed first: if the embedding service is down, nothing is written (EmbeddingUnavailable).
+        embeddings = embedding_service.get_embeddings([chunk["content"] for chunk in raw_chunks])
+
         # Create Document record
         doc_id = uuid.uuid4()
         meta = custom_metadata or {}
@@ -241,10 +259,6 @@ class DocumentService:
         )
         db.add(db_doc)
         db.flush()
-
-        # Generate embeddings in batch
-        texts_to_embed = [chunk["content"] for chunk in raw_chunks]
-        embeddings = embedding_service.get_embeddings(texts_to_embed)
 
         # Create DocumentChunk records
         for idx, (chunk_data, embedding) in enumerate(zip(raw_chunks, embeddings)):

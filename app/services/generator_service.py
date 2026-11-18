@@ -5,7 +5,7 @@ initiatives and units -> code values and checks them. Cost stays blank.
 import json
 from pathlib import Path
 
-from app.knowledge import load_tables
+from app.knowledge import load_initiative_types, load_tables
 from app.services.initiative_valuation import FRAMEWORK_VERSIONS, TenderForm, localised_proxy, value_initiatives
 from app.services.llm_client import complete_json
 
@@ -17,6 +17,7 @@ Return JSON only, exactly this shape:
   "initiatives": [
     {
       "name": "Short initiative title",
+      "type": "PAT-01",
       "theme": "One of the tender themes",
       "description": "What is delivered, where, for whom",
       "attribution": "Infosys" or "Partner-led",
@@ -36,6 +37,8 @@ Return JSON only, exactly this shape:
   ]
 }
 Propose 5 to 8 initiatives. Units are whole-of-contract totals in the measure's unit.
+"type" is a label only: after deciding the initiative, give the id of the INITIATIVE TYPES entry it
+clearly is, or null. Never change, add or drop an initiative to fit that list.
 "macs" are the criteria this initiative claims, from the MEASURE-MAC MAP.
 "no_tom_reason" is set only when "lines" is empty: why no TOM measure fits (rule A4).
 "done_before" cites INFOSYS TRACK RECORD entries by id, or is [] when nothing serves the
@@ -100,6 +103,10 @@ def build_prompt(form: TenderForm, tables: dict) -> tuple[str, str]:
             "INFOSYS TRACK RECORD (already committed on past contracts — cite by id, never re-propose):\n"
             + json.dumps(track, indent=1, default=str),
         ]
+        + [
+            "INITIATIVE TYPES (labels for the \"type\" field only — not a menu of what to propose):\n"
+            + json.dumps([{"id": t["id"], "name": t["name"]} for t in load_initiative_types().values()], indent=1)
+        ]
         + ([f"MEASURE-MAC MAP:\n{json.dumps(mac_map, indent=1, default=str)}"] if mac_map else [])
         + ([f"INTERVENTION PATTERNS:\n{json.dumps(tables['patterns'], indent=1, default=str)}"] if tables.get("patterns") else [])
         + ([f"INFOSYS CAPABILITY PROFILE:\n{json.dumps(tables['capability'], indent=1, default=str)}"] if tables.get("capability") else [])
@@ -112,10 +119,28 @@ def build_prompt(form: TenderForm, tables: dict) -> tuple[str, str]:
     return RULES + "\n" + OUTPUT_CONTRACT, user
 
 
+def apply_initiative_types(result: dict, ai_output: dict) -> None:
+    """Rule D3: the Infosys-fit rating comes from the curated type, never from the AI's own words.
+
+    An unknown or missing type leaves the rating empty, so the screen says it is unassessed.
+    """
+    types = load_initiative_types()
+    raw = [r for r in (ai_output.get("initiatives") or [])]
+    for i, ini in enumerate(result.get("initiatives") or []):
+        source = raw[i] if i < len(raw) and isinstance(raw[i], dict) else {}
+        type_id = str(source.get("type") or "").strip().upper()
+        known = types.get(type_id)
+        if type_id and not known:
+            result["checks"].append(f"{ini['name']}: unknown initiative type '{type_id}' ignored; Infosys fit not assessed.")
+        ini["type"] = {"id": known["id"], "name": known["name"], "fit": known["fit"], "reason": known["reason"],
+                       "terms": known["terms"]} if known else None
+
+
 def generate(form: TenderForm) -> dict:
     tables = load_tables()
     system, user = build_prompt(form, tables)
     ai_output = complete_json(system, user)
     result = value_initiatives(ai_output, tables, form)
+    apply_initiative_types(result, ai_output)
     result["form"] = {**form.__dict__, "target_gbp": form.target_gbp}
     return result

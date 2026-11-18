@@ -1,13 +1,19 @@
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+import uuid
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.knowledge import load_tables
+from app.models.chunk import DocumentChunk
 from app.models.document import Document
+from app.services.document_service import document_service
+from app.services.embedding_service import EmbeddingUnavailable
 from app.services.generator_service import generate
+from app.services.retrieval_service import retrieval_service
 from app.services.initiative_valuation import TenderForm
 from app.services.llm_client import LLMUnavailable
 from app.services.tender_prompt import parse_tender_prompt
@@ -139,11 +145,101 @@ def generator_knowledge(db: Session = Depends(get_db)) -> Dict[str, Any]:
     }
 
 
+# A passage below this similarity is not shown as evidence: it is more likely noise than support.
+EVIDENCE_MIN_SIMILARITY = 0.6
+EVIDENCE_PER_INITIATIVE = 2
+EVIDENCE_SNIPPET_CHARS = 400
+
+
+def attach_evidence(result: Dict[str, Any], db: Session) -> None:
+    """Passages from the document repository that support each proposed initiative.
+
+    Runs after the AI and the valuation, so evidence never changes what is proposed or valued.
+    Leaves every list empty, with a note in `checks`, when nothing is indexed or search is down.
+    """
+    initiatives = result.get("initiatives") or []
+    for ini in initiatives:
+        ini["evidence"] = []
+    has_docs = db.query(DocumentChunk.id).join(Document).filter(Document.is_archived.is_(False)).first()
+    if not has_docs:
+        result["checks"].append("No past bid documents in the repository yet, so no supporting evidence is shown.")
+        return
+    try:
+        # Each passage goes to the one initiative it matches best, so a generic paragraph is not
+        # repeated under every card as if it supported all of them.
+        best: Dict[str, tuple] = {}  # chunk id -> (similarity, initiative index, hit)
+        for idx, ini in enumerate(initiatives):
+            query = f"{ini.get('name') or ''}. {ini.get('description') or ''}"
+            for h in retrieval_service.search_chunks(db=db, query=query, top_k=EVIDENCE_PER_INITIATIVE * 3):
+                if h.similarity >= EVIDENCE_MIN_SIMILARITY and h.similarity > best.get(h.chunk_id, (0.0,))[0]:
+                    best[h.chunk_id] = (h.similarity, idx, h)
+        for similarity, idx, h in sorted(best.values(), key=lambda b: -b[0]):
+            ini = initiatives[idx]
+            if len(ini["evidence"]) >= EVIDENCE_PER_INITIATIVE or any(e["document_id"] == h.document_id for e in ini["evidence"]):
+                continue  # at most one passage per document per initiative keeps the list readable
+            text = " ".join(h.content.split())
+            ini["evidence"].append({
+                "document_id": h.document_id,
+                "filename": h.filename,
+                "kind": _kind(h.filename),
+                "snippet": text[:EVIDENCE_SNIPPET_CHARS] + ("…" if len(text) > EVIDENCE_SNIPPET_CHARS else ""),
+                "similarity": similarity,
+            })
+    except EmbeddingUnavailable as e:
+        for ini in initiatives:
+            ini["evidence"] = []
+        result["checks"].append(f"Evidence search is unavailable right now ({e}); no supporting evidence is shown.")
+
+
 @router.post("/run")
-def run_generator(req: GeneratorRequest):
+def run_generator(req: GeneratorRequest, db: Session = Depends(get_db)):
     if req.region not in {r["region"] for r in load_tables()["regions"]}:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"Unknown region '{req.region}'")
     try:
-        return generate(TenderForm(**req.model_dump()))
+        result = generate(TenderForm(**req.model_dump()))
     except LLMUnavailable as e:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"AI unavailable: {e}") from e
+    attach_evidence(result, db)
+    return result
+
+
+# Policy and tender documents are read for the generator, never stored by these two endpoints.
+EXTRACT_MAX_BYTES = 15 * 1024 * 1024
+EXTRACT_MAX_CHARS = 400_000
+
+
+@router.post("/extract")
+def extract_text(file: UploadFile = File(...)) -> Dict[str, str]:
+    """Text of an uploaded PDF, Word, Excel, TXT or MD file. The file is read and discarded."""
+    name = file.filename or "document"
+    data = file.file.read(EXTRACT_MAX_BYTES + 1)
+    if not data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The file is empty.")
+    if len(data) > EXTRACT_MAX_BYTES:
+        raise HTTPException(status_code=status.HTTP_413_CONTENT_TOO_LARGE, detail="The file is larger than 15 MB.")
+    try:
+        text = document_service.extract_full_text(data, name)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(e)) from e
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                            detail=f"Could not read {name}. Is it a valid, unprotected file?") from e
+    if not text.strip():
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                            detail=f"No readable text in {name}. A scanned PDF needs OCR first.")
+    return {"name": name, "text": text[:EXTRACT_MAX_CHARS]}
+
+
+@router.get("/documents/{document_id}/text")
+def document_text(document_id: str, db: Session = Depends(get_db)) -> Dict[str, str]:
+    """Text of a document already in the repository, rebuilt from its indexed passages."""
+    try:
+        doc_uuid = uuid.UUID(document_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found.")
+    doc = db.query(Document).filter(Document.id == doc_uuid, Document.is_archived.is_(False)).first()
+    if doc is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found.")
+    chunks = (db.query(DocumentChunk.content).filter(DocumentChunk.document_id == doc_uuid)
+              .order_by(DocumentChunk.chunk_index).all())
+    return {"name": doc.filename, "text": "\n\n".join(c.content for c in chunks)[:EXTRACT_MAX_CHARS]}
