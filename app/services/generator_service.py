@@ -103,6 +103,11 @@ def build_prompt(form: TenderForm, tables: dict) -> tuple[str, str]:
         + ([f"MEASURE-MAC MAP:\n{json.dumps(mac_map, indent=1, default=str)}"] if mac_map else [])
         + ([f"INTERVENTION PATTERNS:\n{json.dumps(tables['patterns'], indent=1, default=str)}"] if tables.get("patterns") else [])
         + ([f"INFOSYS CAPABILITY PROFILE:\n{json.dumps(tables['capability'], indent=1, default=str)}"] if tables.get("capability") else [])
+        + ([
+            "HOW INFOSYS WRITES A MEASURABLE COMMITMENT (house style from a live contract scorecard — "
+            "match this level of specificity, do not reuse these commitments):\n"
+            + json.dumps(tables["wording"], indent=1, default=str)
+        ] if tables.get("wording") else [])
     )
     return RULES + "\n" + OUTPUT_CONTRACT, user
 

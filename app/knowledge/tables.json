@@ -1,7 +1,7 @@
 {
   "source": "Monk_Spaces_SV_Knowledge_Base_NHS_FWS 2.xlsx",
   "edition": "Open Access TOM System Edition 2025",
-  "imported_at": "2026-11-18T05:05:33Z",
+  "imported_at": "2026-11-18T05:14:51Z",
   "settings": {
     "default_region": "North East",
     "default_industry": "Computer programming, consultancy and related services",
@@ -3110,5 +3110,168 @@
       "Notes": "The advisory partner behind this tool, not a capability to commit in a bid."
     }
   ],
-  "wording": []
+  "wording": [
+    {
+      "Commitment": "Oracle Carbon Calculator instantiation (OCI emissions, by-spend)",
+      "What is counted": "% of infrastructure covered",
+      "Target": "50% within 5 years",
+      "Reported": "Throughout",
+      "Owner": "Oracle",
+      "Pillar": "SV1",
+      "Ref": "ACT-03"
+    },
+    {
+      "Commitment": "30-min online module - 50,000 NHS staff (Y1-3)",
+      "What is counted": "No. of NHS participants",
+      "Target": "50,000 in first 3 years",
+      "Reported": "Throughout",
+      "Owner": "Oracle",
+      "Pillar": "SV1",
+      "Ref": "OBL-04"
+    },
+    {
+      "Commitment": "Mandatory training - 100% Infosys workforce (4 hrs)",
+      "What is counted": "% of contract workforce completed",
+      "Target": "100% of Infosys staff",
+      "Reported": "Throughout (Within first 6 months of employment)",
+      "Owner": "Infosys",
+      "Pillar": "SV1",
+      "Ref": "OBL-05"
+    },
+    {
+      "Commitment": "Workforce Sustainable Behaviour app (Nudge Programme)",
+      "What is counted": "No. of active registered users",
+      "Target": "200,000 active users across contract term",
+      "Reported": "Throughout",
+      "Owner": "Infosys",
+      "Pillar": "SV1",
+      "Ref": "OBL-09"
+    },
+    {
+      "Commitment": "100% renewable electricity (Oracle UK DC by 2025; Infosys by 2040)",
+      "What is counted": "% renewables; ISO50001 compliance (Oracle Data Centre)",
+      "Target": "Infosys - 100% renewable; Oracle Cloud DCs adhere to ISO50001",
+      "Reported": "Annually",
+      "Owner": "Oracle",
+      "Pillar": "SV1",
+      "Ref": "OBL-10"
+    },
+    {
+      "Commitment": "Scope 1,2,3 GHG Emissions Reduction Tracking",
+      "What is counted": "50% decrease in Scope 2 & 3 supply chain emissions",
+      "Target": "50% reduction; CDP leadership maintained",
+      "Reported": "Annually",
+      "Owner": "Infosys",
+      "Pillar": "SV1",
+      "Ref": "OBL-11"
+    },
+    {
+      "Commitment": "11 prison-leavers newly employed on contract",
+      "What is counted": "Cumulative months employed (264 target)",
+      "Target": "264 months / 11 FTE - consolidated with KPI-12 = 2,184 months total",
+      "Reported": "Annually",
+      "Owner": "Infosys / Good Things Foundation",
+      "Pillar": "SV2",
+      "Ref": "KPI-12"
+    },
+    {
+      "Commitment": "Work-Ready Clubs (18,000 hrs/yr; 200 candidates) + 2 Maker Zones",
+      "What is counted": "Hours of support; candidates",
+      "Target": "18,000 hrs/yr; 200 candidates",
+      "Reported": "Annual / weekly sessions",
+      "Owner": "Oracle / Onside Youth",
+      "Pillar": "SV2",
+      "Ref": "OBL-15"
+    },
+    {
+      "Commitment": "5,000 hrs/yr work experience; 50 NHS candidates (UCAS-recognised)",
+      "What is counted": "Hours; participants",
+      "Target": "5,000 hrs/yr; 50 NHS candidates",
+      "Reported": "Annual / 12-week rolling",
+      "Owner": "Oracle / QA Consulting",
+      "Pillar": "SV2",
+      "Ref": "OBL-16"
+    },
+    {
+      "Commitment": "Device Prescribing - 500 consultations",
+      "What is counted": "No. of consultations resulting in appropriate prescription",
+      "Target": "500 consultations",
+      "Reported": "Once",
+      "Owner": "Infosys / Good Things Foundation",
+      "Pillar": "SV2",
+      "Ref": "SPI-02"
+    },
+    {
+      "Commitment": "Multi-Academy Trust collab - 200 learners",
+      "What is counted": "Learners reached",
+      "Target": "200 learners",
+      "Reported": "Throughout",
+      "Owner": "Oracle / Selected MAT",
+      "Pillar": "SV2",
+      "Ref": "ACT-04"
+    },
+    {
+      "Commitment": "FWS Ambassadors - 80 newly employed (Lvl 3/4 apprenticeships)",
+      "What is counted": "Cumulative months of paid work",
+      "Target": "1,920 months from 80 FTE; ref points +2y=144m, +3y=1,008m, +4y=1,440m, +5y=2,184m",
+      "Reported": "Annually",
+      "Owner": "QA Consulting",
+      "Pillar": "SV2",
+      "Ref": "KPI-11"
+    },
+    {
+      "Commitment": "MSAT report achieving ≥80% (Green RAG)",
+      "What is counted": "MSAT score ≥80%; bi-annual submission",
+      "Target": "Target ≥80%; Min 78-80; Ser 75-78; Sev <75; Threshold <70 on two consecutive",
+      "Reported": "Bi-annually 1 Apr & 1 Oct",
+      "Owner": "Infosys",
+      "Pillar": "SV3",
+      "Ref": "KPI-13"
+    },
+    {
+      "Commitment": "Unseen NHS Clinical Modern Slavery Detection training",
+      "What is counted": "Min uptake 2,400; intervention rates; 6 e-modules for 600+ staff",
+      "Target": "≥2,400 trained",
+      "Reported": "Throughout",
+      "Owner": "Infosys / Unseen",
+      "Pillar": "SV3",
+      "Ref": "OBL-21"
+    },
+    {
+      "Commitment": "5 PhDs enrolled / in-progress / published",
+      "What is counted": "Count of PhDs",
+      "Target": "5 PhDs (Effective Date + 5 years)",
+      "Reported": "Once",
+      "Owner": "Infosys / partner university",
+      "Pillar": "SV3",
+      "Ref": "SPI-03"
+    },
+    {
+      "Commitment": "£45,000 implementation fund for PhD research recommendations",
+      "What is counted": "Fund disbursed against research outputs",
+      "Target": "£45,000",
+      "Reported": "Throughout",
+      "Owner": "Infosys",
+      "Pillar": "SV3",
+      "Ref": "OBL-25"
+    },
+    {
+      "Commitment": "£30,000 innovation research grant via NHSBSA Student Services",
+      "What is counted": "Grant disbursed",
+      "Target": "£30,000",
+      "Reported": "Once",
+      "Owner": "Infosys / NHSBSA",
+      "Pillar": "SV3",
+      "Ref": "OBL-23"
+    },
+    {
+      "Commitment": "Modern Slavery Awareness Champion + social scientist support",
+      "What is counted": "Champion appointed; activity log",
+      "Target": "Continuous engagement",
+      "Reported": "Throughout",
+      "Owner": "Infosys",
+      "Pillar": "SV3",
+      "Ref": "ACT-05"
+    }
+  ]
 }
