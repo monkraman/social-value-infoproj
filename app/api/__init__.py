@@ -7,6 +7,7 @@ from app.api.calculations import router as calculations_router
 from app.api.auth import router as auth_router
 from app.api.audit import router as audit_router
 from app.api.generator import router as generator_router
+from app.api.generator_runs import router as generator_runs_router
 
 __all__ = [
     "health_router",
@@ -17,5 +18,6 @@ __all__ = [
     "calculations_router",
     "auth_router",
     "audit_router",
-    "generator_router"
+    "generator_router",
+    "generator_runs_router"
 ]
