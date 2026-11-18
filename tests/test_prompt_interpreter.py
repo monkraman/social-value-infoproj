@@ -9,7 +9,12 @@ from app.main import app
 
 
 @pytest.fixture
-def client(authed_client):
+def client(authed_client, monkeypatch):
+    # These tests check the deterministic offline packages, so no AI provider is reachable here,
+    # whatever keys the developer's .env holds.
+    from app.core.config import settings
+    for key in ("GEMINI_API_KEY", "OPENAI_API_KEY", "AZURE_OPENAI_API_KEY"):
+        monkeypatch.setattr(settings, key, None)
     return authed_client
 
 

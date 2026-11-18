@@ -43,24 +43,25 @@ def test_run_values_ai_output_in_code(authed_client, monkeypatch):
 
     def fake(system, user):
         captured["system"], captured["user"] = system, user
-        return AI_OUTPUT
+        return AI_OUTPUT, "fake/model"
 
-    monkeypatch.setattr(generator_service, "complete_json", fake)
+    monkeypatch.setattr(generator_service, "complete_json_with_source", fake)
     data = authed_client.post("/generator/run", json=BODY).json()
 
-    assert "No values from you" in captured["system"]  # rules are in the prompt
+    assert "No £ figures anywhere" in captured["system"]  # rules are in the prompt
     assert '"target_value_gbp": 1000000.0' in captured["user"]  # target sizes the units
     ini = data["initiatives"][0]
     assert ini["value_gbp"] == pytest.approx(600 * 17.48)  # AI's 99999 ignored
     assert ini["cost_gbp"] is None
     assert data["target_gbp"] == 1_000_000
+    assert data["model"] == "fake/model"  # the result says which model answered
 
 
 def test_ai_unavailable_returns_503(authed_client, monkeypatch):
     def down(system, user):
         raise LLMUnavailable("Gemini returned HTTP 429")
 
-    monkeypatch.setattr(generator_service, "complete_json", down)
+    monkeypatch.setattr(generator_service, "complete_json_with_source", down)
     res = authed_client.post("/generator/run", json=BODY)
     assert res.status_code == 503 and "429" in res.json()["detail"]
 
@@ -77,9 +78,9 @@ def test_brief_and_client_reach_the_ai_but_not_the_numbers(authed_client, monkey
 
     def fake(system, user):
         captured["user"] = user
-        return AI_OUTPUT
+        return AI_OUTPUT, "fake/model"
 
-    monkeypatch.setattr(generator_service, "complete_json", fake)
+    monkeypatch.setattr(generator_service, "complete_json_with_source", fake)
     body = {**BODY, "client": "Birmingham City Council", "brief": "Focus on digital inclusion. Budget £99M."}
     data = authed_client.post("/generator/run", json=body).json()
     assert "digital inclusion" in captured["user"] and "Birmingham City Council" in captured["user"]

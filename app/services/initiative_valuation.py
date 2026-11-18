@@ -27,7 +27,9 @@ NOT_VALUED = "Not valued"
 
 # Rule 2: the AI must never supply a £ figure. Any such key is dropped.
 _MONEY_KEY = re.compile(r"(value|gbp|cost|price|proxy|£)", re.IGNORECASE)
-_MONEY_TEXT = re.compile(r"£\s?\d[\d,.]*\s?(k|m|bn|million|billion)?\b", re.IGNORECASE)
+# The trailing space is taken only with a suffix ("£1.2 m"), so "£1,200,000 in" keeps its space
+# and a full stop after a figure stays in the sentence.
+_MONEY_TEXT = re.compile(r"£\s?\d(?:[\d,]*\d)?(?:\.\d+)?(?:\s?(?:k|m|bn|million|billion)\b)?", re.IGNORECASE)
 
 ALWAYS_ASK = "Confirm cost, delivery owner and evidence before committing."
 
@@ -162,6 +164,41 @@ def _num(v: Any) -> Optional[float]:
     return n if n == n else None  # reject NaN
 
 
+_FACTOR_SPLIT = re.compile(r"\s[x\*]\s|\s?×\s?", re.IGNORECASE)
+_NUMBER = re.compile(r"\d(?:[\d,]*\d)?(?:\.\d+)?")
+
+
+def _fmt(x: float) -> str:
+    return f"{x:,.0f}" if float(x).is_integer() else f"{x:,.2f}"
+
+
+def quantity_doubts(units: float, basis: str, unit: Optional[str], duration_years: float,
+                    people: Optional[float] = None) -> List[str]:
+    """Reasons to doubt a quantity the AI worked out itself. Only flags; never changes a number.
+
+    1. The basis reads "a x b x c" but its product is not the units given.
+    2. A "weeks" measure gives one person more weeks than the contract has.
+    """
+    doubts: List[str] = []
+    factors = [f for f in _FACTOR_SPLIT.split(basis.split("(")[0]) if f.strip()]
+    found = [_NUMBER.search(f) for f in factors]
+    nums = [float(m.group().replace(",", "")) for m in found if m]
+    readable = len(factors) >= 2 and len(nums) == len(factors)
+    if readable:
+        product = 1.0
+        for n in nums:
+            product *= n
+        if abs(product - units) > 0.01 * max(abs(product), abs(units)):
+            doubts.append(f"{_fmt(units)} does not match its basis ({' × '.join(_fmt(n) for n in nums)} = {_fmt(product)})")
+    if "week" in str(unit or "").lower() and duration_years > 0:
+        who = people if people else (nums[0] if readable else None)
+        limit = 52 * duration_years
+        if who and units / who > limit + 0.01:
+            doubts.append(f"{_fmt(units / who)} weeks per person is more than the {_fmt(limit)} weeks "
+                          f"in a {duration_years:g}-year contract")
+    return doubts
+
+
 def _strip_money(obj: dict, where: str, checks: List[str]) -> dict:
     clean = {}
     for k, v in obj.items():
@@ -235,6 +272,15 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
             if code in BARRIER_MEASURES | {"NT1"} and people is None:
                 questions.append(f"How many people does {code} cover? FTE is capped per person.")
             out["units"] = units
+
+            # The AI does its own arithmetic for units; flag sums that do not add up (value unchanged).
+            if not out["note"]:
+                doubts = quantity_doubts(units, out["basis"], measures[code].get("unit"), form.duration_years, people)
+                if doubts:
+                    out["note"] = "Check the quantity: " + "; ".join(doubts) + "."
+                    checks.append(f"{name}: {code} — check the quantity: {'; '.join(doubts)}. "
+                                  "The value uses the AI's number as given.")
+                    questions.append(f"Confirm the quantity for {code}: {doubts[0]}.")
 
             proxy, basis = localised_proxy(code, tables, form.region, form.industry)
             out["proxy_gbp"], out["proxy_basis"] = proxy, basis

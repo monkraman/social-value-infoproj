@@ -137,3 +137,38 @@ def test_spend_cannot_exceed_contract_value():
 def test_far_above_target_is_flagged():
     r = run({"name": "Hires", "lines": [{"measure": "NT1", "units": 100, "people": 40}]}, bid_amount_gbp=1_000_000)
     assert any("check the units are realistic" in c for c in r["checks"])
+
+
+# --- Quantity checks: the AI does its own arithmetic for units; the code flags sums that do not add up.
+
+from app.services.initiative_valuation import _MONEY_TEXT, quantity_doubts
+
+
+def test_money_removed_from_paragraph_keeps_the_spacing():
+    assert _MONEY_TEXT.sub("[value]", "at least £1,200,000 in local spend") == "at least [value] in local spend"
+    assert _MONEY_TEXT.sub("[value]", "costs £500.") == "costs [value]."
+    assert _MONEY_TEXT.sub("[value]", "worth £1.2m, and") == "worth [value], and"
+
+
+def test_units_that_do_not_match_their_basis_are_flagged():
+    doubts = quantity_doubts(23040, "80 apprentices x 24 months x 48 weeks per year (average)", "no. weeks", 5)
+    assert "92,160" in doubts[0]  # 80 x 24 x 48
+    assert "288 weeks per person" in doubts[1]  # more than 52 x 5 = 260
+
+
+def test_sound_units_are_not_flagged():
+    assert quantity_doubts(1000, "250 young people x 4 weeks virtual work experience each", "no. weeks", 5) == []
+    assert quantity_doubts(360, "120 workshops x 3 hours x 1 expert per session", "no. hours", 5) == []
+    assert quantity_doubts(10, "10 long-term unemployed recruited for 1 FTE year each", "no. people FTE", 5) == []
+    assert quantity_doubts(5000, "Training totalling 5,000 weeks", "no. weeks", 5) == []
+
+
+def test_a_flagged_quantity_keeps_its_value_and_raises_a_check():
+    bad = {"name": "Apprentices", "lines": [{"measure": "NT10", "units": 23040,
+                                            "basis": "80 apprentices x 24 months x 48 weeks per year"}]}
+    r = run(bad, duration_years=5)
+    ln = line(r)
+    assert ln["status"] == COUNTED and ln["units"] == 23040  # nothing changed, only flagged
+    assert ln["value_gbp"] == pytest.approx(23040 * ln["proxy_gbp"])
+    assert ln["note"].startswith("Check the quantity")
+    assert any("NT10" in c and "check the quantity" in c for c in r["checks"])

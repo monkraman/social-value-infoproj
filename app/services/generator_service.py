@@ -7,7 +7,7 @@ from pathlib import Path
 
 from app.knowledge import load_initiative_types, load_tables
 from app.services.initiative_valuation import FRAMEWORK_VERSIONS, TenderForm, localised_proxy, value_initiatives
-from app.services.llm_client import complete_json
+from app.services.llm_client import complete_json_with_source
 
 RULES = (Path(__file__).resolve().parent.parent / "knowledge" / "rules.md").read_text(encoding="utf-8")
 
@@ -139,8 +139,9 @@ def apply_initiative_types(result: dict, ai_output: dict) -> None:
 def generate(form: TenderForm) -> dict:
     tables = load_tables()
     system, user = build_prompt(form, tables)
-    ai_output = complete_json(system, user)
+    ai_output, source = complete_json_with_source(system, user)
     result = value_initiatives(ai_output, tables, form)
     apply_initiative_types(result, ai_output)
     result["form"] = {**form.__dict__, "target_gbp": form.target_gbp}
+    result["model"] = source  # e.g. "azure/gpt-4.1-mini": which provider answered after any fallback
     return result
