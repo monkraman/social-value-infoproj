@@ -20,7 +20,7 @@
 | **Frontend** | React 19, TypeScript, Vite |
 | **Backend** | Python, FastAPI, SQLAlchemy |
 | **Database** | PostgreSQL with pgvector (1,536-dimension vectors) |
-| **AI** | Azure OpenAI gpt-4.1-mini (UK South) first; Google Gemini as automatic fallback and for document search |
+| **AI** | Azure OpenAI (UK South): gpt-4.1-mini for proposals, text-embedding-3-small for document search |
 | **Security** | JWT sign-in (8-hour sessions), PBKDF2 password hashing, three roles, audit log kept 3 years |
 
 The governing design rule: **the AI proposes, the code calculates.** The AI chooses initiatives and quantities. Every pound value comes from the TOM tables through deterministic code, and every AI claim that can be checked is checked before it reaches the user.
@@ -54,7 +54,7 @@ UK public sector tenders score social value under PPN 06/20 and its successors, 
 | **Check every checkable claim** | Claimed criteria, cited past work, measure codes and quantities are validated in code. |
 | **Additive safeguards** | A check either corrects the output with a visible note or warns; it never silently drops an initiative. |
 | **Keys stay on the server** | The browser never holds an AI key or calls an AI provider. |
-| **Provider independence** | The AI provider is configuration. Providers are tried in order and fall back automatically on quota or outage. |
+| **Provider independence** | The AI model is configuration. A second Azure OpenAI deployment can be added as a backup and is tried automatically on quota or outage. |
 | **Explainability** | Each card shows where its values, criteria, evidence and model came from. |
 
 ---
@@ -66,8 +66,7 @@ UK public sector tenders score social value under PPN 06/20 and its successors, 
 | Bid writer (`bid_author`) | Describes a tender, runs the generator, edits quantities, chooses partners, copies wording |
 | Reviewer (`reviewer`) | Same access as a bid writer today; a separate review permission is not yet enforced |
 | Super-administrator (`superadmin`) | Creates users, chooses the primary AI model, reviews the audit log |
-| Azure OpenAI | Receives the tender, tables and rules; returns proposed initiatives as JSON |
-| Google Gemini | Fallback for the same request; creates embeddings for document search |
+| Azure OpenAI | Receives the tender, tables and rules; returns proposed initiatives as JSON; creates embeddings for document search |
 | Knowledge workbook | Source of TOM tables, track record, capability profile and Measure-to-MAC map, imported by a script |
 
 ---
@@ -77,12 +76,12 @@ UK public sector tenders score social value under PPN 06/20 and its successors, 
 | Container | Responsibility | Technology |
 | :--- | :--- | :--- |
 | **Frontend** | Tender entry (prompt or form), framework and criteria selection, buyer document upload, initiative cards, editing, saved runs, administration panel | React 19, TypeScript, Vite; static files |
-| **Backend API** | Authentication and roles, prompt building, AI calls with fallback, valuation and checks, evidence search, document ingestion, run history, audit | Python, FastAPI, SQLAlchemy |
+| **Backend API** | Authentication and roles, prompt building, AI calls, valuation and checks, evidence search, document ingestion, run history, audit | Python, FastAPI, SQLAlchemy |
 | **Database** | Users, saved runs, documents and their vector index, audit log, settings | PostgreSQL with pgvector |
 | **Knowledge files** | TOM tables, rules, initiative types | JSON and Markdown in the backend repository |
-| **AI providers** | Text generation and embeddings | Azure OpenAI; Google Gemini; OpenAI optional |
+| **AI service** | Text generation and embeddings | Azure OpenAI (UK South) |
 
-The frontend talks only to the backend, over HTTPS with a JWT bearer token. The backend is the only component that reaches the database and the AI providers.
+The frontend talks only to the backend, over HTTPS with a JWT bearer token. The backend is the only component that reaches the database and Azure OpenAI.
 
 ---
 
@@ -95,7 +94,7 @@ The user writes the tender in a sentence or fills a form. A deterministic parser
 Builds one request from: the tender; the valid TOM measures with a sizing proxy each; the Infosys track record (cite by ID, never re-propose); the capability profile; the 19 initiative type labels; the Measure-to-MAC map for the chosen framework; and the rules in `rules.md`. The output contract fixes the JSON shape the AI must return.
 
 ### 5.3 AI gateway
-Tries providers in the effective order: the super-administrator's choice if set, otherwise `LLM_PROVIDER` followed by `LLM_FALLBACK`. A provider without full configuration is skipped. On any failure the next provider is tried; if all fail, the user sees every reason. The result records which provider and model answered.
+Calls the configured Azure OpenAI deployment. If a backup deployment is configured, it is tried automatically on failure; if none answers, the user sees the reason. A super-administrator can choose the primary deployment from the diagnostics panel. The result records which model answered.
 
 ### 5.4 Valuation and checks
 Pure functions with no database or network access, so every rule is unit-tested. For each line: validate the measure, apply caps (A-06, NT1, supply-chain spend), compute units × localised proxy, apply A-07 (one employment measure per group of people) and A-13 (carbon is conditional). Then validate claimed criteria (A1, A2), citations (D2), and quantities against their stated basis; remove £ figures from text; and compare the total with the target.
@@ -114,13 +113,13 @@ Each run is saved with its full state so a user can reopen it. A super-administr
 2. The frontend loads the knowledge summary and form options from the backend.
 3. The user enters the tender, picks the framework and criteria, and optionally uploads buyer documents (text extracted by the backend).
 4. **Ask the AI** sends the tender to `/generator/run`.
-5. The backend builds the prompt and calls the AI gateway; the first available provider answers with JSON.
+5. The backend builds the prompt and calls the AI gateway; Azure OpenAI answers with JSON.
 6. The valuation layer values and checks every initiative and adds the curated Infosys fit rating.
 7. Evidence search attaches supporting passages.
 8. The frontend shows the cards, totals and checks; the user edits quantities and partners and copies wording.
 9. The run is saved to `/generator/runs`.
 
-If no AI provider is available, step 5 returns HTTP 503 with each provider's reason and nothing is valued.
+If Azure OpenAI is unavailable, step 5 returns HTTP 503 with the reason and nothing is valued.
 
 ---
 
@@ -145,7 +144,7 @@ If no AI provider is available, step 5 returns HTTP 503 with each provider's rea
 | :--- | :--- |
 | **Accuracy** | All £ values computed in code from versioned tables; AI £ figures removed |
 | **Traceability** | Each line shows measure, units, basis, proxy and its source; each card names the AI model |
-| **Availability of AI** | Automatic fallback across providers; clear error when none is available |
+| **Availability of AI** | Clear error and retry when Azure OpenAI is unavailable; optional backup deployment |
 | **Data residency** | Azure OpenAI deployed in UK South |
 | **Security** | Keys only in server settings; JWT with 8-hour expiry; role checks on every protected endpoint |
 | **Auditability** | Request and security events logged with user, time and outcome; AI model changes recorded |
@@ -171,7 +170,7 @@ GitHub Actions deploy on every push to `main`: the backend to Azure App Service 
 | :--- | :--- | :--- |
 | AI proposes unrealistic quantities | Quantity check flags lines whose units do not match their basis or exceed the contract's weeks; target check flags totals above 150% | Have the AI return the parts and let code multiply |
 | AI names a partner Infosys has not agreed with | Partner is a suggestion; nothing is named until the user chooses | Give the AI the regional partner list |
-| AI provider quota or outage | Automatic fallback to the next provider | Add a second Azure deployment if required |
+| Azure OpenAI quota or outage | Clear error; the user retries | Add a backup Azure OpenAI deployment in a second UK region |
 | Thin knowledge base weakens evidence | Evidence threshold hides weak matches | Add past bids, track record and measures |
 | Key exposure | Keys only on the server; rotation process | Move secrets to Key Vault |
 | TOM edition changes | Yearly re-import script with a reviewable diff | Assign an owner for the yearly update |

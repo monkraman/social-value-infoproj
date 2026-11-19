@@ -34,7 +34,7 @@ This document specifies the modules, data, interfaces and algorithms of the Init
 | `app/api/calculations.py` | TOMs Catalog, Regional Partners and Value Tuner endpoints |
 | `app/services/generator_service.py` | Prompt builder, output contract, `generate()`, initiative type labels |
 | `app/services/initiative_valuation.py` | Valuation and all checks (pure functions) |
-| `app/services/llm_client.py` | Provider calls (Azure OpenAI, Gemini, OpenAI), ordered fallback, JSON parsing |
+| `app/services/llm_client.py` | Azure OpenAI calls, ordered backup, JSON parsing |
 | `app/services/ai_settings_service.py` | Stored primary-provider choice and the effective order |
 | `app/services/embedding_service.py`, `retrieval_service.py`, `document_service.py` | Embeddings, vector search, text extraction and chunking |
 | `app/services/tender_prompt.py` | Deterministic parser for the tender sentence |
@@ -102,7 +102,7 @@ All endpoints except `/health`, `/ping`, `/auth/login` and `/auth/status` need a
 | `POST /documents/ingest`, `GET /documents`, `DELETE /documents/{id}`, `POST /documents/{id}/restore`, `GET /documents/{id}/chunks` | Past bid documents | Delete archives by default (`?permanent=true` removes the document and its vectors); 503 when embeddings are unavailable, nothing half-written |
 | `POST /search` | Vector search over passages | 503 when embeddings are unavailable |
 | `GET /audit/logs`, `GET /audit/summary`, `POST /audit/purge-expired` | Audit log | |
-| `GET /health` | Database, pgvector, active provider, configured providers | Used by diagnostics |
+| `GET /health` | Database, pgvector, active AI model configuration | Used by diagnostics |
 
 ### 4.1 `POST /generator/run`
 
@@ -132,11 +132,11 @@ Response (abridged):
 
 ## 5. Algorithms
 
-### 5.1 Provider order and fallback (`llm_client`, `ai_settings_service`)
-1. Configured providers: Azure needs key, endpoint and deployment; Gemini and OpenAI need a key.
-2. Default order: `LLM_PROVIDER`, then each of `LLM_FALLBACK`, keeping only configured ones, no repeats.
+### 5.1 Model order and backup (`llm_client`, `ai_settings_service`)
+1. A deployment counts as configured when its key, endpoint and deployment name are set.
+2. Default order: `LLM_PROVIDER`, then each of `LLM_FALLBACK` (an optional backup), keeping only configured ones, no repeats.
 3. Effective order: the stored superadmin choice first (if configured), then the default order. The stored choice is cached for 15 seconds; a database error falls back to the default order.
-4. For each provider: call with the system and user prompt, JSON response format; parse JSON (code fences stripped). Any failure moves to the next provider. Gemini also moves down its own model list on HTTP 404, 429, 500 or 503 and rests a failed model for 10 minutes.
+4. For each provider: call with the system and user prompt, JSON response format; parse JSON (code fences stripped). Any failure moves to the next configured deployment, if there is one.
 5. All failed: raise `LLMUnavailable` with every reason; the API returns 503.
 
 ### 5.2 Valuation (`value_initiatives`)
@@ -156,7 +156,7 @@ Then per initiative: keep only claimed MACs served by a proposed measure under t
 The AI returns a type ID from the 19 curated types. The fit rating, name and reason come from `initiative_types.json`; an unknown ID leaves the rating empty with a check.
 
 ### 5.4 Evidence (`attach_evidence`)
-Documents are split into chunks of up to 800 characters with 150 overlap, embedded with `gemini-embedding-001` at 1,536 dimensions. For each initiative the query is its name and description; the top six hits are considered; a hit counts at similarity ≥ 0.6; each chunk goes to its best initiative; at most two passages per initiative and one per document; snippets are cut to 400 characters. When embeddings are unavailable, search returns 503 or the run notes that evidence is unavailable; synthetic vectors are used only when `EMBEDDING_ALLOW_SYNTHETIC` is set.
+Documents are split into chunks of up to 800 characters with 150 overlap, embedded with the Azure OpenAI embedding deployment (`text-embedding-3-small`) at 1,536 dimensions. For each initiative the query is its name and description; the top six hits are considered; a hit counts at similarity ≥ 0.6; each chunk goes to its best initiative; at most two passages per initiative and one per document; snippets are cut to 400 characters. When embeddings are unavailable, search returns 503 or the run notes that evidence is unavailable; synthetic vectors are used only when `EMBEDDING_ALLOW_SYNTHETIC` is set.
 
 ### 5.5 Frontend mapping (`fromBackend`)
 Backend values are used as given (`proxy_gbp`, `value_gbp`). The frontend recomputes totals for display and adds a check if any differ from the backend's (value drift). Backend citations, evidence and type are used, with the earlier local heuristics as fallback when a field is absent (older saved runs).
@@ -167,14 +167,12 @@ Backend values are used as given (`proxy_gbp`, `value_gbp`). The frontend recomp
 
 | Variable | Default | Notes |
 | :--- | :--- | :--- |
-| `LLM_PROVIDER` | `auto` | `azure`, `gemini`, `openai` or `offline` |
-| `LLM_FALLBACK` | empty | Comma list, e.g. `gemini` |
+| `LLM_PROVIDER` | `auto` | `azure` in production |
+| `LLM_FALLBACK` | empty | Optional backup; empty in production |
 | `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_DEPLOYMENT` | empty | All three needed |
 | `AZURE_OPENAI_API_VERSION` | `2024-10-21` | `2025-01-01-preview` in use |
 | `AZURE_OPENAI_TEMPERATURE` | unset | Leave unset for reasoning models |
-| `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_EMBEDDING_MODEL` | | Embedding model `gemini-embedding-001` |
-| `OPENAI_API_KEY`, `OPENAI_CHAT_MODEL` | | Optional third provider |
-| `EMBEDDING_PROVIDER` | `auto` | Changing it means re-indexing documents |
+| `EMBEDDING_PROVIDER`, `AZURE_OPENAI_EMBEDDING_DEPLOYMENT` | `azure`, `text-embedding-3-small` | Changing the embedding model means re-indexing documents |
 | `EMBEDDING_DIMENSION` | `1536` | Must match the column |
 | `EMBEDDING_ALLOW_SYNTHETIC` | false | Development only |
 | `DATABASE_URL` | | PostgreSQL with pgvector |
@@ -189,8 +187,8 @@ Backend values are used as given (`proxy_gbp`, `value_gbp`). The frontend recomp
 
 | Situation | Behaviour |
 | :--- | :--- |
-| No AI provider answers | 503 with each provider's reason; nothing valued |
-| AI returns invalid JSON | Treated as a provider failure; next provider tried |
+| Azure OpenAI does not answer | 503 with the reason; nothing valued |
+| AI returns invalid JSON | Treated as a failure; the backup deployment is tried if configured, otherwise 503 |
 | Unknown region | 422 |
 | Embeddings unavailable during ingestion | 503, transaction rolled back, nothing stored |
 | Embeddings unavailable during a run | Run succeeds; a check says evidence is unavailable |
@@ -202,4 +200,4 @@ Backend values are used as given (`proxy_gbp`, `value_gbp`). The frontend recomp
 
 ## 8. Testing
 
-Run `pytest` in the backend repository (123 tests, about nine minutes against a remote database). Coverage includes valuation rules and checks (`test_initiative_valuation.py`), generator API with a fake AI (`test_generator_api.py`), Phase 1 behaviour (`test_generator_phase1.py`), provider order, fallback and the admin switch (`test_llm_providers.py`), authentication and route protection, documents and pgvector, and saved runs. Tests create users named `pytest-…` and remove them afterwards. The frontend is checked with `tsc` and `oxlint`.
+Run `pytest` in the backend repository (123 tests, about nine minutes against a remote database). Coverage includes valuation rules and checks (`test_initiative_valuation.py`), generator API with a fake AI (`test_generator_api.py`), Phase 1 behaviour (`test_generator_phase1.py`), model order, backup and the admin switch (`test_llm_providers.py`), authentication and route protection, documents and pgvector, and saved runs. Tests create users named `pytest-…` and remove them afterwards. The frontend is checked with `tsc` and `oxlint`.

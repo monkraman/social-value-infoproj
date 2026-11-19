@@ -20,7 +20,7 @@
 
 **Purpose.** This plan describes how the Initiative Generator moves from its current proof-of-concept hosting to a production service on Microsoft Azure: the target setup, what must be in place first, the deployment and verification steps, how to roll back, and how the service is run afterwards.
 
-**Scope.** Frontend, backend API, database, AI providers and their configuration. Not in scope: changes to the tool's features or AI behaviour, which follow the normal change process (branch, before/after comparison, approval).
+**Scope.** Frontend, backend API, database, Azure OpenAI and their configuration. Not in scope: changes to the tool's features or AI behaviour, which follow the normal change process (branch, before/after comparison, approval).
 
 ---
 
@@ -33,10 +33,9 @@
 | Backend API | Azure App Service `infosys-social-value` (B1) | FastAPI backend; the only component that holds secrets |
 | Secrets | Azure Key Vault | AI keys, database password, JWT secret |
 | Database | PostgreSQL with pgvector | Users, saved runs, documents, audit log |
-| Primary AI | Azure OpenAI `gpt-4.1-mini`, UK South | Proposes initiatives |
-| Fallback AI | Google Gemini | Fallback for proposals; creates the vectors for evidence search |
+| AI | Azure OpenAI, UK South: `gpt-4.1-mini` and `text-embedding-3-small` | Proposes initiatives; creates the vectors for evidence search |
 
-The browser loads the frontend from Azure Static Web Apps and calls only the backend API. The backend is the single component that holds secrets and reaches the database and the AI providers. Azure OpenAI answers first; Gemini is the automatic fallback and also creates the vectors used by evidence search.
+The browser loads the frontend from Azure Static Web Apps and calls only the backend API. The backend is the single component that holds secrets and reaches the database and Azure OpenAI. All data and AI processing stay in Azure, UK South.
 
 **Environments**
 
@@ -75,7 +74,7 @@ Each gate must be met, or explicitly accepted as a risk by the approver, before 
 
 - Sign-in required for every endpoint except health and sign-in; JWT sessions expire after 8 hours.
 - Passwords stored as PBKDF2 hashes; no public sign-up — only a super-administrator creates users.
-- AI keys and the database password live only on the server; the browser never holds a key or calls an AI provider.
+- AI keys and the database password live only on the server; the browser never holds a key or calls Azure OpenAI directly.
 - Requests, errors, security events and AI model changes are written to the audit log, kept for 3 years.
 - The AI's £ figures are removed; every value is calculated in code from the TOM tables.
 
@@ -83,7 +82,7 @@ Each gate must be met, or explicitly accepted as a risk by the approver, before 
 
 | Item | Action |
 | --- | --- |
-| Secrets | Store `AZURE_OPENAI_API_KEY`, `GEMINI_API_KEY`, `DATABASE_URL` and `JWT_SECRET_KEY` in Key Vault; reference them from App Service settings using a managed identity |
+| Secrets | Store `AZURE_OPENAI_API_KEY`, `DATABASE_URL` and `JWT_SECRET_KEY` in Key Vault; reference them from App Service settings using a managed identity |
 | Rotation | Rotate the Azure OpenAI key and the database password before go-live, and use new values for production |
 | JWT secret | New random value of at least 32 characters, different from every other environment |
 | First administrator | Use `INITIAL_ADMIN_EMAIL` / `INITIAL_ADMIN_PASSWORD` once, then remove both settings |
@@ -103,7 +102,7 @@ Code reaches Azure through GitHub Actions on every push to `main`: the backend r
 
 1. Scale the App Service plan to B1, turn on Always On, HTTPS Only and TLS 1.2.
 2. Create the Key Vault, add the secrets, give the App Service a managed identity with read access.
-3. Add the App Service settings: `LLM_PROVIDER=azure`, `LLM_FALLBACK=gemini`, the four `AZURE_OPENAI_*` values (endpoint, key, deployment `gpt-4.1-mini`, API version `2025-01-01-preview`), `AZURE_OPENAI_TEMPERATURE=0.2`, `GEMINI_API_KEY`, `GEMINI_MODEL` (a current model, not `gemini-1.5-flash`), `EMBEDDING_PROVIDER=auto`, `DATABASE_URL`, `JWT_SECRET_KEY`, `APP_ENV=production`, `DEBUG=False`, `CORS_ORIGINS`.
+3. Add the App Service settings: `LLM_PROVIDER=azure`, the four `AZURE_OPENAI_*` values (endpoint, key, deployment `gpt-4.1-mini`, API version `2025-01-01-preview`), `AZURE_OPENAI_TEMPERATURE=0.2`, `EMBEDDING_PROVIDER=azure`, `AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-3-small`, `DATABASE_URL`, `JWT_SECRET_KEY`, `APP_ENV=production`, `DEBUG=False`, `CORS_ORIGINS`.
 4. Set the startup command to `bash startup.sh`.
 5. Restart the App Service. Database tables are created automatically at start-up.
 6. In the frontend repository, set the GitHub variable `VITE_API_URL` to the App Service URL and re-run the Static Web Apps workflow.
@@ -129,7 +128,7 @@ Code reaches Azure through GitHub Actions on every push to `main`: the backend r
 | S2 | Open the frontend URL | Sign-in page loads with no browser errors |
 | S3 | Sign in as a test user | Lands on the Initiative Generator |
 | S4 | Run one representative tender | Initiatives appear in about one minute; each card names "Azure OpenAI · gpt-4.1-mini" |
-| S5 | Diagnostics, as super-administrator | AI model card shows Azure first, Gemini as fallback |
+| S5 | Diagnostics, as super-administrator | AI model card shows Azure OpenAI `gpt-4.1-mini` |
 
 **Acceptance tests (before go-live, with Infosys)**
 
@@ -142,7 +141,7 @@ Code reaches Azure through GitHub Actions on every push to `main`: the backend r
 | A5 | Choose a delivery partner and draft the bid response | Wording can be copied |
 | A6 | Reopen a run from "Recent tenders" | The run reopens as saved |
 | A7 | Upload, search and archive a past bid document | Passages appear in Evidence Search; archived documents are excluded |
-| A8 | Fallback | With Azure OpenAI temporarily unavailable, the run completes on Gemini and the card says so |
+| A8 | AI unavailable | With Azure OpenAI temporarily unavailable, the user sees a clear message, nothing is valued, and a retry works once it is back |
 | A9 | Access control | A bid writer cannot open user creation or the AI model settings |
 | A10 | Session expiry | After 8 hours the user is asked to sign in again |
 
@@ -154,7 +153,7 @@ Code reaches Azure through GitHub Actions on every push to `main`: the backend r
 | --- | --- | --- |
 | New release breaks something | Revert the commit on `main`; GitHub Actions redeploys the previous version. With a staging slot, swap the slots back instead | Minutes |
 | Azure backend unavailable on go-live day | Point the frontend's `VITE_API_URL` back to the Render backend and re-run the frontend workflow | About 10 minutes |
-| Azure OpenAI fails or is out of quota | No action needed: Gemini takes over automatically. A super-administrator can also choose the model in diagnostics | Immediate |
+| Azure OpenAI fails or is out of quota | Users retry; raise the quota or add a backup Azure OpenAI deployment in another UK region | Minutes to hours |
 | Knowledge workbook import gives wrong values | Re-import the previous workbook version from Git | Minutes |
 | Database problem | Restore from the provider's backup or point-in-time restore | Depends on provider |
 
@@ -174,7 +173,7 @@ Code reaches Azure through GitHub Actions on every push to `main`: the backend r
 | Users | Add and remove users; remove leavers the same week | As needed | Super-administrator |
 | Knowledge | Re-import the workbook when the track record, capability profile or pattern library changes | As needed | Developer, on Infosys request |
 | TOM edition | Import the new Open Access TOM edition and review the value changes | Yearly | Developer + Infosys |
-| AI model | Check the Azure OpenAI and Gemini model retirement dates and move to the successor model with a before/after comparison | Twice a year | Developer |
+| AI model | Check the Azure OpenAI model retirement dates and move to the successor model with a before/after comparison | Twice a year | Developer |
 | Dependencies | Update libraries and re-run all tests | Quarterly | Developer |
 
 **Support:** issues are reported to the agreed Monk Spaces contact with the tender, the time and a screenshot; never with passwords or keys.
@@ -199,10 +198,11 @@ Code reaches Azure through GitHub Actions on every push to `main`: the backend r
 
 | Risk | Likelihood | Mitigation |
 | --- | --- | --- |
-| AI model retired by the provider | Medium | Fallback provider; twice-yearly model check |
+| AI model retired by Microsoft | Medium | Twice-yearly model check; move to the successor with a before/after comparison |
 | Unrealistic figure reaches a bid | Medium | Quantity and target checks; human review of every figure |
 | Key exposure | Low after rotation | Key Vault, 90-day rotation |
 | Cost overrun | Low | Budget alert; small model (`gpt-4.1-mini`) |
+| Azure OpenAI outage | Low | Clear error and retry; optional backup deployment |
 
 **Sign-off**
 
