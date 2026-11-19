@@ -435,4 +435,12 @@ if __name__ == "__main__":
         "Low-Level Design (LLD) Document",
         "INFOSYS-SV-LLD-2026-V2"
     )
+
+    convert_markdown_to_docx(
+        os.path.join(docs_dir, "PRODUCTION_DEPLOYMENT_PLAN.md"),
+        os.path.join(docs_dir, "PRODUCTION_DEPLOYMENT_PLAN.docx"),
+        "Production Deployment Plan",
+        "INFOSYS-SV-DEPLOY-2026-V1",
+        subtitle="Infosys Social Value Initiative Generator — Production Deployment"
+    )
     print(f"[Done] Written to {docs_dir}")
