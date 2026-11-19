@@ -1,7 +1,7 @@
 {
   "source": "Monk_Spaces_SV_Knowledge_Base_NHS_FWS 2.xlsx",
   "edition": "Open Access TOM System Edition 2025",
-  "imported_at": "2026-11-18T05:14:51Z",
+  "imported_at": "2026-11-19T08:17:38Z",
   "settings": {
     "default_region": "North East",
     "default_industry": "Computer programming, consultancy and related services",
@@ -3272,6 +3272,1436 @@
       "Owner": "Infosys",
       "Pillar": "SV3",
       "Ref": "ACT-05"
+    }
+  ],
+  "delivery": [
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-01",
+      "Step": "Publish RGESN assessment grid (D1 deliverable)",
+      "Due": "01/05/2028",
+      "Reporting cycle": "Twice"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-01",
+      "Step": "Scope definition - identify in-scope FWS services for RGESN review",
+      "Due": "01/07/2026",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-01",
+      "Step": "Apply RGESN framework across front-end, back-end, architecture, governance layers",
+      "Due": "01/09/2026",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-01",
+      "Step": "Consolidate service-level impact scores + prioritised recommendations",
+      "Due": "01/10/2026",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-02",
+      "Step": "Platform live and operational (D2 deliverable)",
+      "Due": "01/05/2028",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-02",
+      "Step": "Confirm scope and data sources for platform",
+      "Due": "01/07/2026",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-02",
+      "Step": "Provision platform environment",
+      "Due": "01/09/2026",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-02",
+      "Step": "Configure automated data ingestion + integrate datasets",
+      "Due": "01/03/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-02",
+      "Step": "Define KPI catalogue and quality controls",
+      "Due": "01/06/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-03",
+      "Step": "Publish baseline, reconcile with existing records (D3 deliverable)",
+      "Due": "01/09/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-03",
+      "Step": "Publish baseline and reconcile with existing records",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-03",
+      "Step": "Develop foundational dashboards",
+      "Due": "01/09/2026",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-03",
+      "Step": "Align methodology with NHS reporting practices + validate with SMEs",
+      "Due": "01/03/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-04",
+      "Step": "100% of Programme-mapped Infosys developers complete Energy Efficient Training",
+      "Due": "01/09/2027",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-04",
+      "Step": "Deliver role-based training modules covering sustainable design infrastructure and architecture practices, and responsib",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-04",
+      "Step": "Provide supporting materials and maintain attendance records",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-05",
+      "Step": "Publish scenario analysis with quantified levers (D5)",
+      "Due": "07/11/2028",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-05",
+      "Step": "Identify efficiency & reduction opportunities",
+      "Due": "07/11/2028",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-05",
+      "Step": "Develop scenario models with documented assumptions",
+      "Due": "07/11/2028",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-05",
+      "Step": "Align options with organizational constraints and priorities",
+      "Due": "07/11/2028",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-06",
+      "Step": "Prioritized action plan with owners, milestones, and review cadence",
+      "Due": "07/11/2028",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-06",
+      "Step": "Translate scenarios into prioritised action plan",
+      "Due": "07/11/2028",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-06",
+      "Step": "Assign accountability + timelines",
+      "Due": "07/11/2028",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-06",
+      "Step": "Establish governance cadence + performance checkpoints",
+      "Due": "07/11/2028",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-07",
+      "Step": "Case study published via GDSA (D7)",
+      "Due": "07/11/2028",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-07",
+      "Step": "Curate case study content (context, interventions, outcomes)",
+      "Due": "07/11/2028",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-07",
+      "Step": "Coordinate review/approvals with communications team",
+      "Due": "07/11/2028",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-08",
+      "Step": "Monitoring dashboards and periodic reports",
+      "Due": "06/08/2040",
+      "Reporting cycle": "Quarterly"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-08",
+      "Step": "Maintain dashboards and periodic reporting",
+      "Due": "06/08/2040",
+      "Reporting cycle": "Quarterly"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-08",
+      "Step": "Monitor progress against planned trajectories",
+      "Due": "06/08/2040",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-08",
+      "Step": "Highlight variances for action",
+      "Due": "06/08/2040",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-09",
+      "Step": "Advisory Sessions & written recommendations",
+      "Due": "06/08/2040",
+      "Reporting cycle": "Quarterly"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-09",
+      "Step": "Provide continuous reviews and advisory",
+      "Due": "06/08/2040",
+      "Reporting cycle": "Quarterly"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-09",
+      "Step": "Recommend course corrections and optimizations based on observed results",
+      "Due": "06/08/2040",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-09",
+      "Step": "Support decision-making",
+      "Due": "06/08/2040",
+      "Reporting cycle": "Quarterly"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-10",
+      "Step": "Communications package (internal/external)",
+      "Due": "06/08/2040",
+      "Reporting cycle": "Per release"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-10",
+      "Step": "Communications package",
+      "Due": "06/08/2040",
+      "Reporting cycle": "Per release"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-10",
+      "Step": "Prepare internal and external communications",
+      "Due": "06/08/2040",
+      "Reporting cycle": "Per release"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-10",
+      "Step": "Manage approvals",
+      "Due": "06/08/2040",
+      "Reporting cycle": "Per release"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-10",
+      "Step": "Showcase progress and achievements",
+      "Due": "06/08/2040",
+      "Reporting cycle": "Per release"
+    },
+    {
+      "Initiative": "INI-01",
+      "Scorecard ID": "KPI-10",
+      "Step": "Support change adoption",
+      "Due": "06/08/2040",
+      "Reporting cycle": "Per release"
+    },
+    {
+      "Initiative": "INI-02",
+      "Scorecard ID": "OBL-01",
+      "Step": "Carbon footprint baseline (Scope 1/2/3)",
+      "Due": "01/07/2026",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-02",
+      "Scorecard ID": "OBL-01",
+      "Step": "Aggregate publicly disclosed Scope 1/2/3 for contracting partners",
+      "Due": "01/07/2026",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-02",
+      "Scorecard ID": "OBL-01",
+      "Step": "Document methodology + assumptions (template)",
+      "Due": "01/07/2026",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-02",
+      "Scorecard ID": "OBL-01",
+      "Step": "Annual refresh of carbon baseline",
+      "Due": "01/07/2026",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-02",
+      "Scorecard ID": "OBL-02",
+      "Step": "Supplier-attributed emissions monitoring (spend-allocated)",
+      "Due": "01/07/2026",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-02",
+      "Scorecard ID": "OBL-02",
+      "Step": "Compile supplier global GHG intensity",
+      "Due": "01/07/2026",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-02",
+      "Scorecard ID": "OBL-02",
+      "Step": "Calculate attributable emissions = intensity × NHS spend",
+      "Due": "01/07/2026",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-02",
+      "Scorecard ID": "OBL-02",
+      "Step": "Reconcile material methodology changes",
+      "Due": "01/07/2026",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-02",
+      "Scorecard ID": "OBL-02",
+      "Step": "Annual refresh of supplier intensities",
+      "Due": "01/07/2026",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-02",
+      "Scorecard ID": "ACT-02",
+      "Step": "Mobilisation step - Monk Spaces appointed",
+      "Due": "01/12/2025",
+      "Reporting cycle": "One-off"
+    },
+    {
+      "Initiative": "INI-02",
+      "Scorecard ID": "ACT-02",
+      "Step": "Engagement letter executed",
+      "Due": "01/12/2025",
+      "Reporting cycle": "One-off"
+    },
+    {
+      "Initiative": "INI-02",
+      "Scorecard ID": "ACT-02",
+      "Step": "Baseline dataset aggregated + methodology delivered",
+      "Due": "01/03/2026",
+      "Reporting cycle": "One-off"
+    },
+    {
+      "Initiative": "INI-03",
+      "Scorecard ID": "OBL-03",
+      "Step": "Net Zero Leadership workshops - 280 board-level leaders",
+      "Due": "01/03/2027",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-03",
+      "Scorecard ID": "OBL-03",
+      "Step": "Cumulative leaders trained (target 280)",
+      "Due": "31/05/2037",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-03",
+      "Scorecard ID": "OBL-03",
+      "Step": "Design Phase",
+      "Due": "31/05/2037",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-03",
+      "Scorecard ID": "OBL-03",
+      "Step": "Mar 2028 - 20 leaders",
+      "Due": "31/05/2037",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-03",
+      "Scorecard ID": "OBL-03",
+      "Step": "Mar 2030 - 50 leaders",
+      "Due": "31/05/2037",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-03",
+      "Scorecard ID": "OBL-03",
+      "Step": "Mar 2034 - 160 leaders",
+      "Due": "31/05/2037",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-03",
+      "Scorecard ID": "OBL-03",
+      "Step": "Mar 2037 - 50 leaders",
+      "Due": "31/05/2037",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-04",
+      "Scorecard ID": "OBL-04",
+      "Step": "30-min online module - 50,000 NHS staff (Y1-3)",
+      "Due": "01/10/2028",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-04",
+      "Scorecard ID": "OBL-04",
+      "Step": "Cumulative NHS staff participants (50,000 in first 3 yrs)",
+      "Due": "06/10/2040",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-04",
+      "Scorecard ID": "OBL-04",
+      "Step": "Module designed (Y1)",
+      "Due": "06/10/2040",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-04",
+      "Scorecard ID": "OBL-04",
+      "Step": "NHS Staff trained within 1st 3 years",
+      "Due": "06/10/2040",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-04",
+      "Scorecard ID": "OBL-04",
+      "Step": "NHS Staff trained after 1st 3 years",
+      "Due": "06/10/2040",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-04",
+      "Scorecard ID": "OBL-04",
+      "Step": "Marketing undertaken by Oracle/For Net-Zero Nature & Health",
+      "Due": "06/10/2040",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-05",
+      "Scorecard ID": "OBL-05",
+      "Step": "100% Infosys FWS workforce complete 4-hr training",
+      "Due": "01/03/2026",
+      "Reporting cycle": "Within first 6 months"
+    },
+    {
+      "Initiative": "INI-06",
+      "Scorecard ID": "OBL-06",
+      "Step": "Percentage Completion",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-06",
+      "Scorecard ID": "OBL-06",
+      "Step": "Cumulative NHS staff trained (target 280)",
+      "Due": "31/05/2037",
+      "Reporting cycle": "Every 2 years"
+    },
+    {
+      "Initiative": "INI-06",
+      "Scorecard ID": "OBL-06",
+      "Step": "1st Green Health Route (C3 end + 1 year)",
+      "Due": "31/05/2029",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-06",
+      "Scorecard ID": "OBL-06",
+      "Step": "2nd Green Health Route (C3 end + 3 year)",
+      "Due": "31/05/2031",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-06",
+      "Scorecard ID": "OBL-06",
+      "Step": "3rd Green Health Route (C3 end + 5 year)",
+      "Due": "31/05/2033",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-06",
+      "Scorecard ID": "OBL-06",
+      "Step": "4th Green Health Route (C3 end + 7 year)",
+      "Due": "31/05/2035",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-06",
+      "Scorecard ID": "OBL-06",
+      "Step": "5th Green Health Route (C3 end + 9 year)",
+      "Due": "31/05/2037",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-07",
+      "Scorecard ID": "OBL-07",
+      "Step": "FWS data centres maintain ISO50001/14001 + Climate Neutral DC Pact",
+      "Due": "06/05/2040",
+      "Reporting cycle": "Annual audit"
+    },
+    {
+      "Initiative": "INI-07",
+      "Scorecard ID": "OBL-07",
+      "Step": "ISO50001/14001 certification maintained",
+      "Due": "06/05/2040",
+      "Reporting cycle": "Annual audit"
+    },
+    {
+      "Initiative": "INI-08",
+      "Scorecard ID": "KPI-04",
+      "Step": "100% of Programme-mapped Infosys developers complete Energy Efficient Training",
+      "Due": "01/09/2027",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-08",
+      "Scorecard ID": "KPI-04",
+      "Step": "Deliver role-based training modules covering sustainable design infrastructure and architecture practices, and responsib",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-08",
+      "Scorecard ID": "KPI-04",
+      "Step": "Provide supporting materials and maintain attendance records",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-08",
+      "Scorecard ID": "OBL-08",
+      "Step": "Energy-efficient coding principles training rolled out to all Infosys FWS developers",
+      "Due": "06/05/2040",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-09",
+      "Scorecard ID": "OBL-09",
+      "Step": "Workforce Sustainable Behaviour app (Nudge Programme)",
+      "Due": "06/05/2029",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-09",
+      "Scorecard ID": "OBL-09",
+      "Step": "Active registered users (target 200,000)",
+      "Due": "06/05/2029",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-09",
+      "Scorecard ID": "OBL-09",
+      "Step": "Programme Initiation & planning",
+      "Due": "01/02/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-09",
+      "Scorecard ID": "OBL-09",
+      "Step": "Functional Requirement gathering",
+      "Due": "01/09/2026",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-09",
+      "Scorecard ID": "OBL-09",
+      "Step": "App & Nudge (behavioural) design",
+      "Due": "01/10/2026",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-09",
+      "Scorecard ID": "OBL-09",
+      "Step": "App Development",
+      "Due": "01/11/2026",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-09",
+      "Scorecard ID": "OBL-09",
+      "Step": "App testing & updates",
+      "Due": "01/01/2028",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-09",
+      "Scorecard ID": "OBL-09",
+      "Step": "Deployment & phased rollout",
+      "Due": "01/05/2028",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-09",
+      "Scorecard ID": "OBL-09",
+      "Step": "Monitoring & support",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-10",
+      "Scorecard ID": "OBL-10",
+      "Step": "100% renewable electricity (Oracle UK DC by 2025; Infosys by 2040)",
+      "Due": "30/09/2040",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-10",
+      "Scorecard ID": "OBL-10",
+      "Step": "Oracle UK datacentres adhere to ISO50001",
+      "Due": "30/09/2040",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-10",
+      "Scorecard ID": "OBL-10",
+      "Step": "Infosys 100% renewable electricity by 2040",
+      "Due": "30/09/2040",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-10",
+      "Scorecard ID": "OBL-10",
+      "Step": "Oracle 100% Renewable Energy",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-10",
+      "Scorecard ID": "OBL-10",
+      "Step": "Contracting partners % renewable energy",
+      "Due": "30/09/2040",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-11",
+      "Scorecard ID": "OBL-11",
+      "Step": "Scope 1,2,3 GHG Emissions Reduction Tracking",
+      "Due": "06/05/2040",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-11",
+      "Scorecard ID": "OBL-11",
+      "Step": "Reducing absolute Scope 3 GHG emissions by 30%",
+      "Due": "06/05/2040",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-11",
+      "Scorecard ID": "OBL-11",
+      "Step": "Reducing absolute Scope 1 and 2 greenhouse gas (GHG) emissions by 75%",
+      "Due": "06/05/2040",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-12",
+      "Scorecard ID": "OBL-12",
+      "Step": "Oracle 'Design for Environment' - 100% recovery, <0.1% to landfill",
+      "Due": "06/05/2040",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-12",
+      "Scorecard ID": "OBL-12",
+      "Step": "100% IT equipment recovered",
+      "Due": "06/05/2040",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-12",
+      "Scorecard ID": "OBL-12",
+      "Step": "Waste-to-landfill <0.1% maintained",
+      "Due": "06/05/2040",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-13",
+      "Scorecard ID": "OBL-13",
+      "Step": "Social Value Scorecard + Oracle Carbon Calculator (Y3+)",
+      "Due": "01/07/2026",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-13",
+      "Scorecard ID": "OBL-13",
+      "Step": "Social Value Scorecard live by Y1",
+      "Due": "01/07/2026",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-13",
+      "Scorecard ID": "OBL-13",
+      "Step": "Programme Delivery Plan operational",
+      "Due": "01/05/2026",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-13",
+      "Scorecard ID": "OBL-13",
+      "Step": "Oracle Carbon Calculator instantiated from Y3",
+      "Due": "01/04/2027",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-13",
+      "Scorecard ID": "OBL-13",
+      "Step": "50% of OCI infrastructure covered within 5 yrs",
+      "Due": "01/03/2032",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-13",
+      "Scorecard ID": "ACT-03",
+      "Step": "Oracle Carbon Calculator instantiation (OCI emissions, by-spend)",
+      "Due": "01/04/2027",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-13",
+      "Scorecard ID": "ACT-03",
+      "Step": "OCI emissions calculator configured",
+      "Due": "01/04/2027",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-13",
+      "Scorecard ID": "ACT-03",
+      "Step": "% of OCI infrastructure covered (target 50% in 5 yrs)",
+      "Due": "01/03/2032",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-14",
+      "Scorecard ID": "SPI-01",
+      "Step": "5 Green Health Routes established and maintained",
+      "Due": "31/05/2037",
+      "Reporting cycle": "Every 2 years"
+    },
+    {
+      "Initiative": "INI-14",
+      "Scorecard ID": "SPI-01",
+      "Step": "Green Health Routes established (cumulative target 5)",
+      "Due": "31/05/2037",
+      "Reporting cycle": "Every 2 years"
+    },
+    {
+      "Initiative": "INI-14",
+      "Scorecard ID": "SPI-01",
+      "Step": "1st Green Health Route (C3 end + 1 year)",
+      "Due": "31/05/2029",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-14",
+      "Scorecard ID": "SPI-01",
+      "Step": "2nd Green Health Route (C3 end + 3 year)",
+      "Due": "31/05/2031",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-14",
+      "Scorecard ID": "SPI-01",
+      "Step": "3rd Green Health Route (C3 end + 5 year)",
+      "Due": "31/05/2033",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-14",
+      "Scorecard ID": "SPI-01",
+      "Step": "4th Green Health Route (C3 end + 7 year)",
+      "Due": "31/05/2035",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-14",
+      "Scorecard ID": "SPI-01",
+      "Step": "5th Green Health Route (C3 end + 9 year)",
+      "Due": "31/05/2037",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-14",
+      "Scorecard ID": "SPI-01",
+      "Step": "Site selection methodology agreed with NHSBSA",
+      "Due": "01/09/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-16",
+      "Scorecard ID": "OBL-20",
+      "Step": "Cumulative disbursement (£125,000 by 2034)",
+      "Due": "2036",
+      "Reporting cycle": "Every 2 years"
+    },
+    {
+      "Initiative": "INI-17",
+      "Scorecard ID": "KPI-11",
+      "Step": "FWS Ambassadors employed (percentage)",
+      "Due": "01/10/2030",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-17",
+      "Scorecard ID": "KPI-11",
+      "Step": "FWS Ambassadors employed (cumulative)",
+      "Due": "01/10/2030",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-17",
+      "Scorecard ID": "KPI-11",
+      "Step": "Pilot cohort recruitment (8 apprentices)",
+      "Due": "31/12/2029",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-17",
+      "Scorecard ID": "KPI-11",
+      "Step": "Cohort 1",
+      "Due": "31/05/2029",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-17",
+      "Scorecard ID": "KPI-11",
+      "Step": "Cohort 2",
+      "Due": "30/09/2029",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-17",
+      "Scorecard ID": "KPI-11",
+      "Step": "Cohort 3",
+      "Due": "31/01/2030",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-17",
+      "Scorecard ID": "KPI-11",
+      "Step": "Cohort 4",
+      "Due": "30/05/2030",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-17",
+      "Scorecard ID": "KPI-11",
+      "Step": "10% of Ambassadors progress to Level 4",
+      "Due": "01/10/2030",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-18",
+      "Scorecard ID": "KPI-12",
+      "Step": "11 prison-leavers newly employed on contract",
+      "Due": "01/09/2028",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-18",
+      "Scorecard ID": "KPI-12",
+      "Step": "11 prison-leavers recruited & trained",
+      "Due": "01/09/2028",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-18",
+      "Scorecard ID": "KPI-12",
+      "Step": "Cumulative months of paid work (target 264)",
+      "Due": "01/09/2032",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-19",
+      "Scorecard ID": "SPI-02",
+      "Step": "Device Prescribing - 500 consultations",
+      "Due": "01/03/2028",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-19",
+      "Scorecard ID": "SPI-02",
+      "Step": "Consultations with appropriate prescriptions (target 500)",
+      "Due": "01/03/2028",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-19",
+      "Scorecard ID": "SPI-02",
+      "Step": "Pilot geography + primary-care referral pathway agreed",
+      "Due": "01/12/2026",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-19",
+      "Scorecard ID": "SPI-02",
+      "Step": "Volunteer digital consultants trained (20 vols × 7 consults)",
+      "Due": "01/06/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-19",
+      "Scorecard ID": "SPI-02",
+      "Step": "Pause for Evaluation (Q3 2027)",
+      "Due": "01/07/2027",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-21",
+      "Scorecard ID": "OBL-15",
+      "Step": "Work-Ready Clubs (18,000 hrs/yr; 200 candidates) + 2 Maker Zones",
+      "Due": null,
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-21",
+      "Scorecard ID": "OBL-15",
+      "Step": "Cumulative candidates via Work-Ready Clubs (target 200)",
+      "Due": null,
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-21",
+      "Scorecard ID": "OBL-15",
+      "Step": "Regions selected for Delivery & Recruitment",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-21",
+      "Scorecard ID": "OBL-15",
+      "Step": "2 Maker Zones set up in North-West",
+      "Due": null,
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-21",
+      "Scorecard ID": "OBL-15",
+      "Step": "Annual Maker Zone workshops (2/wk × 5 yrs)",
+      "Due": null,
+      "Reporting cycle": "Weekly"
+    },
+    {
+      "Initiative": "INI-22",
+      "Scorecard ID": "OBL-16",
+      "Step": "5,000 hrs/yr work experience; 50 NHS candidates (UCAS-recognised)",
+      "Due": "01/04/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-22",
+      "Scorecard ID": "OBL-16",
+      "Step": "Springpod content configuration (develop live and pre-recorded audio-visual programme)",
+      "Due": "00:00:00",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-22",
+      "Scorecard ID": "OBL-16",
+      "Step": "NHS-specific candidates accessing virtual WX (target 50)",
+      "Due": "00:00:00",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-22",
+      "Scorecard ID": "OBL-16",
+      "Step": "Springpod publicising through channels and partner networks",
+      "Due": "00:00:00",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-23",
+      "Scorecard ID": "OBL-17",
+      "Step": "12-week online programme for tech returners",
+      "Due": "01/04/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-23",
+      "Scorecard ID": "OBL-17",
+      "Step": "Programme design complete",
+      "Due": "00:00:00",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-23",
+      "Scorecard ID": "OBL-17",
+      "Step": "Rolling 12-week cohorts delivered",
+      "Due": "00:00:00",
+      "Reporting cycle": "12-week cohorts"
+    },
+    {
+      "Initiative": "INI-23",
+      "Scorecard ID": "OBL-17",
+      "Step": "Cumulative participants placed in mid/senior roles",
+      "Due": "00:00:00",
+      "Reporting cycle": "Per cohort"
+    },
+    {
+      "Initiative": "INI-24",
+      "Scorecard ID": "OBL-18",
+      "Step": "Sutton Trust Online + MAT collab - 225 students/yr accessing 1,350 hrs",
+      "Due": null,
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-24",
+      "Scorecard ID": "OBL-18",
+      "Step": "Cumulative students accessing pathway support (avg 225/yr)",
+      "Due": null,
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-24",
+      "Scorecard ID": "OBL-18",
+      "Step": "Cumulative learning hours delivered",
+      "Due": null,
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-24",
+      "Scorecard ID": "OBL-18",
+      "Step": "Partnership agreements with Sutton Trust + MAT",
+      "Due": "01/09/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-24",
+      "Scorecard ID": "OBL-18",
+      "Step": "Resourcing/funding for Sutton Trust & MAT by Infosys (support on technical content development)",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-24",
+      "Scorecard ID": "ACT-04",
+      "Step": "Multi-Academy Trust collab - 200 learners",
+      "Due": "01/09/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-24",
+      "Scorecard ID": "ACT-04",
+      "Step": "MAT partner selected",
+      "Due": "01/09/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-24",
+      "Scorecard ID": "ACT-04",
+      "Step": "Hackathons / career events delivered",
+      "Due": "30/09/2030",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-24",
+      "Scorecard ID": "ACT-04",
+      "Step": "Cumulative learners reached (target 200)",
+      "Due": "30/09/2030",
+      "Reporting cycle": "Annual"
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "MSAT report achieving ≥80% (Green RAG)",
+      "Due": "01/10/2026",
+      "Reporting cycle": "Bi-annual"
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Current MSAT submission (Infosys)",
+      "Due": "01/10/2026",
+      "Reporting cycle": "Bi-annual"
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Current MSAT submission (Oracle)",
+      "Due": "01/10/2026",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Current MSAT submission (Microsoft)",
+      "Due": "01/10/2026",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Current MSAT submission (Littlefish)",
+      "Due": "01/10/2026",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Current MSAT submission (BCG)",
+      "Due": "01/10/2026",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Current MSAT submission (Atlassian)",
+      "Due": "01/10/2026",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Current MSAT submission (ServiceNow)",
+      "Due": "01/10/2026",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Whistlblower policy align with NHSBSA",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Managing Safegaurding alegations policy align with NHSBSA",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Safegaurding policy align with NHSBSA",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Procurement policy align with NHSBSA",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Throrough & complete induction & training on Workplace rights",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Top-3 suppliers MSAT achieve Green RAG",
+      "Due": "01/03/2027",
+      "Reporting cycle": "Bi-annual"
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "All FWS suppliers complete NHS Supplier Roadmap assessments",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Bi-annual submissions delivered on schedule",
+      "Due": "06/05/2040",
+      "Reporting cycle": "Bi-annual"
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Third-party Suppliers/Subcontractors will follow the reporting and compliance requirements set by Infosys and our partne",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-26",
+      "Scorecard ID": "KPI-13",
+      "Step": "Narrative report (from SVD to contracting authority)",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-21",
+      "Step": "£25,000 one-off reforestation donation",
+      "Due": "01/09/2026",
+      "Reporting cycle": "One-off"
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-21",
+      "Step": "Unseen NHS Clinical Modern Slavery Detection training",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-21",
+      "Step": "Cumulative progress",
+      "Due": "01/01/2040",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-21",
+      "Step": "Design of virtual clasroom program",
+      "Due": "01/01/2040",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-21",
+      "Step": "Unseen Learning Academy launch",
+      "Due": "01/01/2040",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-21",
+      "Step": "Design of pre-recorded course for FWS commences, learning lessons from live sessions",
+      "Due": "01/01/2040",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-21",
+      "Step": "Pre-recorded modern slavery module launches on FWS",
+      "Due": "01/01/2040",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-21",
+      "Step": "MS training intervention correlation tracked",
+      "Due": "01/01/2040",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-22",
+      "Step": "Unseen Learning Academy - Modern Slavery Awareness raising",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-22",
+      "Step": "Cumulative progress (Engagement through Procurement-specific modules)",
+      "Due": "01/01/2040",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-22",
+      "Step": "Create materials such as articles, videos, and expert talks to address key modern slavery risks, challenge common miscon",
+      "Due": "01/01/2040",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-22",
+      "Step": "Procurement-specific modules engaging 600+ staff",
+      "Due": "01/01/2040",
+      "Reporting cycle": "Continuous"
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-22",
+      "Step": "Incorproate 'Modern slavery awareness module' into the FWS Ambassadors induction programme",
+      "Due": "01/01/2040",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-22",
+      "Step": "Volunteering opportunities to be made available for ‘Digital prescribers’ offering volunteering options",
+      "Due": "01/01/2040",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-27",
+      "Scorecard ID": "OBL-22",
+      "Step": "Anonymised case studies to be shared alongside data-driven impact reports",
+      "Due": "01/01/2040",
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-29",
+      "Scorecard ID": "OBL-24",
+      "Step": "£50,000 community support grant disbursed",
+      "Due": "2027",
+      "Reporting cycle": "One-off"
+    },
+    {
+      "Initiative": "INI-31",
+      "Scorecard ID": "SPI-03",
+      "Step": "5 PhDs enrolled / in-progress / published",
+      "Due": "01/09/2030",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-31",
+      "Scorecard ID": "SPI-03",
+      "Step": "Universities shortlisted",
+      "Due": "01/09/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-31",
+      "Scorecard ID": "SPI-03",
+      "Step": "University partner selected via competitive process",
+      "Due": "01/03/2028",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-31",
+      "Scorecard ID": "SPI-03",
+      "Step": "Research focus areas defined",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-31",
+      "Scorecard ID": "SPI-03",
+      "Step": "Call for proposals issued",
+      "Due": null,
+      "Reporting cycle": null
+    },
+    {
+      "Initiative": "INI-32",
+      "Scorecard ID": "OBL-25",
+      "Step": "£45,000 implementation fund disbursed",
+      "Due": "01/09/2035",
+      "Reporting cycle": "Throughout PhD"
+    },
+    {
+      "Initiative": "INI-33",
+      "Scorecard ID": "ACT-05",
+      "Step": "Modern Slavery Awareness Champion + social scientist support",
+      "Due": "01/04/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-33",
+      "Scorecard ID": "ACT-05",
+      "Step": "Modern Slavery Awareness Champion appointed",
+      "Due": "01/04/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-33",
+      "Scorecard ID": "ACT-05",
+      "Step": "Social scientist support secured",
+      "Due": "01/09/2027",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-33",
+      "Scorecard ID": "ACT-05",
+      "Step": "Ongoing engagement + activity log",
+      "Due": "30/09/2030",
+      "Reporting cycle": "Quarterly"
+    },
+    {
+      "Initiative": "INI-34",
+      "Scorecard ID": "OBL-14",
+      "Step": "Social Value Governance Committee - quarterly",
+      "Due": "06/05/2040",
+      "Reporting cycle": "Quarterly"
+    },
+    {
+      "Initiative": "INI-34",
+      "Scorecard ID": "OBL-14",
+      "Step": "Quarterly reports delivered - Social Value Dashboard, Carbon Baseline, Oracle emissions calculator Dashboard",
+      "Due": "06/05/2040",
+      "Reporting cycle": "Quarterly"
+    },
+    {
+      "Initiative": "INI-34",
+      "Scorecard ID": "OBL-14",
+      "Step": "Committee formed",
+      "Due": "01/06/2026",
+      "Reporting cycle": "Once"
+    },
+    {
+      "Initiative": "INI-34",
+      "Scorecard ID": "OBL-14",
+      "Step": "Quarterly meetings held",
+      "Due": "06/05/2040",
+      "Reporting cycle": "Quarterly"
+    },
+    {
+      "Initiative": "INI-34",
+      "Scorecard ID": "ACT-01",
+      "Step": "Appointment of SV Director; Meenaksh, Farheen, Parth & Lily appointed as team",
+      "Due": null,
+      "Reporting cycle": "Once"
     }
   ]
 }

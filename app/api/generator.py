@@ -122,6 +122,17 @@ def generator_knowledge(db: Session = Depends(get_db)) -> Dict[str, Any]:
         "note": str(c.get("Notes") or ""),
     } for c in (t.get("capability") or []) if str(c.get("Partner") or "").strip()]
 
+    # How each past initiative was actually phased, from the contract scorecard. Shown beside
+    # "done before" so a bid team can reuse the real sequence; never sent to the AI, so it
+    # costs no prompt budget.
+    delivery: Dict[str, List[Dict[str, str]]] = {}
+    for d in t.get("delivery") or []:
+        ini, step = str(d.get("Initiative") or "").strip(), str(d.get("Step") or "").strip()
+        if ini and step:
+            delivery.setdefault(ini, []).append({
+                "step": step, "due": str(d.get("Due") or "").strip(), "cycle": str(d.get("Reporting cycle") or "").strip()
+            })
+
     warnings: List[str] = []
     if not measure_mac:
         warnings.append("Measure-MAC map not loaded: criteria shown come from the tool's draft mapping.")
@@ -140,6 +151,7 @@ def generator_knowledge(db: Session = Depends(get_db)) -> Dict[str, Any]:
         "measure_mac": measure_mac,
         "track_record": track_record,
         "partners": partners,
+        "delivery": delivery,
         "documents": documents,
         "warnings": warnings,
     }

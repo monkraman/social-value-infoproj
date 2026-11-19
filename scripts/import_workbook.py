@@ -28,7 +28,8 @@ import openpyxl
 OUT = Path(__file__).resolve().parent.parent / "app" / "knowledge" / "tables.json"
 
 # Optional sheets Saloni maintains; imported generically (header row -> list of dicts) when present.
-OPTIONAL_SHEETS = {"Patterns": "patterns", "Measure-MAC": "measure_mac", "Capability": "capability", "Wording": "wording"}
+OPTIONAL_SHEETS = {"Patterns": "patterns", "Measure-MAC": "measure_mac", "Capability": "capability",
+                   "Wording": "wording", "Delivery": "delivery"}
 
 
 def _rows(ws):
