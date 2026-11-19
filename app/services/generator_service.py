@@ -6,7 +6,13 @@ import json
 from pathlib import Path
 
 from app.knowledge import load_initiative_types, load_tables
-from app.services.initiative_valuation import FRAMEWORK_VERSIONS, TenderForm, localised_proxy, value_initiatives
+from app.services.initiative_valuation import (
+    FRAMEWORK_VERSIONS,
+    TenderForm,
+    headcount_capacity,
+    localised_proxy,
+    value_initiatives,
+)
 from app.services.llm_client import complete_json_with_source
 
 RULES = (Path(__file__).resolve().parent.parent / "knowledge" / "rules.md").read_text(encoding="utf-8")
@@ -37,6 +43,11 @@ Return JSON only, exactly this shape:
   ]
 }
 Propose 5 to 8 initiatives. Units are whole-of-contract totals in the measure's unit.
+Size the package to the target. "roles_the_whole_contract_could_fund" is what the contract could
+pay for if every pound went on local wages, so the people committed across all the employment
+measures must come to a fraction of it — the contract has a service to deliver as well.
+Claim each measure once across the whole package, and supply-chain spend once however it is
+sliced: NT14, NT18 and NT19 describe the same pot of money, not three separate ones.
 "type" is a label only: after deciding the initiative, give the id of the INITIATIVE TYPES entry it
 clearly is, or null. Never change, add or drop an initiative to fit that list.
 "macs" are the criteria this initiative claims, from the MEASURE-MAC MAP.
@@ -80,6 +91,9 @@ def build_prompt(form: TenderForm, tables: dict) -> tuple[str, str]:
         "contract_value_gbp": form.bid_amount_gbp,
         "social_value_percent": form.sv_percent,
         "target_value_gbp": form.target_gbp,
+        # Without a sense of scale the AI proposes headcounts the contract could never pay for,
+        # and the package comes back worth more than the contract itself.
+        "roles_the_whole_contract_could_fund": round(capacity) if (capacity := headcount_capacity(tables, form)) else None,
         "region": form.region,
         "duration_years": form.duration_years,
         "themes": form.themes,

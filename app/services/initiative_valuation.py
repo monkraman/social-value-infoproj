@@ -209,6 +209,51 @@ def _strip_money(obj: dict, where: str, checks: List[str]) -> dict:
     return clean
 
 
+def headcount_capacity(tables: dict, form: TenderForm) -> Optional[float]:
+    """Roles the contract could fund at regional wages, if every pound went on local pay.
+
+    A generous ceiling on purpose: it is there to catch the impossible, not to budget.
+    """
+    region = next((r for r in tables["regions"] if r["region"] == form.region), None)
+    wage = (region or {}).get("median_wage_gbp")
+    if not wage or not form.duration_years or form.bid_amount_gbp <= 0:
+        return None
+    return form.bid_amount_gbp / form.duration_years / wage
+
+
+def _dedupe_package(initiatives_out: List[dict], checks: List[str]) -> None:
+    """A-07 across the whole package, not just inside one initiative.
+
+    Two things get counted twice otherwise. The same measure claimed in two initiatives is
+    almost always the same people described twice — eight apprentices do not become sixteen
+    by being mentioned again. And NT14/NT18/NT19 are overlapping views of one pot of
+    supply-chain spend: local SMEs are local companies, so adding them multiplies one pound
+    by three. In both cases the largest line counts and the rest are shown but not added.
+    """
+    def claim(line: dict, other: str, reason: str) -> None:
+        line["status"] = ALTERNATIVE
+        line["value_gbp"] = round(line["value_gbp"], 2)
+        line["note"] = (line["note"] + " " if line["note"] else "") + reason
+        checks.append(f"{other}: {line['measure']} is shown but not added — {reason}")
+
+    counted = [(out, l) for out in initiatives_out for l in out["lines"] if l["status"] == COUNTED and l["value_gbp"]]
+
+    # One line per measure code across the package: keep the largest.
+    for code in {l["measure"] for _, l in counted}:
+        same = sorted([(o, l) for o, l in counted if l["measure"] == code], key=lambda x: -x[1]["value_gbp"])
+        for out, line in same[1:]:
+            claim(line, out["name"], f"{code} is already counted in \"{same[0][0]['name']}\" (A-07).")
+
+    # Supply-chain spend is one pot however it is sliced: keep the largest slice only.
+    spend = sorted([(o, l) for o, l in counted if l["measure"] in SPEND_MEASURES and l["status"] == COUNTED],
+                   key=lambda x: -x[1]["value_gbp"])
+    for out, line in spend[1:]:
+        if line["status"] != COUNTED:
+            continue
+        claim(line, out["name"],
+              f"the same supply-chain spend is already counted as {spend[0][1]['measure']} in \"{spend[0][0]['name']}\".")
+
+
 def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[str, Any]:
     """Value the AI's proposed initiatives against the tables and apply the rules."""
     checks: List[str] = []
@@ -243,6 +288,8 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
                 "measure_name": measures.get(code, {}).get("name"),
                 "unit": measures.get(code, {}).get("unit"),
                 "units": units,
+                # Kept so the package-wide headcount check can see it, and the screen can show it.
+                "people": people,
                 "basis": str(line.get("basis") or ""),
                 "proxy_gbp": None,
                 "proxy_basis": None,
@@ -343,11 +390,41 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
             "status": "Proposal",
         })
 
+    _dedupe_package(initiatives_out, checks)
+
+    totals = {"infosys_gbp": 0.0, "partner_gbp": 0.0, "conditional_gbp": 0.0}
+    for out in initiatives_out:
+        counted = sum(l["value_gbp"] for l in out["lines"] if l["status"] == COUNTED)
+        conditional = sum(l["value_gbp"] for l in out["lines"] if l["status"] == CONDITIONAL)
+        out["value_gbp"], out["conditional_gbp"] = round(counted, 2), round(conditional, 2)
+        totals["partner_gbp" if out["attribution"] == "Partner-led" else "infosys_gbp"] += counted
+        totals["conditional_gbp"] += conditional
+
     totals = {k: round(v, 2) for k, v in totals.items()}
     target = form.target_gbp
     if target > 0 and totals["infosys_gbp"] > target * 1.5:
         checks.append(
             f"Infosys value is {totals['infosys_gbp'] / target:.0%} of the target — check the units are realistic for this contract."
+        )
+    # A contract can only employ so many people: more than its whole value in local wages is
+    # not a stretch target, it is arithmetic that does not work.
+    hired = sum(
+        _num(l.get("people")) or 0
+        for out in initiatives_out for l in out["lines"]
+        if l["measure"] in EMPLOYMENT_MEASURES and l["status"] in (COUNTED, CONDITIONAL)
+    )
+    capacity = headcount_capacity(tables, form)
+    if hired and capacity and hired > capacity:
+        checks.append(
+            f"{hired:,.0f} people are claimed across the employment measures, but at {form.region} wages the whole "
+            f"contract could fund about {capacity:,.0f} roles over {form.duration_years:g} years. Cut the headcount to "
+            "what the contract actually pays for."
+        )
+
+    if form.bid_amount_gbp > 0 and totals["infosys_gbp"] > form.bid_amount_gbp:
+        checks.append(
+            f"The package is worth more than the contract itself ({totals['infosys_gbp'] / form.bid_amount_gbp:.0%} of "
+            f"£{form.bid_amount_gbp:,.0f}). Something is being counted that the contract cannot support — check the volumes."
         )
     if not tables.get("measure_mac"):
         checks.append("Measure–MAC map not loaded yet: framework fit is not checked.")
