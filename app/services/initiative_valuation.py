@@ -7,6 +7,7 @@ the tables (app/knowledge/tables.json): units × (localised) proxy. Rule referen
 
 Pure functions — no database, no network — so every rule is unit-tested.
 """
+import math
 import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
@@ -254,6 +255,50 @@ def _dedupe_package(initiatives_out: List[dict], checks: List[str]) -> None:
               f"the same supply-chain spend is already counted as {spend[0][1]['measure']} in \"{spend[0][0]['name']}\".")
 
 
+def _trim_to_target(initiatives_out: List[dict], tables: dict, form: TenderForm, checks: List[str]) -> None:
+    """Bring a package back to the target when it overshoots.
+
+    The weighting is what the buyer asked for, and every pound above it is a commitment
+    Infosys is bound to deliver for no extra score — KPIs with service points attached. Coming
+    in under is a smaller package; coming in over is a liability. Under target is left alone.
+    """
+    target = form.target_gbp
+    if target <= 0:
+        return
+    counted = [l for out in initiatives_out for l in out["lines"] if l["status"] == COUNTED and l["value_gbp"] > 0]
+    total = sum(l["value_gbp"] for l in counted)
+    if total <= target or not counted:
+        return
+
+    before = total
+    for _ in range(3):  # a couple of passes settle the rounding
+        total = sum(l["value_gbp"] for l in counted)
+        if total <= target:
+            break
+        k = target / total
+        for line in counted:
+            # Always round down: the target is a ceiling here, so landing a pound under it is
+            # right and a pound over it is the thing being avoided.
+            line.setdefault("units_proposed", line["units"])
+            units = (line["units"] or 0) * k
+            line["units"] = math.floor(units * 100) / 100 if units < 100 else math.floor(units)
+            if line.get("people"):
+                line["people"] = max(1, round(line["people"] * k))
+            proxy, _basis = localised_proxy(line["measure"], tables, form.region, form.industry)
+            line["value_gbp"] = round((line["units"] or 0) * (proxy or 0), 2)
+
+    after = sum(l["value_gbp"] for l in counted)
+    for line in counted:
+        was = line.get("units_proposed")
+        if was and was != line["units"]:
+            line["note"] = (line["note"] + " " if line["note"] else "") + f"Brought down from {was:,.0f} to meet the target."
+    checks.append(
+        f"Volumes were brought down from £{before:,.0f} to £{after:,.0f} to meet the {form.sv_percent:g}% target and no "
+        "more. Anything above it is a commitment Infosys is bound to deliver for no extra score, so each line shows what "
+        "the AI first proposed."
+    )
+
+
 def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[str, Any]:
     """Value the AI's proposed initiatives against the tables and apply the rules."""
     checks: List[str] = []
@@ -391,6 +436,7 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
         })
 
     _dedupe_package(initiatives_out, checks)
+    _trim_to_target(initiatives_out, tables, form, checks)
 
     totals = {"infosys_gbp": 0.0, "partner_gbp": 0.0, "conditional_gbp": 0.0}
     for out in initiatives_out:
