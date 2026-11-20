@@ -31,6 +31,13 @@ DOCUMENT_KINDS = (
 )
 
 
+def _num(value: Any) -> Optional[float]:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _kind(filename: str) -> str:
     lower = (filename or "").lower()
     for kind, hints in DOCUMENT_KINDS:
@@ -130,7 +137,9 @@ def generator_knowledge(db: Session = Depends(get_db)) -> Dict[str, Any]:
         ini, step = str(d.get("Initiative") or "").strip(), str(d.get("Step") or "").strip()
         if ini and step:
             delivery.setdefault(ini, []).append({
-                "step": step, "due": str(d.get("Due") or "").strip(), "cycle": str(d.get("Reporting cycle") or "").strip()
+                "step": step, "due": str(d.get("Due") or "").strip(), "cycle": str(d.get("Reporting cycle") or "").strip(),
+                # "Cumulative" steps carry a real quantity — how big each cohort or tranche was.
+                "kind": str(d.get("Kind") or "").strip(), "target": _num(d.get("Target")),
             })
 
     warnings: List[str] = []
@@ -152,6 +161,8 @@ def generator_knowledge(db: Session = Depends(get_db)) -> Dict[str, Any]:
         "track_record": track_record,
         "partners": partners,
         "delivery": delivery,
+        # Cost per unit, value per £1, the staff rate card and past non-staff costs, to cost a commitment.
+        "costs": t.get("costs") or {"levers": [], "rate_card": [], "examples": []},
         "documents": documents,
         "warnings": warnings,
     }

@@ -122,20 +122,21 @@ def test_carbon_is_conditional():
 def test_partner_value_is_separate():
     r = run(
         {"name": "Ours", "lines": [{"measure": "NT8", "units": 100}]},
-        {"name": "Theirs", "attribution": "Partner-led", "lines": [{"measure": "NT8", "units": 50}]},
+        # A different measure: the same one in two initiatives is claimed once.
+        {"name": "Theirs", "attribution": "Partner-led", "lines": [{"measure": "NT17", "units": 50}]},
     )
     assert r["totals"]["infosys_gbp"] == pytest.approx(1748.0)
-    assert r["totals"]["partner_gbp"] == pytest.approx(874.0)
+    assert r["totals"]["partner_gbp"] == pytest.approx(50 * localised_proxy("NT17", TABLES, "North East", COMPUTING)[0])
 
 
-def test_same_measure_from_infosys_and_a_partner_both_count():
+def test_same_measure_across_the_package_is_counted_once():
     r = run(
         {"name": "Ours", "lines": [{"measure": "NT8", "units": 100}]},
         {"name": "Theirs", "attribution": "Partner-led", "lines": [{"measure": "NT8", "units": 50}]},
-        {"name": "Ours again", "lines": [{"measure": "NT8", "units": 30}]},
     )
-    assert line(r, 1)["status"] == COUNTED  # the partner's volunteers are its own people
-    assert line(r, 2)["status"] == ALTERNATIVE  # Infosys's NT8 is the same people described twice
+    assert line(r, 1)["status"] == ALTERNATIVE
+    assert not any("not added" in c for c in r["checks"])  # the line says why; the audit keeps the record
+    assert any(a["action"] == "not added" for a in r["sizing"]["adjustments"])
 
 
 # ── Realistic scale ──────────────────────────────────────────────────────────
@@ -188,13 +189,14 @@ def test_weeks_without_parts_are_capped_per_person():
 
 # ── Sizing to target: whole people, just under the target, quietly ───────────
 def test_package_above_target_is_sized_in_whole_people_just_under_target():
-    r = run(apprentices(people=40, per=46, years=3), bid_amount_gbp=1_000_000, sv_percent=5)  # target £50,000
+    r = run(apprentices(people=40, per=46, years=3), bid_amount_gbp=1_000_000, sv_percent=20)  # target £200,000
     ln = line(r)
     assert float(ln["people"]).is_integer() and ln["people"] < 40
     assert ln["units"] == ln["people"] * 46 * 3
     assert ln["basis"].startswith(f"{ln['people']:g} apprentices")
-    assert r["totals"]["infosys_gbp"] <= 50_000
-    assert r["totals"]["infosys_gbp"] > 50_000 - 46 * 3 * ln["proxy_gbp"]  # within one person of it
+    assert ln["people"] > 1
+    assert r["totals"]["infosys_gbp"] <= 200_000
+    assert r["totals"]["infosys_gbp"] > 200_000 - 46 * 3 * ln["proxy_gbp"]  # within one person of it
     assert f"employ {ln['people']:g} apprentices" in r["initiatives"][0]["bid_paragraph"]
     assert not any("brought down" in c.lower() for c in r["checks"]) and not ln["note"]
     assert any(a["action"] == "sized to target" for a in r["sizing"]["adjustments"])
@@ -209,6 +211,37 @@ def test_spend_is_sized_in_round_steps():
     r = run({"name": "SME spend", "lines": [{"measure": "NT19", "units": 900_000}]}, bid_amount_gbp=1_000_000, sv_percent=10)
     units = line(r)["units"]
     assert units % 1000 == 0 and r["totals"]["infosys_gbp"] <= 100_000
+
+
+def test_package_far_above_target_drops_whole_lines_largest_first():
+    r = run(apprentices(people=40, per=46, years=3),
+            {"name": "Volunteering", "lines": [{"measure": "NT8", "units": 50}]},
+            bid_amount_gbp=1_000_000, sv_percent=10)  # target £100,000
+    assert line(r, 0)["people"] < 40  # the largest line is cut first, in whole people
+    assert line(r, 1)["units"] == 50 and line(r, 1)["status"] == COUNTED  # the small one is untouched
+    assert r["totals"]["infosys_gbp"] <= 100_000
+    assert not any("cut back" in c or "proposed" in c for c in r["checks"])
+
+
+def test_far_above_target_keeps_every_line_and_cuts_from_the_top():
+    r = run(apprentices(people=40, per=46, years=3),
+            {"name": "SME spend", "lines": [{"measure": "NT19", "units": 2_000_000, "basis": "Spend with local SMEs"}]},
+            {"name": "Volunteering", "lines": [{"measure": "NT8", "units": 50}]},
+            bid_amount_gbp=3_000_000, sv_percent=10)  # target £300,000, about twenty times over
+    assert all(line(r, i)["status"] == COUNTED for i in range(3))  # no jobs or spend lost to meet a number
+    assert line(r, 2)["units"] == 50  # the small line is untouched
+    assert line(r, 1)["basis"] == "Spend with local SMEs"  # wording without arithmetic is kept
+    assert 290_000 < r["totals"]["infosys_gbp"] <= 300_000
+
+
+def test_a_line_too_big_for_the_target_becomes_an_alternative():
+    r = run(apprentices(people=40, per=46, years=3),
+            {"name": "Volunteering", "lines": [{"measure": "NT8", "units": 50}]},
+            bid_amount_gbp=1_000_000, sv_percent=1)  # target £10,000: one apprentice is worth more
+    assert line(r, 0)["status"] == ALTERNATIVE and line(r, 0)["people"] == 40  # kept as proposed, not added
+    assert line(r, 1)["status"] == COUNTED
+    assert r["totals"]["infosys_gbp"] <= 10_000
+    assert not any("cut back" in c or "proposed" in c for c in r["checks"])
 
 
 # --- Quantity checks: the AI does its own arithmetic for units; the code flags sums that do not add up.

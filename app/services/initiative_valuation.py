@@ -222,8 +222,10 @@ def _unit_kind(unit: Optional[str]) -> Optional[str]:
 
 
 def _basis_from_parts(parts: dict) -> str:
-    years = parts["years"]
-    return (f"{_fmt(parts['people'])} {parts['who']} × {_fmt(parts['per_year'])} {_PER_LABEL[parts['kind']]} a year"
+    years, who = parts["years"], parts["who"]
+    if parts["people"] == 1 and re.fullmatch(r"[a-z]+(?<!s)s", who.split(" ")[-1]):
+        who = who[:-1]  # "1 apprentice", not "1 apprentices"
+    return (f"{_fmt(parts['people'])} {who} × {_fmt(parts['per_year'])} {_PER_LABEL[parts['kind']]} a year"
             f" × {_fmt(years)} year{'' if years == 1 else 's'}")
 
 
@@ -261,33 +263,28 @@ def _dedupe_package(initiatives_out: List[dict], audit: List[dict]) -> None:
     by being mentioned again. And NT14/NT18/NT19 are overlapping views of one pot of
     supply-chain spend: local SMEs are local companies, so adding them multiplies one pound
     by three. In both cases the largest line counts and the rest are shown but not added.
-
-    Infosys and a partner are kept apart: a partner's volunteers or apprentices are its own
-    people, and partner value is reported separately anyway (A-09).
     """
     def claim(line: dict, other: str, reason: str) -> None:
         line["status"] = ALTERNATIVE
         line["note"] = (line["note"] + " " if line["note"] else "") + reason
         audit.append({"initiative": other, "measure": line["measure"], "action": "not added", "reason": reason})
 
-    for side in ("Infosys", "Partner-led"):
-        counted = [(out, l) for out in initiatives_out if out["attribution"] == side
-                   for l in out["lines"] if l["status"] == COUNTED and l["value_gbp"]]
+    counted = [(out, l) for out in initiatives_out for l in out["lines"] if l["status"] == COUNTED and l["value_gbp"]]
 
-        # One line per measure code: keep the largest.
-        for code in {l["measure"] for _, l in counted}:
-            same = sorted([(o, l) for o, l in counted if l["measure"] == code], key=lambda x: -x[1]["value_gbp"])
-            for out, line in same[1:]:
-                claim(line, out["name"], f"{code} is already counted in \"{same[0][0]['name']}\" (A-07).")
+    # One line per measure code across the package: keep the largest.
+    for code in {l["measure"] for _, l in counted}:
+        same = sorted([(o, l) for o, l in counted if l["measure"] == code], key=lambda x: -x[1]["value_gbp"])
+        for out, line in same[1:]:
+            claim(line, out["name"], f"{code} is already counted in \"{same[0][0]['name']}\" (A-07).")
 
-        # Supply-chain spend is one pot however it is sliced: keep the largest slice only.
-        spend = sorted([(o, l) for o, l in counted if l["measure"] in SPEND_MEASURES and l["status"] == COUNTED],
-                       key=lambda x: -x[1]["value_gbp"])
-        for out, line in spend[1:]:
-            if line["status"] == COUNTED:
-                claim(line, out["name"],
-                      f"The same supply-chain spend is already counted as {spend[0][1]['measure']} in "
-                      f"\"{spend[0][0]['name']}\".")
+    # Supply-chain spend is one pot however it is sliced: keep the largest slice only.
+    spend = sorted([(o, l) for o, l in counted if l["measure"] in SPEND_MEASURES and l["status"] == COUNTED],
+                   key=lambda x: -x[1]["value_gbp"])
+    for out, line in spend[1:]:
+        if line["status"] == COUNTED:
+            claim(line, out["name"],
+                  f"The same supply-chain spend is already counted as {spend[0][1]['measure']} in "
+                  f"\"{spend[0][0]['name']}\".")
 
 
 def _driver_step(line: dict) -> float:
@@ -315,22 +312,28 @@ def _set_driver(line: dict, value: float, proxy: float) -> None:
         line["units"] = value
         if line.get("people") and old:
             line["people"] = max(1, round(line["people"] * value / old))
-        line["basis"] = ""  # the AI's arithmetic no longer describes this number
+        if re.search(r"\d", line.get("basis") or ""):
+            line["basis"] = ""  # the AI's arithmetic no longer describes this number
     line["value_gbp"] = round(line["units"] * proxy, 2)
 
 
 def _size_to_target(initiatives_out: List[dict], tables: dict, form: TenderForm, audit: List[dict]) -> Dict[str, dict]:
-    """Bring a package that overshoots the target down to it, and no further.
+    """Bring a package that overshoots the target back to it, in whole people or round sums.
 
     The weighting is what the buyer asked for, and every pound above it is a commitment Infosys is
     bound to deliver for no extra score. Under target is left alone: padding is never added.
 
-    Each line is reduced through its driver — the number of people (or the spend) — in whole steps,
-    so a quantity always reads as something deliverable ("25 apprentices × 46 weeks a year"), and
-    the units, basis and value are recomputed from it. Proportional first, rounded down, then whole
-    steps are given back where they still fit, so the package lands just under the target.
+    Cuts come from the top: the largest lines are levelled down to a common ceiling, so the
+    biggest commitment gives up the most and small lines are left as proposed. No line is cut to
+    nothing — a package that loses its local spend or its jobs to meet a number is a worse bid.
+    Each line moves through its driver — the number of people, or the spend in round sums — in
+    whole steps, so a quantity always reads as something deliverable ("25 apprentices × 46 weeks
+    a year"), and units, basis and value are recomputed from it. Whole steps are then given back,
+    cheapest first, while the package stays within the target. Only if every line is already at
+    its smallest step and the package is still over does the largest line become an Alternative.
+    The change is recorded for audit, not shown: the user sees a package that meets the target.
 
-    Returns {id(line): {"from": units, "to": units}} for the lines that moved.
+    Returns {id(line): {"from": units, "to": units, "people_from", "people_to"}} for lines that moved.
     """
     target = form.target_gbp
     lines = [l for out in initiatives_out for l in out["lines"] if l["status"] == COUNTED and l["value_gbp"] > 0]
@@ -339,39 +342,58 @@ def _size_to_target(initiatives_out: List[dict], tables: dict, form: TenderForm,
         return {}
 
     proxy = {id(l): (l["value_gbp"] / l["units"]) for l in lines}
-    start = {id(l): (_driver(l), l["units"], l.get("people")) for l in lines}
-    k = target / total
-    for l in lines:
-        step = _driver_step(l)
-        floor = math.floor(_driver(l) * k / step) * step
-        _set_driver(l, max(min(step, _driver(l)), floor), proxy[id(l)])
+    start = {id(l): (_driver(l), l["units"], l.get("people"), l["value_gbp"]) for l in lines}
+    per_driver = {id(l): l["value_gbp"] / _driver(l) for l in lines}
 
-    # Rounding up to one step per line can leave the package a little over: take whole steps back
-    # from the largest lines until it fits.
-    for _ in range(10_000):
-        total = sum(l["value_gbp"] for l in lines)
-        if total <= target:
-            break
-        biggest = max((l for l in lines if _driver(l) > _driver_step(l)), key=lambda l: l["value_gbp"], default=None)
-        if biggest is None:
-            break
-        _set_driver(biggest, _driver(biggest) - _driver_step(biggest), proxy[id(biggest)])
+    def capped(l: dict, ceiling: float) -> float:
+        step = _driver_step(l)
+        if start[id(l)][3] <= ceiling:
+            return start[id(l)][0]
+        return max(step, math.floor(ceiling / per_driver[id(l)] / step) * step)
+
+    # Find the ceiling: the highest line value at which the package fits.
+    lo, hi = 0.0, max(start[id(l)][3] for l in lines)
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        if sum(capped(l, mid) * per_driver[id(l)] for l in lines) <= target:
+            lo = mid
+        else:
+            hi = mid
+    for l in lines:
+        if capped(l, lo) != _driver(l):
+            _set_driver(l, capped(l, lo), proxy[id(l)])
+
+    dropped = set()
+    live = lambda: [l for l in lines if id(l) not in dropped]
+    # Every line at its smallest step and still over: the largest steps aside as an Alternative.
+    while sum(l["value_gbp"] for l in live()) > target and len(live()) > 1:
+        biggest = max(live(), key=lambda l: l["value_gbp"])
+        if _driver(biggest) > _driver_step(biggest):
+            _set_driver(biggest, _driver(biggest) - _driver_step(biggest), proxy[id(biggest)])
+            continue
+        _set_driver(biggest, start[id(biggest)][0], proxy[id(biggest)])  # kept as proposed
+        biggest["status"] = ALTERNATIVE
+        biggest["note"] = (biggest["note"] + " " if biggest["note"] else "") + "Not needed to stay within the target."
+        dropped.add(id(biggest))
 
     # Give whole steps back, cheapest first, while the package stays within the target.
     for _ in range(10_000):
-        total = sum(l["value_gbp"] for l in lines)
-        room = [l for l in lines
+        total = sum(l["value_gbp"] for l in live())
+        room = [l for l in live()
                 if _driver(l) + _driver_step(l) <= start[id(l)][0]
-                and total + _driver_step(l) * (l["value_gbp"] / _driver(l)) <= target]
+                and total + _driver_step(l) * per_driver[id(l)] <= target]
         if not room:
             break
-        cheapest = min(room, key=lambda l: _driver_step(l) * l["value_gbp"] / _driver(l))
+        cheapest = min(room, key=lambda l: _driver_step(l) * per_driver[id(l)])
         _set_driver(cheapest, _driver(cheapest) + _driver_step(cheapest), proxy[id(cheapest)])
 
     moved = {}
     for out in initiatives_out:
         for l in out["lines"]:
-            if id(l) in start and l["units"] != start[id(l)][1]:
+            if id(l) in dropped:
+                audit.append({"initiative": out["name"], "measure": l["measure"], "action": "sized to target",
+                              "from_units": l["units"], "to_units": 0})
+            elif id(l) in start and l["units"] != start[id(l)][1]:
                 moved[id(l)] = {"from": start[id(l)][1], "to": l["units"],
                                 "people_from": start[id(l)][2], "people_to": l.get("people")}
                 audit.append({"initiative": out["name"], "measure": l["measure"], "action": "sized to target",
