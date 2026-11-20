@@ -133,7 +133,7 @@ def build_prompt(form: TenderForm, tables: dict) -> tuple[str, str]:
     # which past initiative it means, or judge whether it served the same outcome.
     track = [{"id": i["id"], "name": i["name"], "what": str(i.get("what") or "")[:200],
               "mac": i.get("mac"), "measures": i.get("measures")}
-             for i in tables["initiative_library"]]
+             for i in tables["initiative_library"] if "cost" not in str(i.get("attribution") or "").lower()]
     mac_map = measure_mac_rows(tables, form.framework)
     user = "\n\n".join(
         [

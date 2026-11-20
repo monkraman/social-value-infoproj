@@ -38,6 +38,11 @@ def _num(value: Any) -> Optional[float]:
         return None
 
 
+def _cost_only(initiative: Dict[str, Any]) -> bool:
+    """A line from the cost tracker with no commitment behind it: not track record, and costs are never shown."""
+    return "cost" in str(initiative.get("attribution") or "").lower()
+
+
 def _kind(filename: str) -> str:
     lower = (filename or "").lower()
     for kind, hints in DOCUMENT_KINDS:
@@ -113,7 +118,7 @@ def generator_knowledge(db: Session = Depends(get_db)) -> Dict[str, Any]:
         "pillar": i.get("pillar") or "", "delivered_by": i.get("delivered_by") or "",
         "measures": [c for c in (i.get("measures") or []) if str(c).upper().startswith("NT")],
         "contract": contract,
-    } for i in t["initiative_library"] if i.get("id")]
+    } for i in t["initiative_library"] if i.get("id") and not _cost_only(i)]
 
     documents = [{
         "path": str(d.id), "name": d.filename, "kind": _kind(d.filename),
@@ -161,8 +166,6 @@ def generator_knowledge(db: Session = Depends(get_db)) -> Dict[str, Any]:
         "track_record": track_record,
         "partners": partners,
         "delivery": delivery,
-        # Cost per unit, value per £1, the staff rate card and past non-staff costs, to cost a commitment.
-        "costs": t.get("costs") or {"levers": [], "rate_card": [], "examples": []},
         "documents": documents,
         "warnings": warnings,
     }
