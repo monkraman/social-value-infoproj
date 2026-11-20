@@ -128,15 +128,87 @@ def test_partner_value_is_separate():
     assert r["totals"]["partner_gbp"] == pytest.approx(874.0)
 
 
+def test_same_measure_from_infosys_and_a_partner_both_count():
+    r = run(
+        {"name": "Ours", "lines": [{"measure": "NT8", "units": 100}]},
+        {"name": "Theirs", "attribution": "Partner-led", "lines": [{"measure": "NT8", "units": 50}]},
+        {"name": "Ours again", "lines": [{"measure": "NT8", "units": 30}]},
+    )
+    assert line(r, 1)["status"] == COUNTED  # the partner's volunteers are its own people
+    assert line(r, 2)["status"] == ALTERNATIVE  # Infosys's NT8 is the same people described twice
+
+
 # ── Realistic scale ──────────────────────────────────────────────────────────
 def test_spend_cannot_exceed_contract_value():
-    r = run({"name": "SME spend", "lines": [{"measure": "NT19", "units": 50_000_000}]}, bid_amount_gbp=1_000_000)
+    # Target is high enough that only the contract-value cap applies.
+    r = run({"name": "SME spend", "lines": [{"measure": "NT19", "units": 50_000_000}]}, bid_amount_gbp=1_000_000, sv_percent=100)
     assert line(r)["units"] == 1_000_000
 
 
-def test_far_above_target_is_flagged():
+def test_far_above_target_is_recorded_for_audit_not_shown():
     r = run({"name": "Hires", "lines": [{"measure": "NT1", "units": 100, "people": 40}]}, bid_amount_gbp=1_000_000)
-    assert any("check the units are realistic" in c for c in r["checks"])
+    assert not any("realistic" in c or "brought down" in c.lower() for c in r["checks"])
+    assert any(a["action"] == "far above target" for a in r["sizing"]["adjustments"])
+
+
+# ── Parts: the AI gives people × rate × years, the code multiplies ───────────
+def apprentices(people=12, per=46, years=3, **extra):
+    return {"name": "Apprentices", "bid_paragraph": f"We will employ {people} apprentices.",
+            "lines": [{"measure": "NT10", "people": people, "who": "apprentices",
+                       "per_person_per_year": per, "years": years, **extra}]}
+
+
+def test_units_are_the_product_of_the_parts():
+    r = run(apprentices(units=99_999))  # a stray AI total is ignored
+    ln = line(r)
+    assert ln["units"] == 12 * 46 * 3
+    assert ln["basis"] == "12 apprentices × 46 weeks a year × 3 years"
+    assert ln["value_gbp"] == pytest.approx(ln["units"] * ln["proxy_gbp"])
+
+
+def test_parts_are_held_to_what_a_person_and_the_contract_can_give():
+    r = run(apprentices(per=80, years=9), duration_years=3)
+    assert line(r)["units"] == 12 * 52 * 3
+    assert not line(r)["note"]  # corrected quietly; recorded for audit
+    assert len([a for a in r["sizing"]["adjustments"] if a["action"] == "corrected"]) == 2
+
+
+def test_weeks_given_as_a_share_of_the_year_are_read_as_weeks():
+    r = run(apprentices(per=0.88), sv_percent=100)
+    assert line(r)["units"] == 12 * 46 * 3
+
+
+def test_weeks_without_parts_are_capped_per_person():
+    r = run({"name": "Apprentices", "lines": [{"measure": "NT10", "units": 23040, "people": 80,
+                                              "basis": "80 apprentices x 24 months x 48 weeks per year"}]},
+            duration_years=5, sv_percent=100)
+    assert line(r)["units"] == 80 * 52 * 5
+    assert line(r)["basis"] == ""  # the AI's arithmetic no longer describes the number
+
+
+# ── Sizing to target: whole people, just under the target, quietly ───────────
+def test_package_above_target_is_sized_in_whole_people_just_under_target():
+    r = run(apprentices(people=40, per=46, years=3), bid_amount_gbp=1_000_000, sv_percent=5)  # target £50,000
+    ln = line(r)
+    assert float(ln["people"]).is_integer() and ln["people"] < 40
+    assert ln["units"] == ln["people"] * 46 * 3
+    assert ln["basis"].startswith(f"{ln['people']:g} apprentices")
+    assert r["totals"]["infosys_gbp"] <= 50_000
+    assert r["totals"]["infosys_gbp"] > 50_000 - 46 * 3 * ln["proxy_gbp"]  # within one person of it
+    assert f"employ {ln['people']:g} apprentices" in r["initiatives"][0]["bid_paragraph"]
+    assert not any("brought down" in c.lower() for c in r["checks"]) and not ln["note"]
+    assert any(a["action"] == "sized to target" for a in r["sizing"]["adjustments"])
+
+
+def test_package_under_target_is_left_alone():
+    r = run(apprentices(people=2, per=46, years=3))
+    assert line(r)["people"] == 2 and r["sizing"]["adjustments"] == []
+
+
+def test_spend_is_sized_in_round_steps():
+    r = run({"name": "SME spend", "lines": [{"measure": "NT19", "units": 900_000}]}, bid_amount_gbp=1_000_000, sv_percent=10)
+    units = line(r)["units"]
+    assert units % 1000 == 0 and r["totals"]["infosys_gbp"] <= 100_000
 
 
 # --- Quantity checks: the AI does its own arithmetic for units; the code flags sums that do not add up.
@@ -163,12 +235,11 @@ def test_sound_units_are_not_flagged():
     assert quantity_doubts(5000, "Training totalling 5,000 weeks", "no. weeks", 5) == []
 
 
-def test_a_flagged_quantity_keeps_its_value_and_raises_a_check():
+def test_a_doubtful_quantity_is_recorded_for_audit_not_shown():
     bad = {"name": "Apprentices", "lines": [{"measure": "NT10", "units": 23040,
                                             "basis": "80 apprentices x 24 months x 48 weeks per year"}]}
-    r = run(bad, duration_years=5)
+    r = run(bad, duration_years=5, sv_percent=100)
     ln = line(r)
-    assert ln["status"] == COUNTED and ln["units"] == 23040  # nothing changed, only flagged
-    assert ln["value_gbp"] == pytest.approx(23040 * ln["proxy_gbp"])
-    assert ln["note"].startswith("Check the quantity")
-    assert any("NT10" in c and "check the quantity" in c for c in r["checks"])
+    assert ln["status"] == COUNTED and ln["units"] == 23040
+    assert not ln["note"] and not any("quantity" in c.lower() for c in r["checks"])
+    assert any(a["action"] == "doubt" and "92,160" in a["reason"] for a in r["sizing"]["adjustments"])

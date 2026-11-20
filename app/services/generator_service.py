@@ -31,7 +31,8 @@ Return JSON only, exactly this shape:
       "macs": ["2.2", "2.3"],
       "no_tom_reason": null,
       "lines": [
-        {"measure": "NT8", "units": 864, "people": null, "basis": "12 sessions x 3 hrs x 8 staff x 3 years"}
+        {"measure": "NT10", "people": 12, "who": "apprentices", "per_person_per_year": 46, "years": 3},
+        {"measure": "NT19", "units": 250000, "basis": "Local SME subcontracting for field services"}
       ],
       "done_before": [
         {"id": "INI-17", "shared_mac": "2.2", "shared_measures": ["NT10"],
@@ -42,8 +43,13 @@ Return JSON only, exactly this shape:
     }
   ]
 }
-Propose 5 to 8 initiatives. Units are whole-of-contract totals in the measure's unit.
-Size the package to the target. "roles_the_whole_contract_could_fund" is what the contract could
+Propose 5 to 8 initiatives.
+Quantities: for a measure counted in FTE, weeks or hours, give "people" (how many), "who" (what
+they are, e.g. "apprentices", "staff volunteers"), "per_person_per_year" (FTE, weeks or hours each
+person gives in a year) and "years"; do not give "units" — the tool multiplies the parts. For a
+measure counted in £, tonnes, miles or kg, give "units" as the whole-of-contract total.
+Size the package to the target: aim for it, never above it — the tool brings anything above the
+target down to it. "roles_the_whole_contract_could_fund" is what the contract could
 pay for if every pound went on local wages, so the people committed across all the employment
 measures must come to a fraction of it — the contract has a service to deliver as well.
 Claim each measure once across the whole package, and supply-chain spend once however it is

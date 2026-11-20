@@ -41,9 +41,10 @@ B5. Go deep rather than wide. Six well-specified commitments beat twelve thin on
 
 C1. Use only measure codes listed in VALID TOM MEASURES. Never invent a code, a measure
     name or a unit.
-C2. Units are whole-of-contract totals, in that measure's own unit. Put the arithmetic in
-    "basis" so a reviewer can follow it, for example "80 apprentices x 24 months x 4.33
-    weeks per month".
+C2. For measures counted in FTE, weeks or hours, give the parts — people, who they are,
+    FTE/weeks/hours per person per year, and years — and let the tool multiply them. Never
+    give more than one person can: 1 FTE, 52 weeks or 1,950 hours a year. For £, tonnes,
+    miles and kg, give the whole-of-contract total in "units".
 C3. Always give "people" for NT1 and for the barrier measures (NT3, NT4, NT5, NT6, NT76).
     Without it the quantity cannot be checked and the tool will cap it.
 C4. One activity, one measure. The same people are never claimed twice — not within an
@@ -57,7 +58,7 @@ C7. Carbon (NT31, NT31a) counts only beyond the measured baseline reduction. Nev
     offsetting as a saving.
 C8. Size the package so the total lands near the target value. Never inflate units to reach
     it. A defensible package that falls short is a better answer than a padded one that
-    hits the number, and the tool will flag anything far above target.
+    hits the number, and the tool brings anything above the target down to it.
 C9. Every quantity needs a named cohort, a route by which they are reached, and a first
     delivery inside twelve months. A number with none of these is not a commitment.
 

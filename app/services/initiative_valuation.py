@@ -7,10 +7,13 @@ the tables (app/knowledge/tables.json): units × (localised) proxy. Rule referen
 
 Pure functions — no database, no network — so every rule is unit-tested.
 """
+import logging
 import math
 import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
+
+log = logging.getLogger(__name__)
 
 # A-07: one measure per activity. Within an initiative only the first of these counts.
 EMPLOYMENT_MEASURES = {"NT1", "NT3", "NT4", "NT5", "NT6", "NT76", "NT10"}
@@ -200,6 +203,34 @@ def quantity_doubts(units: float, basis: str, unit: Optional[str], duration_year
     return doubts
 
 
+# The most one person can give in a year, by what the measure counts. Physical limits, not targets:
+# a full-time year is at most 1 FTE, 52 weeks, or 1,950 hours (37.5 a week).
+PER_PERSON_YEAR_LIMIT = {"fte": 1.0, "weeks": 52.0, "hours": 1950.0}
+_PER_LABEL = {"fte": "FTE", "weeks": "weeks", "hours": "hours"}
+
+
+def _unit_kind(unit: Optional[str]) -> Optional[str]:
+    """'fte', 'weeks' or 'hours' for measures counted per person; None for £, tonnes, miles, kg."""
+    u = str(unit or "").lower()
+    if "fte" in u:
+        return "fte"
+    if "week" in u:
+        return "weeks"
+    if "hr" in u or "hour" in u:
+        return "hours"
+    return None
+
+
+def _basis_from_parts(parts: dict) -> str:
+    years = parts["years"]
+    return (f"{_fmt(parts['people'])} {parts['who']} × {_fmt(parts['per_year'])} {_PER_LABEL[parts['kind']]} a year"
+            f" × {_fmt(years)} year{'' if years == 1 else 's'}")
+
+
+def _units_from_parts(parts: dict) -> float:
+    return parts["people"] * parts["per_year"] * parts["years"]
+
+
 def _strip_money(obj: dict, where: str, checks: List[str]) -> dict:
     clean = {}
     for k, v in obj.items():
@@ -222,7 +253,7 @@ def headcount_capacity(tables: dict, form: TenderForm) -> Optional[float]:
     return form.bid_amount_gbp / form.duration_years / wage
 
 
-def _dedupe_package(initiatives_out: List[dict], checks: List[str]) -> None:
+def _dedupe_package(initiatives_out: List[dict], audit: List[dict]) -> None:
     """A-07 across the whole package, not just inside one initiative.
 
     Two things get counted twice otherwise. The same measure claimed in two initiatives is
@@ -230,78 +261,142 @@ def _dedupe_package(initiatives_out: List[dict], checks: List[str]) -> None:
     by being mentioned again. And NT14/NT18/NT19 are overlapping views of one pot of
     supply-chain spend: local SMEs are local companies, so adding them multiplies one pound
     by three. In both cases the largest line counts and the rest are shown but not added.
+
+    Infosys and a partner are kept apart: a partner's volunteers or apprentices are its own
+    people, and partner value is reported separately anyway (A-09).
     """
     def claim(line: dict, other: str, reason: str) -> None:
         line["status"] = ALTERNATIVE
-        line["value_gbp"] = round(line["value_gbp"], 2)
         line["note"] = (line["note"] + " " if line["note"] else "") + reason
-        checks.append(f"{other}: {line['measure']} is shown but not added — {reason}")
+        audit.append({"initiative": other, "measure": line["measure"], "action": "not added", "reason": reason})
 
-    counted = [(out, l) for out in initiatives_out for l in out["lines"] if l["status"] == COUNTED and l["value_gbp"]]
+    for side in ("Infosys", "Partner-led"):
+        counted = [(out, l) for out in initiatives_out if out["attribution"] == side
+                   for l in out["lines"] if l["status"] == COUNTED and l["value_gbp"]]
 
-    # One line per measure code across the package: keep the largest.
-    for code in {l["measure"] for _, l in counted}:
-        same = sorted([(o, l) for o, l in counted if l["measure"] == code], key=lambda x: -x[1]["value_gbp"])
-        for out, line in same[1:]:
-            claim(line, out["name"], f"{code} is already counted in \"{same[0][0]['name']}\" (A-07).")
+        # One line per measure code: keep the largest.
+        for code in {l["measure"] for _, l in counted}:
+            same = sorted([(o, l) for o, l in counted if l["measure"] == code], key=lambda x: -x[1]["value_gbp"])
+            for out, line in same[1:]:
+                claim(line, out["name"], f"{code} is already counted in \"{same[0][0]['name']}\" (A-07).")
 
-    # Supply-chain spend is one pot however it is sliced: keep the largest slice only.
-    spend = sorted([(o, l) for o, l in counted if l["measure"] in SPEND_MEASURES and l["status"] == COUNTED],
-                   key=lambda x: -x[1]["value_gbp"])
-    for out, line in spend[1:]:
-        if line["status"] != COUNTED:
-            continue
-        claim(line, out["name"],
-              f"the same supply-chain spend is already counted as {spend[0][1]['measure']} in \"{spend[0][0]['name']}\".")
+        # Supply-chain spend is one pot however it is sliced: keep the largest slice only.
+        spend = sorted([(o, l) for o, l in counted if l["measure"] in SPEND_MEASURES and l["status"] == COUNTED],
+                       key=lambda x: -x[1]["value_gbp"])
+        for out, line in spend[1:]:
+            if line["status"] == COUNTED:
+                claim(line, out["name"],
+                      f"The same supply-chain spend is already counted as {spend[0][1]['measure']} in "
+                      f"\"{spend[0][0]['name']}\".")
 
 
-def _trim_to_target(initiatives_out: List[dict], tables: dict, form: TenderForm, checks: List[str]) -> None:
-    """Bring a package back to the target when it overshoots.
+def _driver_step(line: dict) -> float:
+    """How far the driver of a line moves in one step: a whole person, or about three significant figures."""
+    if line.get("parts"):
+        return 1.0
+    units = line["units"] or 0
+    return 1.0 if units < 1000 else float(10 ** (len(str(int(units))) - 3))
 
-    The weighting is what the buyer asked for, and every pound above it is a commitment
-    Infosys is bound to deliver for no extra score — KPIs with service points attached. Coming
-    in under is a smaller package; coming in over is a liability. Under target is left alone.
+
+def _driver(line: dict) -> float:
+    return line["parts"]["people"] if line.get("parts") else (line["units"] or 0)
+
+
+def _set_driver(line: dict, value: float, proxy: float) -> None:
+    """Move a line's driver and recompute everything that follows from it: units, people, basis, value."""
+    parts = line.get("parts")
+    if parts:
+        parts["people"] = value
+        line["people"] = value
+        line["units"] = _units_from_parts(parts)
+        line["basis"] = _basis_from_parts(parts)
+    else:
+        old = line["units"] or 0
+        line["units"] = value
+        if line.get("people") and old:
+            line["people"] = max(1, round(line["people"] * value / old))
+        line["basis"] = ""  # the AI's arithmetic no longer describes this number
+    line["value_gbp"] = round(line["units"] * proxy, 2)
+
+
+def _size_to_target(initiatives_out: List[dict], tables: dict, form: TenderForm, audit: List[dict]) -> Dict[str, dict]:
+    """Bring a package that overshoots the target down to it, and no further.
+
+    The weighting is what the buyer asked for, and every pound above it is a commitment Infosys is
+    bound to deliver for no extra score. Under target is left alone: padding is never added.
+
+    Each line is reduced through its driver — the number of people (or the spend) — in whole steps,
+    so a quantity always reads as something deliverable ("25 apprentices × 46 weeks a year"), and
+    the units, basis and value are recomputed from it. Proportional first, rounded down, then whole
+    steps are given back where they still fit, so the package lands just under the target.
+
+    Returns {id(line): {"from": units, "to": units}} for the lines that moved.
     """
     target = form.target_gbp
-    if target <= 0:
-        return
-    counted = [l for out in initiatives_out for l in out["lines"] if l["status"] == COUNTED and l["value_gbp"] > 0]
-    total = sum(l["value_gbp"] for l in counted)
-    if total <= target or not counted:
-        return
+    lines = [l for out in initiatives_out for l in out["lines"] if l["status"] == COUNTED and l["value_gbp"] > 0]
+    total = sum(l["value_gbp"] for l in lines)
+    if target <= 0 or not lines or total <= target:
+        return {}
 
-    before = total
-    for _ in range(3):  # a couple of passes settle the rounding
-        total = sum(l["value_gbp"] for l in counted)
+    proxy = {id(l): (l["value_gbp"] / l["units"]) for l in lines}
+    start = {id(l): (_driver(l), l["units"], l.get("people")) for l in lines}
+    k = target / total
+    for l in lines:
+        step = _driver_step(l)
+        floor = math.floor(_driver(l) * k / step) * step
+        _set_driver(l, max(min(step, _driver(l)), floor), proxy[id(l)])
+
+    # Rounding up to one step per line can leave the package a little over: take whole steps back
+    # from the largest lines until it fits.
+    for _ in range(10_000):
+        total = sum(l["value_gbp"] for l in lines)
         if total <= target:
             break
-        k = target / total
-        for line in counted:
-            # Always round down: the target is a ceiling here, so landing a pound under it is
-            # right and a pound over it is the thing being avoided.
-            line.setdefault("units_proposed", line["units"])
-            units = (line["units"] or 0) * k
-            line["units"] = math.floor(units * 100) / 100 if units < 100 else math.floor(units)
-            if line.get("people"):
-                line["people"] = max(1, round(line["people"] * k))
-            proxy, _basis = localised_proxy(line["measure"], tables, form.region, form.industry)
-            line["value_gbp"] = round((line["units"] or 0) * (proxy or 0), 2)
+        biggest = max((l for l in lines if _driver(l) > _driver_step(l)), key=lambda l: l["value_gbp"], default=None)
+        if biggest is None:
+            break
+        _set_driver(biggest, _driver(biggest) - _driver_step(biggest), proxy[id(biggest)])
 
-    after = sum(l["value_gbp"] for l in counted)
-    for line in counted:
-        was = line.get("units_proposed")
-        if was and was != line["units"]:
-            line["note"] = (line["note"] + " " if line["note"] else "") + f"Brought down from {was:,.0f} to meet the target."
-    checks.append(
-        f"Volumes were brought down from £{before:,.0f} to £{after:,.0f} to meet the {form.sv_percent:g}% target and no "
-        "more. Anything above it is a commitment Infosys is bound to deliver for no extra score, so each line shows what "
-        "the AI first proposed."
-    )
+    # Give whole steps back, cheapest first, while the package stays within the target.
+    for _ in range(10_000):
+        total = sum(l["value_gbp"] for l in lines)
+        room = [l for l in lines
+                if _driver(l) + _driver_step(l) <= start[id(l)][0]
+                and total + _driver_step(l) * (l["value_gbp"] / _driver(l)) <= target]
+        if not room:
+            break
+        cheapest = min(room, key=lambda l: _driver_step(l) * l["value_gbp"] / _driver(l))
+        _set_driver(cheapest, _driver(cheapest) + _driver_step(cheapest), proxy[id(cheapest)])
+
+    moved = {}
+    for out in initiatives_out:
+        for l in out["lines"]:
+            if id(l) in start and l["units"] != start[id(l)][1]:
+                moved[id(l)] = {"from": start[id(l)][1], "to": l["units"],
+                                "people_from": start[id(l)][2], "people_to": l.get("people")}
+                audit.append({"initiative": out["name"], "measure": l["measure"], "action": "sized to target",
+                              "from_units": start[id(l)][1], "to_units": l["units"]})
+    return moved
+
+
+_WORD_NUMBER = r"(?<![\d.,]){}(?![\d,]*\d)(?!\.\d)"
+
+
+def _renumber(paragraph: str, old: Optional[float], new: Optional[float]) -> str:
+    """Replace a volume the AI wrote into its paragraph ("40 apprentices") with the sized one."""
+    if not old or not new or old == new:
+        return paragraph
+    for written in {_fmt(old), f"{old:g}"}:
+        paragraph = re.sub(_WORD_NUMBER.format(re.escape(written)), _fmt(new), paragraph)
+    return paragraph
 
 
 def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[str, Any]:
     """Value the AI's proposed initiatives against the tables and apply the rules."""
     checks: List[str] = []
+    # What the code corrected or resized, kept for the audit trail rather than shown on screen:
+    # the user sees deliverable numbers that meet the brief, not the AI's first attempt.
+    audit: List[dict] = []
     measures = {m["code"]: m for m in tables["measures"]}
     track = {str(i.get("id") or "").strip(): i for i in tables.get("initiative_library") or []}
     index = mac_index(tables, form.framework)
@@ -336,6 +431,7 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
                 # Kept so the package-wide headcount check can see it, and the screen can show it.
                 "people": people,
                 "basis": str(line.get("basis") or ""),
+                "parts": None,
                 "proxy_gbp": None,
                 "proxy_basis": None,
                 "value_gbp": 0.0,
@@ -347,32 +443,68 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
             if code not in measures:
                 out.update(status=NOT_VALUED, note="Not an Open Access TOM measure.")
                 continue
+
+            def adjust(reason: str, before: Optional[float], after: Optional[float]) -> None:
+                audit.append({"initiative": name, "measure": code, "action": "corrected", "reason": reason,
+                              "from_units": before, "to_units": after})
+
+            # People-based measures: the AI gives the parts and the code multiplies them, so the
+            # quantity is never the AI's arithmetic. Each part is held to what a person and the
+            # contract can physically give.
+            kind = _unit_kind(measures[code].get("unit"))
+            per, years = _num(line.get("per_person_per_year")), _num(line.get("years"))
+            if kind and people and per and years and people > 0 and per > 0 and years > 0:
+                limit = PER_PERSON_YEAR_LIMIT[kind]
+                if kind == "weeks" and per < 1:
+                    # "0.88" weeks a year is a share of the year written as a fraction, not under a week.
+                    adjust(f"{per:g} read as a share of the year ({per * 52:.0f} weeks)", per, round(per * 52))
+                    per = float(round(per * 52))
+                if per > limit:
+                    adjust(f"{_fmt(per)} {_PER_LABEL[kind]} a year per person is more than {_fmt(limit)}", per, limit)
+                    per = limit
+                if form.duration_years > 0 and years > form.duration_years:
+                    adjust(f"{_fmt(years)} years is longer than the contract", years, form.duration_years)
+                    years = form.duration_years
+                if code in BARRIER_MEASURES:  # A-06: at most one FTE-year per person, whatever the term
+                    per, years = 1.0, 1.0
+                who = str(line.get("who") or "").strip() or "people"
+                out["parts"] = {"people": people, "who": who, "per_year": per, "years": years, "kind": kind}
+                new_units = _units_from_parts(out["parts"])
+                if units is not None and abs(new_units - units) > 0.01 * max(new_units, units):
+                    adjust("the AI's total did not match its parts", units, new_units)
+                units = new_units
+                out["basis"] = _basis_from_parts(out["parts"])
+
             if units is None or units <= 0:
                 out.update(status=NOT_VALUED, note="No usable quantity.")
                 continue
 
-            # Caps that keep units realistic (A-06, NT1 unit guidance, contract size).
+            # Caps that keep units realistic (A-06, NT1 unit guidance, contract size), applied
+            # quietly: the screen shows a deliverable number, the audit keeps what was changed.
             if code in BARRIER_MEASURES and people is not None and units > people:
-                out["note"] = f"Capped at 1 FTE-year per person ({people:g} people)."
+                adjust(f"capped at 1 FTE-year per person ({people:g} people) (A-06)", units, people)
                 units = people
             if code == "NT1" and people is not None and units > people * form.duration_years:
-                out["note"] = f"Capped at 1 FTE per person per year ({people:g} × {form.duration_years:g} yrs)."
+                adjust("capped at 1 FTE per person per year", units, people * form.duration_years)
                 units = people * form.duration_years
+            if kind in ("weeks", "hours") and not out["parts"] and people and form.duration_years > 0:
+                most = people * PER_PERSON_YEAR_LIMIT[kind] * form.duration_years
+                if units > most:
+                    adjust(f"more {kind} than {people:g} people can give in {form.duration_years:g} years", units, most)
+                    units = most
             if code in SPEND_MEASURES and units > form.bid_amount_gbp:
-                out["note"] = "Capped at the contract value."
+                adjust("capped at the contract value", units, form.bid_amount_gbp)
                 units = form.bid_amount_gbp
             if code in BARRIER_MEASURES | {"NT1"} and people is None:
                 questions.append(f"How many people does {code} cover? FTE is capped per person.")
+            if units != out["units"] and not out["parts"]:
+                out["basis"] = ""  # the AI's arithmetic no longer describes this number
             out["units"] = units
 
-            # The AI does its own arithmetic for units; flag sums that do not add up (value unchanged).
-            if not out["note"]:
-                doubts = quantity_doubts(units, out["basis"], measures[code].get("unit"), form.duration_years, people)
-                if doubts:
-                    out["note"] = "Check the quantity: " + "; ".join(doubts) + "."
-                    checks.append(f"{name}: {code} — check the quantity: {'; '.join(doubts)}. "
-                                  "The value uses the AI's number as given.")
-                    questions.append(f"Confirm the quantity for {code}: {doubts[0]}.")
+            # Without parts the AI did its own arithmetic: keep a record for the audit trail.
+            if not out["parts"]:
+                for doubt in quantity_doubts(units, out["basis"], measures[code].get("unit"), form.duration_years, people):
+                    audit.append({"initiative": name, "measure": code, "action": "doubt", "reason": doubt})
 
             proxy, basis = localised_proxy(code, tables, form.region, form.industry)
             out["proxy_gbp"], out["proxy_basis"] = proxy, basis
@@ -435,8 +567,16 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
             "status": "Proposal",
         })
 
-    _dedupe_package(initiatives_out, checks)
-    _trim_to_target(initiatives_out, tables, form, checks)
+    _dedupe_package(initiatives_out, audit)
+    proposed_gbp = round(sum(l["value_gbp"] for out in initiatives_out for l in out["lines"] if l["status"] == COUNTED), 2)
+    moved = _size_to_target(initiatives_out, tables, form, audit)
+    # The AI wrote its own volumes into its paragraph; keep the words in step with the sized numbers.
+    for out in initiatives_out:
+        for l in out["lines"]:
+            change = moved.get(id(l))
+            if change:
+                out["bid_paragraph"] = _renumber(out["bid_paragraph"], change["people_from"], change["people_to"])
+                out["bid_paragraph"] = _renumber(out["bid_paragraph"], change["from"], change["to"])
 
     totals = {"infosys_gbp": 0.0, "partner_gbp": 0.0, "conditional_gbp": 0.0}
     for out in initiatives_out:
@@ -448,10 +588,9 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
 
     totals = {k: round(v, 2) for k, v in totals.items()}
     target = form.target_gbp
-    if target > 0 and totals["infosys_gbp"] > target * 1.5:
-        checks.append(
-            f"Infosys value is {totals['infosys_gbp'] / target:.0%} of the target — check the units are realistic for this contract."
-        )
+    if target > 0 and proposed_gbp > target * 1.5:
+        audit.append({"action": "far above target",
+                      "reason": f"the AI proposed {proposed_gbp / target:.0%} of the target before sizing"})
     # A contract can only employ so many people: more than its whole value in local wages is
     # not a stretch target, it is arithmetic that does not work.
     hired = sum(
@@ -477,10 +616,15 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
     if not tables.get("capability"):
         checks.append("Infosys capability profile not loaded yet: capability fit is not checked.")
 
+    if audit:
+        log.info("Sizing for %s: proposed £%.0f, final £%.0f, target £%.0f, %d adjustments",
+                 form.company, proposed_gbp, totals["infosys_gbp"] + totals["partner_gbp"], target, len(audit))
     return {
         "target_gbp": target,
         "totals": totals,
         "initiatives": initiatives_out,
         "checks": list(dict.fromkeys(checks)),
+        # Backend record of what was corrected or sized; not part of what the screen shows.
+        "sizing": {"proposed_gbp": proposed_gbp, "target_gbp": target, "adjustments": audit},
         "tables": {"source": tables.get("source"), "edition": tables.get("edition"), "imported_at": tables.get("imported_at")},
     }
