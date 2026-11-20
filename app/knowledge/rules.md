@@ -41,8 +41,8 @@ B5. Go deep rather than wide. Six well-specified commitments beat twelve thin on
 
 C1. Use only measure codes listed in VALID TOM MEASURES. Never invent a code, a measure
     name or a unit.
-C2. For measures counted in FTE, weeks or hours, give the parts — people, who they are,
-    FTE/weeks/hours per person per year, and years — and let the tool multiply them. Never
+C2. For measures counted in FTE, weeks or hours, give the parts: people, who they are,
+    FTE/weeks/hours per person per year, and years, and let the tool multiply them. Never
     give more than one person can: 1 FTE, 52 weeks or 1,950 hours a year. For £, tonnes,
     miles and kg, give the whole-of-contract total in "units".
 C3. Always give "people" for NT1 and for the barrier measures (NT3, NT4, NT5, NT6, NT76).
