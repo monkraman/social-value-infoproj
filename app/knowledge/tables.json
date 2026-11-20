@@ -1341,56 +1341,56 @@
       {
         "code": "NT1",
         "driver": "One FTE-year = annual pay of an L3-paid role",
-        "cost_uk": 22590.0,
-        "value_per_gbp_uk": 1.66739707835325,
-        "cost_offshore": 22590.0,
-        "value_per_gbp_offshore": 1.66739707835325,
-        "note": "If the role is needed for the contract anyway, the true incremental cost is only recruitment and support — value per £ is then far higher. Barrier measures capped at 1 year per person."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT3",
         "driver": "One FTE-year = annual pay of an L3-paid role",
-        "cost_uk": 22590.0,
-        "value_per_gbp_uk": 2.28247011952191,
-        "cost_offshore": 22590.0,
-        "value_per_gbp_offshore": 2.28247011952191,
-        "note": "If the role is needed for the contract anyway, the true incremental cost is only recruitment and support — value per £ is then far higher. Barrier measures capped at 1 year per person."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT4",
         "driver": "One FTE-year = annual pay of an L3-paid role",
-        "cost_uk": 22590.0,
-        "value_per_gbp_uk": 2.34674634794157,
-        "cost_offshore": 22590.0,
-        "value_per_gbp_offshore": 2.34674634794157,
-        "note": "If the role is needed for the contract anyway, the true incremental cost is only recruitment and support — value per £ is then far higher. Barrier measures capped at 1 year per person."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT76",
         "driver": "One FTE-year = annual pay of an L3-paid role",
-        "cost_uk": 22590.0,
-        "value_per_gbp_uk": 2.24493138556884,
-        "cost_offshore": 22590.0,
-        "value_per_gbp_offshore": 2.24493138556884,
-        "note": "If the role is needed for the contract anyway, the true incremental cost is only recruitment and support — value per £ is then far higher. Barrier measures capped at 1 year per person."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT5",
         "driver": "One FTE-year = annual pay of an L3-paid role",
-        "cost_uk": 22590.0,
-        "value_per_gbp_uk": 2.4755201416556,
-        "cost_offshore": 22590.0,
-        "value_per_gbp_offshore": 2.4755201416556,
-        "note": "If the role is needed for the contract anyway, the true incremental cost is only recruitment and support — value per £ is then far higher. Barrier measures capped at 1 year per person."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT6",
         "driver": "One FTE-year = annual pay of an L3-paid role",
-        "cost_uk": 22590.0,
-        "value_per_gbp_uk": 2.29698981850376,
-        "cost_offshore": 22590.0,
-        "value_per_gbp_offshore": 2.29698981850376,
-        "note": "If the role is needed for the contract anyway, the true incremental cost is only recruitment and support — value per £ is then far higher. Barrier measures capped at 1 year per person."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT9",
@@ -1399,16 +1399,16 @@
         "value_per_gbp_uk": null,
         "cost_offshore": null,
         "value_per_gbp_offshore": null,
-        "note": "Accredited Level 2+ only. Enter the course cost per training week."
+        "note": ""
       },
       {
         "code": "NT10",
         "driver": "One apprentice week = L3 weekly pay + QA overhead per week",
-        "cost_uk": 602.836538461539,
-        "value_per_gbp_uk": 0.51378770236861,
-        "cost_offshore": 602.836538461539,
-        "value_per_gbp_offshore": 0.51378770236861,
-        "note": "Based on the ambassador programme: L3 pay £12.55/hr × 37.5 hrs + QA Consulting overhead spread across 1,920 months."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT80",
@@ -1417,52 +1417,52 @@
         "value_per_gbp_uk": null,
         "cost_offshore": null,
         "value_per_gbp_offshore": null,
-        "note": "Accredited Level 2+ only. Enter the course cost per training week."
+        "note": ""
       },
       {
         "code": "NT11",
         "driver": "One attendee-hour = staff hour ÷ group size",
-        "cost_uk": 21.655703125,
-        "value_per_gbp_uk": 5.12520878954375,
-        "cost_offshore": 4.11917613636364,
-        "value_per_gbp_offshore": 26.944708438222,
-        "note": "High-yield: £110.99 per attendee-hour. Personalised support only; students excluded."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT12",
         "driver": "One unpaid placement week = 5 hours of supervision",
-        "cost_uk": 433.1140625,
-        "value_per_gbp_uk": 0.222874315007955,
-        "cost_offshore": 82.3835227272727,
-        "value_per_gbp_offshore": 1.17171488672023,
-        "note": "NEET only, 1–8 weeks, at least 3 days a week."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT13",
         "driver": "One paid placement week = L3 weekly pay",
-        "cost_uk": 470.625,
-        "value_per_gbp_uk": 0.876239043824701,
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
         "cost_offshore": null,
         "value_per_gbp_offshore": null,
-        "note": "2–26 week placements only."
+        "note": ""
       },
       {
         "code": "NT8",
         "driver": "One volunteering hour of Infosys staff time",
-        "cost_uk": 86.6228125,
-        "value_per_gbp_uk": 0.201794417607948,
-        "cost_offshore": 16.4767045454545,
-        "value_per_gbp_offshore": 1.0608917548881,
-        "note": "Volunteer hours are valued at £17.48 regardless of who gives them — senior UK time is value-negative in £ terms."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT99",
         "driver": "One volunteering hour of Infosys staff time",
-        "cost_uk": 86.6228125,
-        "value_per_gbp_uk": 0.201794417607948,
-        "cost_offshore": 16.4767045454545,
-        "value_per_gbp_offshore": 1.0608917548881,
-        "note": "Volunteer hours are valued at £17.48 regardless of who gives them — senior UK time is value-negative in £ terms."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT14",
@@ -1471,7 +1471,7 @@
         "value_per_gbp_uk": null,
         "cost_offshore": null,
         "value_per_gbp_offshore": null,
-        "note": "Value comes from moving existing spend to VCSEs / local firms / SMEs, not new spend. Value per £ not meaningful."
+        "note": ""
       },
       {
         "code": "NT18",
@@ -1480,7 +1480,7 @@
         "value_per_gbp_uk": null,
         "cost_offshore": null,
         "value_per_gbp_offshore": null,
-        "note": "Value comes from moving existing spend to VCSEs / local firms / SMEs, not new spend. Value per £ not meaningful."
+        "note": ""
       },
       {
         "code": "NT19",
@@ -1489,70 +1489,70 @@
         "value_per_gbp_uk": null,
         "cost_offshore": null,
         "value_per_gbp_offshore": null,
-        "note": "Value comes from moving existing spend to VCSEs / local firms / SMEs, not new spend. Value per £ not meaningful."
+        "note": ""
       },
       {
         "code": "NT15",
         "driver": "One expert hour of Infosys staff time",
-        "cost_uk": 86.6228125,
-        "value_per_gbp_uk": 1.22762118812524,
-        "cost_offshore": 16.4767045454545,
-        "value_per_gbp_offshore": 6.45396048139591,
-        "note": "Expert support must go to VCSEs or SMEs. Offshore delivery only if the support can be given remotely."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT16",
         "driver": "£1 invested = £1 of cost",
-        "cost_uk": 1.0,
-        "value_per_gbp_uk": 1.0,
-        "cost_offshore": 1.0,
-        "value_per_gbp_offshore": 1.0,
-        "note": "£-invested measures score exactly 1.00x — they never beat £1 for £1."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT17",
         "driver": "One volunteering hour of Infosys staff time",
-        "cost_uk": 86.6228125,
-        "value_per_gbp_uk": 0.201794417607948,
-        "cost_offshore": 16.4767045454545,
-        "value_per_gbp_offshore": 1.0608917548881,
-        "note": "Volunteer hours are valued at £17.48 regardless of who gives them — senior UK time is value-negative in £ terms."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT28",
         "driver": "£1 invested = £1 of cost",
-        "cost_uk": 1.0,
-        "value_per_gbp_uk": 1.0,
-        "cost_offshore": 1.0,
-        "value_per_gbp_offshore": 1.0,
-        "note": "£-invested measures score exactly 1.00x — they never beat £1 for £1."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT29",
         "driver": "One volunteering hour of Infosys staff time",
-        "cost_uk": 86.6228125,
-        "value_per_gbp_uk": 0.201794417607948,
-        "cost_offshore": 16.4767045454545,
-        "value_per_gbp_offshore": 1.0608917548881,
-        "note": "Volunteer hours are valued at £17.48 regardless of who gives them — senior UK time is value-negative in £ terms."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT26",
         "driver": "£1 invested = £1 of cost",
-        "cost_uk": 1.0,
-        "value_per_gbp_uk": 1.0,
-        "cost_offshore": 1.0,
-        "value_per_gbp_offshore": 1.0,
-        "note": "£-invested measures score exactly 1.00x — they never beat £1 for £1."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT27",
         "driver": "£1 invested = £1 of cost",
-        "cost_uk": 1.0,
-        "value_per_gbp_uk": 1.0,
-        "cost_offshore": 1.0,
-        "value_per_gbp_offshore": 1.0,
-        "note": "£-invested measures score exactly 1.00x — they never beat £1 for £1."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT31",
@@ -1561,7 +1561,7 @@
         "value_per_gbp_uk": null,
         "cost_offshore": null,
         "value_per_gbp_offshore": null,
-        "note": "Only savings beyond the 2.4%/yr baseline against last year's measured emissions."
+        "note": ""
       },
       {
         "code": "NT31a",
@@ -1570,7 +1570,7 @@
         "value_per_gbp_uk": null,
         "cost_offshore": null,
         "value_per_gbp_offshore": null,
-        "note": "Only savings beyond the 2.4%/yr baseline against last year's measured emissions."
+        "note": ""
       },
       {
         "code": "NT32",
@@ -1584,20 +1584,20 @@
       {
         "code": "NT116",
         "driver": "£1 invested = £1 of cost",
-        "cost_uk": 1.0,
-        "value_per_gbp_uk": 1.0,
-        "cost_offshore": 1.0,
-        "value_per_gbp_offshore": 1.0,
-        "note": "£-invested measures score exactly 1.00x — they never beat £1 for £1."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT119",
         "driver": "£1 invested = £1 of cost",
-        "cost_uk": 1.0,
-        "value_per_gbp_uk": 1.0,
-        "cost_offshore": 1.0,
-        "value_per_gbp_offshore": 1.0,
-        "note": "£-invested measures score exactly 1.00x — they never beat £1 for £1."
+        "cost_uk": null,
+        "value_per_gbp_uk": null,
+        "cost_offshore": null,
+        "value_per_gbp_offshore": null,
+        "note": ""
       },
       {
         "code": "NT87",
@@ -1615,64 +1615,64 @@
         "role": "Industry Principal (JL7B)",
         "location": "Offshore",
         "hours_per_day": 8.8,
-        "per_hour": 47.4989772727273,
-        "per_month": 8359.82
+        "per_hour": null,
+        "per_month": null
       },
       {
         "grade": "JL6",
         "role": "Lead Consultant (JL6B)",
         "location": "Offshore",
         "hours_per_day": 8.8,
-        "per_hour": 28.7920454545455,
-        "per_month": 5067.4
+        "per_hour": null,
+        "per_month": null
       },
       {
         "grade": "JL5B",
         "role": "Consultant (JL5B)",
         "location": "Offshore",
         "hours_per_day": 8.8,
-        "per_hour": 16.4767045454545,
-        "per_month": 2899.9
+        "per_hour": null,
+        "per_month": null
       },
       {
         "grade": "JL4A",
         "role": "Senior Associate Consultant (JL4A)",
         "location": "Offshore",
         "hours_per_day": 8.8,
-        "per_hour": 13.2809090909091,
-        "per_month": 2337.44
+        "per_hour": null,
+        "per_month": null
       },
       {
         "grade": "JL4B",
         "role": "Associate Consultant (JL4B)",
         "location": "Offshore",
         "hours_per_day": 8.8,
-        "per_hour": 11.9558522727273,
-        "per_month": 2104.23
+        "per_hour": null,
+        "per_month": null
       },
       {
         "grade": "JL5A-UK",
         "role": "Senior Consultant (JL5A)",
         "location": "UK",
         "hours_per_day": 8.0,
-        "per_hour": 86.6228125,
-        "per_month": 13859.65
+        "per_hour": null,
+        "per_month": null
       },
       {
         "grade": "ESR-L3",
         "role": "FWS Ambassador, Level 3 apprentice",
         "location": "UK",
         "hours_per_day": 7.5,
-        "per_hour": 12.55,
-        "per_month": 1882.5
+        "per_hour": null,
+        "per_month": null
       },
       {
         "grade": "ESR-L4",
         "role": "FWS Senior Ambassador, Level 4 apprentice",
         "location": "UK",
         "hours_per_day": 7.5,
-        "per_hour": 14.29,
-        "per_month": 2143.5
+        "per_hour": null,
+        "per_month": null
       }
     ],
     "examples": [
@@ -1681,189 +1681,189 @@
         "vendor": "Infosys",
         "category": "3P Services",
         "initiative": "INI-09",
-        "amount_gbp": 25000.0
+        "amount_gbp": null
       },
       {
         "description": "Community Innovation fund(Additional)",
         "vendor": "",
         "category": "3P Services",
         "initiative": "INI-15",
-        "amount_gbp": 50000.0
+        "amount_gbp": null
       },
       {
         "description": "Community Innovation Fund - Reforestation Initiatives - TBD - March 2027",
         "vendor": "",
         "category": "3P Services",
         "initiative": "INI-16",
-        "amount_gbp": 25000.0
+        "amount_gbp": null
       },
       {
-        "description": "Community Innovation Fund - Donations - 25k/region x 5 regions (2026-2034) - Every November",
+        "description": "Community Innovation Fund - Donations - x 5 regions (2026-2034) - Every November",
         "vendor": "",
         "category": "3P Services",
         "initiative": "INI-15",
-        "amount_gbp": 125000.0
+        "amount_gbp": null
       },
       {
         "description": "Device prescription - 500 devices (consultations) - Good Things Foundation",
         "vendor": "Good Things Foundation",
         "category": "3P Services",
         "initiative": "INI-19",
-        "amount_gbp": 130000.0
+        "amount_gbp": null
       },
       {
         "description": "ESR Ambassadors - administrative overhead (QA Consulting)+Harpreet",
         "vendor": "QA Consulting",
         "category": "3P Services",
         "initiative": "INI-17",
-        "amount_gbp": 1100000.0
+        "amount_gbp": null
       },
       {
         "description": "Indpendent verification of environmental performance (where specified) - Carbon Baselining",
         "vendor": "Monk Spaces",
         "category": "3P Services",
         "initiative": "INI-02",
-        "amount_gbp": 384000.0
+        "amount_gbp": null
       },
       {
         "description": "Unseen - Training 1: Unseen NHS Clinical Modern Slavery Detection training and Training 2: Unseen Learning Academy - Modern Slavery Awareness raising",
         "vendor": "Hope for Justice / Unseen",
         "category": "3P Services",
         "initiative": "INI-27",
-        "amount_gbp": 125000.0
+        "amount_gbp": null
       },
       {
         "description": "Unseen Community Support (Technology Interventions - Section 3.32)",
         "vendor": "Hope for Justice / Unseen",
         "category": "3P Services",
         "initiative": "INI-29",
-        "amount_gbp": 50000.0
+        "amount_gbp": null
       },
       {
         "description": "NHSBSA Student Services - Innovation Research",
         "vendor": "NHSBSA Student Services",
         "category": "3P Services",
         "initiative": "INI-30",
-        "amount_gbp": 45000.0
+        "amount_gbp": null
       },
       {
         "description": "Device prescribing service - external counsel - Good Things Foundation",
         "vendor": "Good Things Foundation",
         "category": "3P Services",
         "initiative": "INI-19",
-        "amount_gbp": 25000.0
+        "amount_gbp": null
       },
       {
         "description": "Device prescribing service - external management and coordination - Good Things Foundation",
         "vendor": "Good Things Foundation",
         "category": "3P Services",
         "initiative": "INI-19",
-        "amount_gbp": 130000.0
+        "amount_gbp": null
       },
       {
         "description": "Device prescribing service - ex-offenders refurb supplement - Good Things Foundation",
         "vendor": "Good Things Foundation",
         "category": "3P Services",
         "initiative": "INI-18",
-        "amount_gbp": 110000.0
+        "amount_gbp": null
       },
       {
         "description": "Springpod deployment costs (Envoy) - to be checked with Lily",
         "vendor": "Springpod / Envoy",
         "category": "3P Services",
         "initiative": "INI-22",
-        "amount_gbp": 50000.0
+        "amount_gbp": null
       },
       {
         "description": "Gender Sensitivity training",
         "vendor": "TBC",
         "category": "3P Services",
         "initiative": "INI-37",
-        "amount_gbp": 0.0
+        "amount_gbp": null
       },
       {
         "description": "IT carbon footprint tool - implementation (October 2025 - March 2027)",
         "vendor": "Sopht",
         "category": "3P SW",
         "initiative": "INI-01",
-        "amount_gbp": 85000.0
+        "amount_gbp": null
       },
       {
         "description": "IT carbon footprint tool - yearly license",
         "vendor": "Sopht",
         "category": "3P SW",
         "initiative": "INI-01",
-        "amount_gbp": 1170020.0
+        "amount_gbp": null
       },
       {
-        "description": "Nudge Program : Employee Carbon Tracker App  (orbit stack)",
+        "description": "Nudge Program : Employee Carbon Tracker App (orbit stack)",
         "vendor": "Infosys DX",
         "category": "IP",
         "initiative": "INI-09",
-        "amount_gbp": 250000.0
+        "amount_gbp": null
       },
       {
         "description": "IT Carbon Footprint - Additional",
         "vendor": "",
         "category": "3P Services",
         "initiative": "INI-01",
-        "amount_gbp": 191119.0
+        "amount_gbp": null
       },
       {
         "description": "Sustainable Digital Services Framework",
         "vendor": "",
         "category": "3P Services",
         "initiative": "INI-01",
-        "amount_gbp": 23115.0
+        "amount_gbp": null
       },
       {
         "description": "LCA of SaaS Services",
         "vendor": "",
         "category": "3P Services",
         "initiative": "INI-01",
-        "amount_gbp": 10000.0
+        "amount_gbp": null
       },
       {
         "description": "LCA and Circularity Assessment of ICT Infrastructure",
         "vendor": "Monk Spaces",
         "category": "3P Services",
         "initiative": "INI-01",
-        "amount_gbp": 12000.0
+        "amount_gbp": null
       },
       {
         "description": "Digital Product Passports",
         "vendor": "Monk Spaces",
         "category": "3P Services",
         "initiative": "INI-01",
-        "amount_gbp": 17150.0
+        "amount_gbp": null
       },
       {
         "description": "Sponsoring PhD's - 5 PhD's 6 May 2026 to 6th May 2031",
         "vendor": "",
         "category": "3P Services",
         "initiative": "INI-31",
-        "amount_gbp": 75000.0
+        "amount_gbp": null
       },
       {
         "description": "NHS Communication Artefacts",
         "vendor": "",
         "category": "3P Services",
         "initiative": "INI-34",
-        "amount_gbp": 20000.0
+        "amount_gbp": null
       },
       {
         "description": "Social Value Director travel to UK, once a quarter",
         "vendor": "",
         "category": "Travel",
         "initiative": "INI-34",
-        "amount_gbp": 0.0
+        "amount_gbp": null
       },
       {
         "description": "SV2 SME local travel for the ESR programme",
         "vendor": "",
         "category": "Travel",
         "initiative": "INI-35",
-        "amount_gbp": 0.0
+        "amount_gbp": null
       }
     ]
   },

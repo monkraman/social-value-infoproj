@@ -18,6 +18,7 @@ has to be edited (editing it through openpyxl would drop its cached formula resu
     python scripts/import_workbook.py "<workbook>.xlsx" --extra "<measure-mac>.xlsx" --extra "<capability>.xlsx"
 """
 import json
+import re
 import sys
 import warnings
 from datetime import datetime, timezone
@@ -97,6 +98,14 @@ def _rows_under(ws, first_header: str, second: "str | None" = None):
     return []
 
 
+_MONEY = re.compile(r"\s*£\s?[\d,.]*\d(?:\s?(?:k|m|bn)\b)?(?:/\w+)?|\s*\b\d+(?:\.\d+)?k\b(?:/\w+)?", re.I)
+
+
+def _without_money(text: str) -> str:
+    """A tracker description with any amounts taken out: cost figures are the bid team's to enter."""
+    return re.sub(r"\s{2,}", " ", _MONEY.sub("", text)).strip(" -")
+
+
 def _costs(wb) -> dict:
     """What delivering each measure costs Infosys, from the Levers and Cost sheets.
 
@@ -113,11 +122,9 @@ def _costs(wb) -> dict:
             out["levers"].append({
                 "code": code,
                 "driver": str(r.get("Cost driver (what one unit costs Infosys)") or "").strip(),
-                "cost_uk": _num(r.get("Cost per unit — UK delivery £")),
-                "value_per_gbp_uk": _num(r.get("Value per £1 — UK")),
-                "cost_offshore": _num(r.get("Cost per unit — offshore delivery £")),
-                "value_per_gbp_offshore": _num(r.get("Value per £1 — offshore")),
-                "note": str(r.get("Notes") or "").strip(),
+                # Cost figures are the bid team's to enter: the structure is kept, the numbers are not.
+                "cost_uk": None, "value_per_gbp_uk": None, "cost_offshore": None, "value_per_gbp_offshore": None,
+                "note": "",
             })
     if "Cost" in wb.sheetnames:
         for r in _rows_under(wb["Cost"], "Grade"):
@@ -126,18 +133,17 @@ def _costs(wb) -> dict:
             out["rate_card"].append({
                 "grade": str(r["Grade"]).strip(), "role": str(r.get("Role") or "").strip(),
                 "location": str(r.get("Location") or "").strip(), "hours_per_day": _num(r.get("Hours / day")),
-                "per_hour": _num(r.get("FRT £ / hour")), "per_month": _num(r.get("FRT £ / month")),
+                "per_hour": None, "per_month": None,
             })
         for r in _rows_under(wb["Cost"], "Line", "Description (tracker)"):
             if not str(r.get("Line") or "").startswith("N-"):
                 continue
-            bid, latest = _num(r.get("Bid £ (FRT submission)")), _num(r.get("Latest forecast £"))
             out["examples"].append({
-                "description": str(r.get("Description (tracker)") or "").strip(),
+                "description": _without_money(str(r.get("Description (tracker)") or "")),
                 "vendor": str(r.get("Vendor / partner") or "").strip().strip("—").strip(),
                 "category": str(r.get("Category") or "").strip(),
                 "initiative": str(r.get("Initiative ID") or "").strip(),
-                "amount_gbp": latest if latest is not None else bid,
+                "amount_gbp": None,
             })
     return out
 
