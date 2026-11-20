@@ -161,6 +161,8 @@ def generator_knowledge(db: Session = Depends(get_db)) -> Dict[str, Any]:
         "track_record": track_record,
         "partners": partners,
         "delivery": delivery,
+        # Cost per unit, value per £1, the staff rate card and past non-staff costs, to cost a commitment.
+        "costs": t.get("costs") or {"levers": [], "rate_card": [], "examples": []},
         "documents": documents,
         "warnings": warnings,
     }

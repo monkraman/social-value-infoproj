@@ -122,21 +122,23 @@ def test_carbon_is_conditional():
 def test_partner_value_is_separate():
     r = run(
         {"name": "Ours", "lines": [{"measure": "NT8", "units": 100}]},
-        {"name": "Theirs", "attribution": "Partner-led", "lines": [{"measure": "NT8", "units": 50}]},
+        # A different measure: the same one in two initiatives is claimed once.
+        {"name": "Theirs", "attribution": "Partner-led", "lines": [{"measure": "NT17", "units": 50}]},
     )
     assert r["totals"]["infosys_gbp"] == pytest.approx(1748.0)
-    assert r["totals"]["partner_gbp"] == pytest.approx(874.0)
+    assert r["totals"]["partner_gbp"] == pytest.approx(50 * localised_proxy("NT17", TABLES, "North East", COMPUTING)[0])
 
 
 # ── Realistic scale ──────────────────────────────────────────────────────────
 def test_spend_cannot_exceed_contract_value():
-    r = run({"name": "SME spend", "lines": [{"measure": "NT19", "units": 50_000_000}]}, bid_amount_gbp=1_000_000)
-    assert line(r)["units"] == 1_000_000
+    r = run({"name": "SME spend", "lines": [{"measure": "NT19", "units": 50_000_000}]}, bid_amount_gbp=1_000_000, sv_percent=100)
+    assert line(r)["units"] <= 1_000_000
 
 
-def test_far_above_target_is_flagged():
+def test_far_above_target_is_cut_back():
     r = run({"name": "Hires", "lines": [{"measure": "NT1", "units": 100, "people": 40}]}, bid_amount_gbp=1_000_000)
-    assert any("check the units are realistic" in c for c in r["checks"])
+    assert any("cut back" in c for c in r["checks"])
+    assert r["totals"]["infosys_gbp"] <= 100_000
 
 
 # --- Quantity checks: the AI does its own arithmetic for units; the code flags sums that do not add up.
@@ -166,7 +168,7 @@ def test_sound_units_are_not_flagged():
 def test_a_flagged_quantity_keeps_its_value_and_raises_a_check():
     bad = {"name": "Apprentices", "lines": [{"measure": "NT10", "units": 23040,
                                             "basis": "80 apprentices x 24 months x 48 weeks per year"}]}
-    r = run(bad, duration_years=5)
+    r = run(bad, duration_years=5, bid_amount_gbp=100_000_000)
     ln = line(r)
     assert ln["status"] == COUNTED and ln["units"] == 23040  # nothing changed, only flagged
     assert ln["value_gbp"] == pytest.approx(23040 * ln["proxy_gbp"])

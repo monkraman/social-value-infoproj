@@ -82,6 +82,66 @@ def _optional_sheets(books: list, tables: dict) -> None:
                 break
 
 
+def _rows_under(ws, first_header: str, second: "str | None" = None):
+    """Like _table, but the header row may sit anywhere and two tables may share a first column name."""
+    rows = _rows(ws)
+    for i, row in enumerate(rows):
+        if row and row[0] == first_header and (second is None or (len(row) > 1 and row[1] == second)):
+            header = [str(h).strip() if h is not None else "" for h in row]
+            out = []
+            for r in rows[i + 1:]:
+                if not r or all(c is None for c in r) or (r[0] and len([c for c in r if c is not None]) == 1):
+                    break
+                out.append({header[j]: r[j] for j in range(len(header)) if header[j] and j < len(r)})
+            return out
+    return []
+
+
+def _costs(wb) -> dict:
+    """What delivering each measure costs Infosys, from the Levers and Cost sheets.
+
+    Levers gives one unit's cost and the value it buys per £1; Cost gives the staff rate card and
+    the non-staff lines (devices, licences, partner fees) past initiatives actually needed.
+    Neither is sent to the AI as figures; the screen uses them to cost a commitment.
+    """
+    out = {"levers": [], "rate_card": [], "examples": []}
+    if "Levers" in wb.sheetnames:
+        for r in _rows_under(wb["Levers"], "Ref"):
+            code = str(r.get("Ref") or "").strip()
+            if not code.startswith("NT"):
+                continue
+            out["levers"].append({
+                "code": code,
+                "driver": str(r.get("Cost driver (what one unit costs Infosys)") or "").strip(),
+                "cost_uk": _num(r.get("Cost per unit — UK delivery £")),
+                "value_per_gbp_uk": _num(r.get("Value per £1 — UK")),
+                "cost_offshore": _num(r.get("Cost per unit — offshore delivery £")),
+                "value_per_gbp_offshore": _num(r.get("Value per £1 — offshore")),
+                "note": str(r.get("Notes") or "").strip(),
+            })
+    if "Cost" in wb.sheetnames:
+        for r in _rows_under(wb["Cost"], "Grade"):
+            if not r.get("Grade"):
+                continue
+            out["rate_card"].append({
+                "grade": str(r["Grade"]).strip(), "role": str(r.get("Role") or "").strip(),
+                "location": str(r.get("Location") or "").strip(), "hours_per_day": _num(r.get("Hours / day")),
+                "per_hour": _num(r.get("FRT £ / hour")), "per_month": _num(r.get("FRT £ / month")),
+            })
+        for r in _rows_under(wb["Cost"], "Line", "Description (tracker)"):
+            if not str(r.get("Line") or "").startswith("N-"):
+                continue
+            bid, latest = _num(r.get("Bid £ (FRT submission)")), _num(r.get("Latest forecast £"))
+            out["examples"].append({
+                "description": str(r.get("Description (tracker)") or "").strip(),
+                "vendor": str(r.get("Vendor / partner") or "").strip().strip("—").strip(),
+                "category": str(r.get("Category") or "").strip(),
+                "initiative": str(r.get("Initiative ID") or "").strip(),
+                "amount_gbp": latest if latest is not None else bid,
+            })
+    return out
+
+
 def import_workbook(path: Path, extra: "list[Path] | Path | None" = None) -> dict:
     warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
     wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
@@ -153,6 +213,7 @@ def import_workbook(path: Path, extra: "list[Path] | Path | None" = None) -> dic
         "regions": regions,
         "industries": industries,
         "initiative_library": library,
+        "costs": _costs(wb),
     }
     others = [extra] if isinstance(extra, Path) else list(extra or [])
     books = [wb] + [openpyxl.load_workbook(p, read_only=True, data_only=True) for p in others]

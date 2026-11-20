@@ -8,6 +8,7 @@ from app.api.auth import router as auth_router
 from app.api.audit import router as audit_router
 from app.api.generator import router as generator_router
 from app.api.generator_runs import router as generator_runs_router
+from app.api.generator_bids import router as generator_bids_router
 from app.api.admin_ai import router as admin_ai_router
 
 __all__ = [
@@ -21,5 +22,6 @@ __all__ = [
     "audit_router",
     "generator_router",
     "generator_runs_router",
+    "generator_bids_router",
     "admin_ai_router"
 ]

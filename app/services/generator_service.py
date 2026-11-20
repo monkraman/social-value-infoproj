@@ -51,6 +51,11 @@ who have been out of work for a year or more", not "recruit 40 people". A line's
 Size the package to the target. "roles_the_whole_contract_could_fund" is what the contract could
 pay for if every pound went on local wages, so the people committed across all the employment
 measures must come to a fraction of it — the contract has a service to deliver as well.
+Reach the target at the lowest cost to Infosys. "value_per_gbp_of_cost" is what £1 Infosys spends
+on a measure returns in social value: below 1 the measure costs more than it is worth. Where two
+measures serve the same criterion, lead with the one that returns more per £1 (employability
+support, expert hours, skills sessions) and keep costly ones (apprenticeships, new hires) to what
+the client asks for; give a cheaper "Alternative" line where one exists.
 Claim each measure once across the whole package, and supply-chain spend once however it is
 sliced: NT14, NT18 and NT19 describe the same pot of money, not three separate ones.
 "type" is a label only: after deciding the initiative, give the id of the INITIATIVE TYPES entry it
@@ -83,14 +88,27 @@ def measure_mac_rows(tables: dict, framework: str | None) -> list[dict]:
     return out
 
 
+def _value_per_gbp(lever: dict | None) -> float | None:
+    """The better of UK and offshore delivery: what £1 of Infosys cost returns in TOMs value."""
+    if not lever:
+        return None
+    best = max((v for v in (lever.get("value_per_gbp_uk"), lever.get("value_per_gbp_offshore")) if isinstance(v, (int, float))), default=None)
+    return round(best, 2) if best is not None else None
+
+
 def build_prompt(form: TenderForm, tables: dict) -> tuple[str, str]:
     """System = rules + output contract. User = the tender and the tables the AI may draw on."""
+    # Value per £1 of Infosys cost, from the workbook's Levers sheet. Apprenticeships and direct
+    # hiring score well but cost Infosys far more per pound of value than employability support or
+    # expert time, so the AI is told which measures are cheap to deliver as well as which score.
+    levers = {c["code"]: c for c in (tables.get("costs") or {}).get("levers") or []}
     measures = []
     for m in tables["measures"]:
         proxy, _ = localised_proxy(m["code"], tables, form.region, form.industry)
         # Proxies are given only so the AI can size units to the target; the code recomputes every £.
         measures.append({"code": m["code"], "theme": m["theme"], "name": m["name"], "unit": m["unit"],
-                         "proxy_per_unit_for_sizing": round(proxy, 4) if proxy else None, "unit_guidance": m["unit_guidance"]})
+                         "proxy_per_unit_for_sizing": round(proxy, 4) if proxy else None, "unit_guidance": m["unit_guidance"],
+                         "value_per_gbp_of_cost": _value_per_gbp(levers.get(m["code"]))})
     tender = {
         "company": form.company,
         "contract_value_gbp": form.bid_amount_gbp,
