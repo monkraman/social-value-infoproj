@@ -5,7 +5,7 @@ The AI proposes initiatives and *units* only. Everything in £ is computed here 
 the tables (app/knowledge/tables.json): units × (localised) proxy. Rule references
 (A-xx) point to the Assumptions sheet of the Monk Spaces workbook.
 
-Pure functions — no database, no network — so every rule is unit-tested.
+Pure functions - no database, no network - so every rule is unit-tested.
 """
 import math
 import re
@@ -75,7 +75,7 @@ def _check_citations(
 ) -> List[dict]:
     """Rule D2: keep a citation only where the data shows a shared outcome.
 
-    Three signals, all from the tables — never from how alike the wording is:
+    Three signals, all from the tables - never from how alike the wording is:
       a) the past initiative used one of the measures now proposed;
       b) its own criterion is one this initiative claims (same framework numbering);
       c) its measures serve one of the claimed criteria under this framework.
@@ -87,7 +87,7 @@ def _check_citations(
         ident = str(cite.get("id") or "").strip()
         past = track.get(ident)
         if past is None:
-            checks.append(f"{name}: dropped citation '{ident or '(no id)'}' — not in the track record.")
+            checks.append(f"{name}: dropped citation '{ident or '(no id)'}' - not in the track record.")
             continue
         past_measures = _measure_codes(past.get("measures"))
         via_measure = bool(proposed & past_measures)
@@ -95,7 +95,7 @@ def _check_citations(
         via_map = any(mac in claimed for code in past_measures for mac, _ in index.get(code, ()))
         if not (via_measure or via_own_mac or via_map):
             checks.append(
-                f"{name}: dropped citation {ident} ({past.get('name')}) — it shares no criterion "
+                f"{name}: dropped citation {ident} ({past.get('name')}) - it shares no criterion "
                 "and no measure with this initiative (D2)."
             )
             continue
@@ -204,7 +204,7 @@ def _strip_money(obj: dict, where: str, checks: List[str]) -> dict:
     clean = {}
     for k, v in obj.items():
         if _MONEY_KEY.search(k):
-            checks.append(f"{where}: AI returned '{k}' — ignored; values come from the tables only.")
+            checks.append(f"{where}: AI returned '{k}' - ignored; values come from the tables only.")
             continue
         clean[k] = v
     return clean
@@ -226,7 +226,7 @@ def _dedupe_package(initiatives_out: List[dict], checks: List[str]) -> None:
     """A-07 across the whole package, not just inside one initiative.
 
     Two things get counted twice otherwise. The same measure claimed in two initiatives is
-    almost always the same people described twice — eight apprentices do not become sixteen
+    almost always the same people described twice - eight apprentices do not become sixteen
     by being mentioned again. And NT14/NT18/NT19 are overlapping views of one pot of
     supply-chain spend: local SMEs are local companies, so adding them multiplies one pound
     by three. In both cases the largest line counts and the rest are shown but not added.
@@ -235,7 +235,7 @@ def _dedupe_package(initiatives_out: List[dict], checks: List[str]) -> None:
         line["status"] = ALTERNATIVE
         line["value_gbp"] = round(line["value_gbp"], 2)
         line["note"] = (line["note"] + " " if line["note"] else "") + reason
-        checks.append(f"{other}: {line['measure']} is shown but not added — {reason}")
+        checks.append(f"{other}: {line['measure']} is shown but not added - {reason}")
 
     counted = [(out, l) for out in initiatives_out for l in out["lines"] if l["status"] == COUNTED and l["value_gbp"]]
 
@@ -386,7 +386,7 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
                 doubts = quantity_doubts(units, out["basis"], measures[code].get("unit"), form.duration_years, people)
                 if doubts:
                     out["note"] = "Check the quantity: " + "; ".join(doubts) + "."
-                    checks.append(f"{name}: {code} — check the quantity: {'; '.join(doubts)}. "
+                    checks.append(f"{name}: {code} - check the quantity: {'; '.join(doubts)}. "
                                   "The value uses the AI's number as given.")
                     questions.append(f"Confirm the quantity for {code}: {doubts[0]}.")
 
@@ -396,7 +396,7 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
 
             if code in EMPLOYMENT_MEASURES:
                 if employment_counted:
-                    out.update(status=ALTERNATIVE, note="Same people as another measure here — shown, never added (A-07).")
+                    out.update(status=ALTERNATIVE, note="Same people as another measure here - shown, never added (A-07).")
                     continue
                 employment_counted = True
             if code in CARBON_MEASURES:
@@ -415,17 +415,17 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
                         served[mac] = strength
             for mac in claimed:
                 if mac not in served:
-                    checks.append(f"{name}: dropped claimed criterion MAC {mac} — no proposed measure serves it (A1).")
+                    checks.append(f"{name}: dropped claimed criterion MAC {mac} - no proposed measure serves it (A1).")
             claimed = [m for m in claimed if m in served]
             if claimed and not any(served.get(m) == "Direct" for m in claimed):
                 checks.append(
-                    f"{name}: only supporting links to MAC {', '.join(claimed)} — needs a direct measure to score (A2)."
+                    f"{name}: only supporting links to MAC {', '.join(claimed)} - needs a direct measure to score (A2)."
                 )
         done_before = _check_citations(ini.get("done_before"), track, proposed, claimed, index, name, checks)
 
         no_tom_reason = str(ini.get("no_tom_reason") or "").strip() or None
         if not lines_out and not no_tom_reason:
-            questions.append("No TOM measure was proposed and no reason was given — confirm how this is evidenced.")
+            questions.append("No TOM measure was proposed and no reason was given - confirm how this is evidenced.")
 
         counted = sum(l["value_gbp"] for l in lines_out if l["status"] == COUNTED)
         conditional = sum(l["value_gbp"] for l in lines_out if l["status"] == CONDITIONAL)
@@ -466,7 +466,7 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
     target = form.target_gbp
     if target > 0 and totals["infosys_gbp"] > target * 1.5:
         checks.append(
-            f"Infosys value is {totals['infosys_gbp'] / target:.0%} of the target — check the units are realistic for this contract."
+            f"Infosys value is {totals['infosys_gbp'] / target:.0%} of the target - check the units are realistic for this contract."
         )
     # A contract can only employ so many people: more than its whole value in local wages is
     # not a stretch target, it is arithmetic that does not work.
@@ -486,7 +486,7 @@ def value_initiatives(ai_output: dict, tables: dict, form: TenderForm) -> Dict[s
     if form.bid_amount_gbp > 0 and totals["infosys_gbp"] > form.bid_amount_gbp:
         checks.append(
             f"The package is worth more than the contract itself ({totals['infosys_gbp'] / form.bid_amount_gbp:.0%} of "
-            f"£{form.bid_amount_gbp:,.0f}). Something is being counted that the contract cannot support — check the volumes."
+            f"£{form.bid_amount_gbp:,.0f}). Something is being counted that the contract cannot support - check the volumes."
         )
     if not tables.get("measure_mac"):
         checks.append("Measure–MAC map not loaded yet: framework fit is not checked.")

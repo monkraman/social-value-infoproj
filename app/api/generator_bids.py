@@ -239,7 +239,7 @@ def render_docx(document: Dict[str, Any]) -> bytes:
         _run(p, text, bold=True, size=13)
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    _run(p, title + (f" — {client}" if client else ""), size=10, italic=True)
+    _run(p, title + (f" - {client}" if client else ""), size=10, italic=True)
 
     intro = [str(x) for x in document.get("introduction") or [] if str(x).strip()]
     _para(doc, "", "SECTION A – DELIVERABLES", bold=True, size=11)

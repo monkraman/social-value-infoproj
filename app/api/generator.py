@@ -88,7 +88,7 @@ def generator_knowledge(db: Session = Depends(get_db)) -> Dict[str, Any]:
     """Everything the Initiative Generator needs, in the shape the frontend already uses.
 
     This is the team's source of truth. It replaces the dev-only local folder reader, so the
-    same screens work from a deployed build — the folder stays a convenience for local work.
+    same screens work from a deployed build - the folder stays a convenience for local work.
     """
     t = load_tables()
     contract = str(t["settings"].get("contract") or "")
@@ -138,7 +138,7 @@ def generator_knowledge(db: Session = Depends(get_db)) -> Dict[str, Any]:
         if ini and step:
             delivery.setdefault(ini, []).append({
                 "step": step, "due": str(d.get("Due") or "").strip(), "cycle": str(d.get("Reporting cycle") or "").strip(),
-                # "Cumulative" steps carry a real quantity — how big each cohort or tranche was.
+                # "Cumulative" steps carry a real quantity - how big each cohort or tranche was.
                 "kind": str(d.get("Kind") or "").strip(), "target": _num(d.get("Target")),
             })
 

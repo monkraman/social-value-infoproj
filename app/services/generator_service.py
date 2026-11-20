@@ -25,7 +25,7 @@ Return JSON only, exactly this shape:
       "name": "Short initiative title",
       "type": "PAT-01",
       "theme": "One of the tender themes",
-      "description": "What is delivered, where, for whom — no numbers",
+      "description": "What is delivered, where, for whom - no numbers",
       "attribution": "Infosys" or "Partner-led",
       "partner": "Partner name or null",
       "macs": ["2.2", "2.3"],
@@ -43,6 +43,8 @@ Return JSON only, exactly this shape:
   ]
 }
 Propose 5 to 8 initiatives. Units are whole-of-contract totals in the measure's unit.
+Write in plain, natural British English as a bid writer would. Never use em dashes (—);
+use a comma, a full stop or a hyphen instead.
 Quantities live only in "lines". Never put a number of people, weeks, hours or pounds in
 "description" or "bid_paragraph": the tool writes those from the lines, so a figure in your
 prose would disagree with the table the moment anyone changes a volume. Write "recruit people
@@ -50,7 +52,7 @@ who have been out of work for a year or more", not "recruit 40 people". A line's
 "people" must agree with each other and with its "basis".
 Size the package to the target. "roles_the_whole_contract_could_fund" is what the contract could
 pay for if every pound went on local wages, so the people committed across all the employment
-measures must come to a fraction of it — the contract has a service to deliver as well.
+measures must come to a fraction of it - the contract has a service to deliver as well.
 Reach the target at the lowest cost to Infosys. "value_per_gbp_of_cost" is what £1 Infosys spends
 on a measure returns in social value: below 1 the measure costs more than it is worth. Where two
 measures serve the same criterion, lead with the one that returns more per £1 (employability
@@ -79,7 +81,7 @@ def measure_mac_rows(tables: dict, framework: str | None) -> list[dict]:
         if str(r.get("MAC") or "—") == "—":
             continue  # not scored under this framework; the AI only needs the links that exist
         # "Why" is the reviewer's justification for the row, not something the AI needs to
-        # choose a criterion — and across three frameworks it is half the prompt.
+        # choose a criterion - and across three frameworks it is half the prompt.
         row = {"measure": r.get("Measure code"), "mac": r.get("MAC"),
                "strength": r.get("Strength"), "criterion": r.get("Criterion it serves")}
         if not wanted:
@@ -137,18 +139,18 @@ def build_prompt(form: TenderForm, tables: dict) -> tuple[str, str]:
         [
             "TENDER:\n" + json.dumps(tender, indent=1),
             "VALID TOM MEASURES:\n" + json.dumps(measures, indent=1),
-            "INFOSYS TRACK RECORD (already committed on past contracts — cite by id, never re-propose):\n"
+            "INFOSYS TRACK RECORD (already committed on past contracts - cite by id, never re-propose):\n"
             + json.dumps(track, indent=1, default=str),
         ]
         + [
-            "INITIATIVE TYPES (labels for the \"type\" field only — not a menu of what to propose):\n"
+            "INITIATIVE TYPES (labels for the \"type\" field only - not a menu of what to propose):\n"
             + json.dumps([{"id": t["id"], "name": t["name"]} for t in load_initiative_types().values()], indent=1)
         ]
         + ([f"MEASURE-MAC MAP:\n{json.dumps(mac_map, indent=1, default=str)}"] if mac_map else [])
         + ([f"INTERVENTION PATTERNS:\n{json.dumps(tables['patterns'], indent=1, default=str)}"] if tables.get("patterns") else [])
         + ([f"INFOSYS CAPABILITY PROFILE:\n{json.dumps(tables['capability'], indent=1, default=str)}"] if tables.get("capability") else [])
         + ([
-            "HOW INFOSYS WRITES A MEASURABLE COMMITMENT (house style from a live contract scorecard — "
+            "HOW INFOSYS WRITES A MEASURABLE COMMITMENT (house style from a live contract scorecard - "
             "match this level of specificity, do not reuse these commitments):\n"
             + json.dumps(tables["wording"], indent=1, default=str)
         ] if tables.get("wording") else [])
