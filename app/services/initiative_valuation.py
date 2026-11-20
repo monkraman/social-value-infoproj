@@ -255,12 +255,19 @@ def _dedupe_package(initiatives_out: List[dict], checks: List[str]) -> None:
               f"the same supply-chain spend is already counted as {spend[0][1]['measure']} in \"{spend[0][0]['name']}\".")
 
 
+# Week-based measures count people x weeks: cut whole people, keep each person's weeks.
+PER_PERSON_WEEKS = {"NT9", "NT10", "NT12", "NT13", "NT80"}
+
+
 def _trim_to_target(initiatives_out: List[dict], tables: dict, form: TenderForm, checks: List[str]) -> None:
-    """Bring a package back to the target when it overshoots.
+    """Bring a package back to the target when it overshoots, in whole units.
 
     The weighting is what the buyer asked for, and every pound above it is a commitment
-    Infosys is bound to deliver for no extra score — KPIs with service points attached. Coming
-    in under is a smaller package; coming in over is a liability. Under target is left alone.
+    Infosys is bound to deliver for no extra score. Scaling every line down in proportion
+    produced 1.2 people and 0.8 apprentices, which nobody can recruit, so instead whole
+    people (or weeks, hours, pounds) come off the largest line first, then the next, until
+    the package is within the target. Fewer lines change and every number stays real.
+    Under target is left alone.
     """
     target = form.target_gbp
     if target <= 0:
@@ -270,32 +277,41 @@ def _trim_to_target(initiatives_out: List[dict], tables: dict, form: TenderForm,
     if total <= target or not counted:
         return
 
-    before = total
-    for _ in range(3):  # a couple of passes settle the rounding
-        total = sum(l["value_gbp"] for l in counted)
-        if total <= target:
+    before, excess = total, total - target
+    for line in sorted(counted, key=lambda l: -l["value_gbp"]):
+        if excess <= 0:
             break
-        k = target / total
-        for line in counted:
-            # Always round down: the target is a ceiling here, so landing a pound under it is
-            # right and a pound over it is the thing being avoided.
-            line.setdefault("units_proposed", line["units"])
-            units = (line["units"] or 0) * k
-            line["units"] = math.floor(units * 100) / 100 if units < 100 else math.floor(units)
-            if line.get("people"):
-                line["people"] = max(1, round(line["people"] * k))
-            proxy, _basis = localised_proxy(line["measure"], tables, form.region, form.industry)
-            line["value_gbp"] = round((line["units"] or 0) * (proxy or 0), 2)
+        proxy = localised_proxy(line["measure"], tables, form.region, form.industry)[0] or 0
+        if proxy <= 0:
+            continue
+        units, people = line["units"] or 0, line.get("people")
+        line.setdefault("units_proposed", units)
+        line.setdefault("people_proposed", people)
 
-    after = sum(l["value_gbp"] for l in counted)
-    for line in counted:
-        was = line.get("units_proposed")
-        if was and was != line["units"]:
-            line["note"] = (line["note"] + " " if line["note"] else "") + f"Brought down from {was:,.0f} to meet the target."
+        if line["measure"] in PER_PERSON_WEEKS and people and people >= 1:
+            weeks_each = units / people
+            cut = min(people, math.ceil(excess / (weeks_each * proxy)))
+            line["people"] = people - cut
+            line["units"] = round(line["people"] * weeks_each)
+        else:
+            cut = min(units, math.ceil(excess / proxy))
+            line["units"] = units - cut
+            if people is not None:
+                line["people"] = min(people, line["units"]) if line["measure"] in BARRIER_MEASURES else people
+
+        value = round(line["units"] * proxy, 2)
+        excess -= line["value_gbp"] - value
+        line["value_gbp"] = value
+        if line["units"] <= 0:
+            line["status"] = ALTERNATIVE
+            line["note"] = (line["note"] + " " if line["note"] else "") + "Not needed to stay within the target."
+
+    after = sum(l["value_gbp"] for l in counted if l["status"] == COUNTED)
+    changed = [l for l in counted if l.get("units_proposed") not in (None, l["units"])]
     checks.append(
-        f"Volumes were brought down from £{before:,.0f} to £{after:,.0f} to meet the {form.sv_percent:g}% target and no "
-        "more. Anything above it is a commitment Infosys is bound to deliver for no extra score, so each line shows what "
-        "the AI first proposed."
+        f"The AI proposed £{before:,.0f}, above the {form.sv_percent:g}% target of £{target:,.0f}. "
+        f"{len(changed)} line{' was' if len(changed) == 1 else 's were'} cut back in whole units, largest first, to "
+        f"£{after:,.0f}: anything above the target is a commitment with no extra score."
     )
 
 
