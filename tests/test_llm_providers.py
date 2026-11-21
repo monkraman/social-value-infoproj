@@ -55,6 +55,47 @@ def test_embeddings_stay_on_gemini_when_chat_is_azure(three_providers):
     assert settings.embedding_provider == "gemini"
 
 
+def test_embeddings_on_azure_when_chosen(three_providers, monkeypatch):
+    monkeypatch.setattr(settings, "EMBEDDING_PROVIDER", "azure")
+    monkeypatch.setattr(settings, "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-small")
+    assert settings.embedding_provider == "azure"
+
+
+def test_azure_embeddings_need_their_own_deployment(three_providers, monkeypatch):
+    monkeypatch.setattr(settings, "EMBEDDING_PROVIDER", "azure")
+    monkeypatch.setattr(settings, "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", None)
+    assert settings.embedding_provider == "none"
+
+
+def test_auto_embeddings_use_azure_only_when_nothing_else(three_providers, monkeypatch):
+    monkeypatch.setattr(settings, "EMBEDDING_PROVIDER", "auto")
+    monkeypatch.setattr(settings, "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "text-embedding-3-small")
+    assert settings.embedding_provider == "gemini"
+    monkeypatch.setattr(settings, "GEMINI_API_KEY", None)
+    monkeypatch.setattr(settings, "OPENAI_API_KEY", None)
+    assert settings.embedding_provider == "azure"
+
+
+def test_azure_embeddings_call_the_embedding_deployment(three_providers, monkeypatch):
+    from types import SimpleNamespace
+
+    from app.services.embedding_service import EmbeddingService
+
+    monkeypatch.setattr(settings, "EMBEDDING_PROVIDER", "azure")
+    monkeypatch.setattr(settings, "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "emb-deploy")
+    seen = {}
+
+    def create(input, model, dimensions):
+        seen.update(model=model, dimensions=dimensions, n=len(input))
+        return SimpleNamespace(data=[SimpleNamespace(embedding=[1.0] + [0.0] * (dimensions - 1)) for _ in input])
+
+    service = EmbeddingService()
+    service._azure_client = SimpleNamespace(embeddings=SimpleNamespace(create=create))
+    vectors = service.get_embeddings(["one", "two"])
+    assert seen == {"model": "emb-deploy", "dimensions": settings.EMBEDDING_DIMENSION, "n": 2}
+    assert len(vectors) == 2 and len(vectors[0]) == settings.EMBEDDING_DIMENSION
+
+
 # ── The admin switch: super-admins pick the first provider; keys never pass through it ────
 
 from fastapi.testclient import TestClient  # noqa: E402

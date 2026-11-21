@@ -96,7 +96,10 @@ app = FastAPI(
         "- Auditable math & non-hallucination guardrails"
     ),
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    docs_url="/docs" if settings.ENABLE_API_DOCS else None,
+    redoc_url="/redoc" if settings.ENABLE_API_DOCS else None,
+    openapi_url="/openapi.json" if settings.ENABLE_API_DOCS else None,
 )
 
 # CORS configuration (supports local and deployed origins with credentials)
@@ -195,7 +198,7 @@ app.include_router(admin_ai_router, dependencies=_require_user)  # each endpoint
 def root():
     return {
         "message": f"Welcome to {settings.APP_NAME}",
-        "docs_url": "/docs",
+        "docs_url": "/docs" if settings.ENABLE_API_DOCS else None,
         "health_check": "/health"
     }
 

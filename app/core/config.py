@@ -19,7 +19,8 @@ class Settings(BaseSettings):
     LLM_PROVIDER: str = "auto"  # 'auto', 'azure', 'gemini', 'openai', 'offline'
     # Providers tried next, in order, when the first is out of quota or down, e.g. "gemini,openai".
     LLM_FALLBACK: str = ""
-    # Which provider makes document embeddings: 'auto' (Gemini if configured, else OpenAI).
+    # Which provider makes document embeddings: 'gemini', 'openai', 'azure', or 'auto' (Gemini if
+    # configured, else OpenAI, else Azure OpenAI).
     # Independent of LLM_PROVIDER so switching chat model never invalidates the document index.
     EMBEDDING_PROVIDER: str = "auto"
 
@@ -28,7 +29,9 @@ class Settings(BaseSettings):
     AZURE_OPENAI_ENDPOINT: Optional[str] = None  # e.g. https://<resource>.openai.azure.com/
     AZURE_OPENAI_DEPLOYMENT: Optional[str] = None  # the deployment name chosen in Foundry, not the model name
     AZURE_OPENAI_API_VERSION: str = "2024-10-21"
-    AZURE_OPENAI_TIMEOUT_SECONDS: float = 120.0
+    # Deployment of the embedding model (e.g. text-embedding-3-small), used when embeddings come from Azure.
+    AZURE_OPENAI_EMBEDDING_DEPLOYMENT: Optional[str] = None
+    AZURE_OPENAI_TIMEOUT_SECONDS: float = 100.0
     # Leave unset for reasoning models (gpt-5, o-series), which accept only their default temperature.
     AZURE_OPENAI_TEMPERATURE: Optional[float] = None
 
@@ -77,6 +80,14 @@ class Settings(BaseSettings):
 
     # Database Settings (Set via .env or Azure App Service Environment Variables)
     DATABASE_URL: str = "postgresql+psycopg://postgres:postgres@localhost:5432/social_value_db"
+    # Connections each worker process may hold. Keep workers x (pool + overflow) under the
+    # database's connection limit (Azure PostgreSQL Burstable B1ms allows about 50).
+    DB_POOL_SIZE: int = 10
+    DB_MAX_OVERFLOW: int = 20
+
+    # Interactive API documentation at /docs and /redoc. Set to false where the API should not
+    # describe itself publicly.
+    ENABLE_API_DOCS: bool = True
 
     model_config = SettingsConfigDict(
         env_file=[str(ENV_FILE_PATH), ".env"],
@@ -90,6 +101,15 @@ class Settings(BaseSettings):
             (self.AZURE_OPENAI_API_KEY or "").strip()
             and (self.AZURE_OPENAI_ENDPOINT or "").strip()
             and (self.AZURE_OPENAI_DEPLOYMENT or "").strip()
+            and not self.AZURE_OPENAI_API_KEY.startswith("your_")
+        )
+
+    @property
+    def is_azure_embedding_configured(self) -> bool:
+        return bool(
+            (self.AZURE_OPENAI_API_KEY or "").strip()
+            and (self.AZURE_OPENAI_ENDPOINT or "").strip()
+            and (self.AZURE_OPENAI_EMBEDDING_DEPLOYMENT or "").strip()
             and not self.AZURE_OPENAI_API_KEY.startswith("your_")
         )
 
@@ -109,11 +129,15 @@ class Settings(BaseSettings):
         """Embeddings stay on one provider whatever the chat provider is: vectors from different
         providers cannot be compared, so switching it means re-indexing every document."""
         prov = self.EMBEDDING_PROVIDER.lower().strip()
+        if prov == "azure":
+            return "azure" if self.is_azure_embedding_configured else "none"
         if prov in ("gemini", "openai"):
             return prov if self._chat_configured(prov) else "none"
         if self.is_gemini_configured:
             return "gemini"
-        return "openai" if self.is_openai_configured else "none"
+        if self.is_openai_configured:
+            return "openai"
+        return "azure" if self.is_azure_embedding_configured else "none"
 
     @property
     def active_provider(self) -> str:

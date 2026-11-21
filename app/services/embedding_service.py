@@ -12,7 +12,7 @@ import hashlib
 import numpy as np
 import httpx
 from typing import List
-from openai import OpenAI
+from openai import AzureOpenAI, OpenAI
 from app.core.config import settings
 
 
@@ -24,12 +24,25 @@ class EmbeddingService:
     def __init__(self):
         self.dimension = settings.EMBEDDING_DIMENSION
         self._openai_client = None
+        self._azure_client = None
 
     @property
     def openai_client(self) -> OpenAI:
         if self._openai_client is None and settings.is_openai_configured:
             self._openai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
         return self._openai_client
+
+    @property
+    def azure_client(self) -> AzureOpenAI:
+        if self._azure_client is None and settings.is_azure_embedding_configured:
+            self._azure_client = AzureOpenAI(
+                api_key=settings.AZURE_OPENAI_API_KEY,
+                azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
+                api_version=settings.AZURE_OPENAI_API_VERSION,
+                timeout=30.0,
+                max_retries=2,
+            )
+        return self._azure_client
 
     def _generate_synthetic_vector(self, text: str) -> List[float]:
         """
@@ -87,6 +100,16 @@ class EmbeddingService:
                 return [self._normalize_and_pad_vector(item.embedding) for item in response.data]
             except Exception as e:
                 return self._fallback(cleaned, f"OpenAI embedding failed: {e}")
+
+        if provider == "azure" and settings.is_azure_embedding_configured:
+            try:
+                # text-embedding-3 models return EMBEDDING_DIMENSION values directly when asked.
+                response = self.azure_client.embeddings.create(
+                    input=cleaned, model=settings.AZURE_OPENAI_EMBEDDING_DEPLOYMENT, dimensions=self.dimension
+                )
+                return [self._normalize_and_pad_vector(item.embedding) for item in response.data]
+            except Exception as e:
+                return self._fallback(cleaned, f"Azure OpenAI embedding failed: {e}")
 
         if provider == "gemini" and settings.is_gemini_configured:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.GEMINI_EMBEDDING_MODEL}:embedContent"
